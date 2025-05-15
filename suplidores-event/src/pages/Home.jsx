@@ -204,7 +204,7 @@ export default function Home() {
                 ÉVOCA
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-white opacity-90 mb-8">
-              roveedores de calidad que ofrecen los
+              Proveedores de calidad que ofrecen los
                 productos y servicios que necesitas
               </p>
             </div>
