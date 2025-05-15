@@ -24,10 +24,7 @@ const DatosProveedor = () => {
       [e.target.name]: e.target.value
     });
   };
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
+  const insertarDatos = async () => {
   try {
     const response = await fetch('http://localhost:3000/crear_proveedores', {
       method: 'POST',
@@ -40,14 +37,37 @@ const handleSubmit = async (e) => {
     if (response.ok) {
       const data = await response.json();
       console.log('Proveedor creado con éxito:', data);
-      navigate('/crear_proveedores', { state: { formData } });
+      navigate('/registro/confirmacion', { state: { formData } }); // Redirige a una página de confirmación
     } else {
       console.error('Error al crear el proveedor:', response.statusText);
+      alert('Hubo un error al crear el proveedor. Inténtalo de nuevo.');
     }
   } catch (error) {
     console.error('Error al conectar con el servidor:', error);
+    alert('No se pudo conectar con el servidor. Verifica tu conexión.');
   }
-}
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  // Aquí puedes realizar la lógica para enviar los datos al servidor
+  // Por ejemplo, usando fetch para enviar una solicitud POST
+  fetch('http://localhost:3000/crear_proveedores', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(formData),
+  })
+    .then((response) => {
+      if (response.ok) {
+        return response.json();
+      } else {
+        throw new Error('Error en la respuesta del servidor');
+      }
+    }
+    )
+  }
 
   // Información sobre el registro del proveedor
   const proveedorInfo = {
@@ -207,15 +227,15 @@ const handleSubmit = async (e) => {
                     ></textarea>
                   </div>
 {/*boton de siguiente*/}
-                  <div className="pt-4">
-                    <button 
-                    onClick={() => navigate('/crear_proveedores', { state: { formData } })}
-                      type="submit" 
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out"
-                    >
-                      Siguiente
-                    </button>
-                  </div>
+<div className="pt-4">
+  <button
+  onClick={insertarDatos}
+    type="submit" // Este tipo asegura que se ejecute el onSubmit del formulario
+    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out"
+  >
+    Siguiente
+  </button>
+</div>
                 </form>
               </div>
             </div>
