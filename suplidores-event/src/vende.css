@@ -1,227 +1,222 @@
 /* Estilos generales */
 .vende-container {
   font-family: 'Poppins', 'Segoe UI', sans-serif;
-  background-color: #012e33;
-  color: #ffffff;
-  padding: 2rem;
-  line-height: 1.6;
+  background-color: #fff;
+  color: #012e33; /* darkTeal */
+  width: 100%;
+  overflow-x: hidden;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-/* Títulos principales */
-.vende-header h1 {
-  color: #d64d55;
-  font-size: 2.8rem;
-  margin-top: 5rem; /* Bajar título */
-  margin-bottom: 3rem;
-  font-weight: 700;
-  text-align: center;
+/* Hero Section restaurado a su tamaño original */
+.hero-section {
+  position: relative;
+  height: 60vh;
+  min-height: 400px;
+  background-image: url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1969&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  margin-bottom: 2rem;
 }
 
-/* Subtítulo */
-.vende-subtitle {
-  color: #94c8d6;
-  font-size: 1.2rem;
-  margin-bottom: 2.5rem;
-  text-align: center;
-}
-
-/* Cuadros de beneficios */
-.vende-stats {
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(1, 46, 51, 0.7), rgba(1, 46, 51, 0.7));
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
-  margin-bottom: 3.5rem;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.hero-section h1 {
+  color: white;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.hero-section p {
+  color: white;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  max-width: 800px;
+}
+
+/* Contenido principal */
+.vende-header {
+  padding: 2rem 1rem;
+  max-width: 1000px;
+}
+
+.vende-header h1 {
+  color: #012e33;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.vende-subtitle {
+  font-size: 1rem;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 3rem;
+}
+
+/* Stats */
+.vende-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1000px;
 }
 
 .stat-item {
-  background-color: #ffffff; /* FONDO BLANCO */
-  color: #012e33; /* Letra oscura */
-  padding: 1.2rem;
+  background-color: #fbcbdb20;
+  padding: 1rem;
   border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  font-weight: 500;
-  transition: transform 0.3s ease;
+  border: 2px solid #fbcbdb;
+  transition: all 0.3s ease;
+  margin: 0.5rem;
 }
 
 .stat-item:hover {
   transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(1, 46, 51, 0.1);
 }
 
-/* Sección de Planes */
+/* Planes */
 .vende-plans {
-  margin: 5rem 0;
+  padding: 2rem 1rem;
+  background-color: #f8f9fa;
 }
 
-/* Título de Planes */
 .plans-title {
-  font-size: 2rem;
-  margin-bottom: 2.5rem;
   text-align: center;
+  color: #012e33;
+  font-size: 2rem;
+  margin-bottom: 3rem;
 }
 
-/* Grid de Planes uno al lado de otro */
 .plans-grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  padding: 0 1rem;
 }
 
-/* Cada plan */
 .plan-card {
-  background-color: #94c8d6; /* Azul claro */
-  color: hsl(186, 96%, 10%);
-  width: 280px; /* Más pequeño */
+  background: white;
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-  text-align: center;
-  transition: transform 0.4s ease, background 0.4s ease;
-}
-
-.plan-card:hover {
-  transform: scale(1.05);
-  background-color: #ffc8dd;
-}
-
-/* Planes todos iguales */
-.highlighted {
-  background-color: #cdeff2; /* mismo color, no rojo */
-}
-
-/* Contenido dentro de cada plan */
-.plan-content h3 {
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-}
-
-.plan-description {
-  font-size: 1rem;
-  margin-bottom: 1rem;
-}
-
-.plan-price {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin: 1rem 0;
-}
-
-.plan-features {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
-  text-align: left;
-}
-
-.plan-features li {
-  margin-bottom: 0.5rem;
-  padding-left: 1.5rem;
-  position: relative;
-}
-
-.plan-features li::before {
-  content: "✓";
-  color: #960f16;
-  font-weight: bold;
-  position: absolute;
-  left: 0;
-}
-
-/* Botón dentro del plan */
-.plan-button {
-  background-color: #d64d55;
-  color: #ffffff;
-  padding: 0.8rem 1.6rem;
-  margin-top: 1.5rem;
-  border-radius: 8px;
-  font-weight: bold;
-  text-decoration: none;
-  display: inline-block;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
   transition: all 0.3s ease;
+  position: relative;
+  margin: 0.5rem;
 }
 
-.plan-button:hover {
-  background-color: #960f16;
-  transform: scale(1.05);
+.highlighted {
+  background-color: #fbcbdb10;
+  border: 2px solid #cbb4db;
+  transform: translateY(-10px);
+}
+
+.plan-badge {
+  position: absolute;
+  top: -12px;
+  right: 20px;
+  background-color: #012e33;
+  color: white;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 
 /* Beneficios */
 .vende-benefits {
-  padding: 80px 20px;
-  background: #003333; /* Fondo petróleo oscuro */
-  text-align: center;
-  color: #ffffff; /* Texto blanco */
+  padding: 2rem 1rem;
+  background-color: white;
 }
 
 .benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 40px;
-  margin-top: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  max-width: 1000px;
+  margin: 2rem auto;
 }
 
 .benefit-item {
-  background: #004c4c; /* Un azul petróleo un poco más claro */
-  padding: 30px 20px;
+  background: white;
+  padding: 1.5rem;
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-align: center;
+  margin: 0.5rem;
 }
 
 .benefit-item:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  transform: translateY(-5px);
 }
 
 .benefit-icon {
-  font-size: 48px;
-  color: #8abdc0; /* Azul claro bonito */
-  margin-bottom: 20px;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #012e33;
 }
 
 .benefit-item h3 {
-  font-size: 22px;
-  margin-bottom: 10px;
-  color: #ffffff;
+  font-size: 1.3rem;
+  margin: 1rem 0;
 }
 
 .benefit-item p {
-  color: #dddddd;
-  font-size: 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Testimonios */
 .vende-testimonials {
-  padding: 80px 20px;
-  background: #8abdc0; /* Azul claro */
-  text-align: center;
-  color: #003333;
+  padding: 2rem 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .testimonials-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 40px;
-  margin-top: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
 }
 
 .testimonial-card {
-  background: #ffffff;
-  padding: 30px;
+  background: white;
+  padding: 1.5rem;
   border-radius: 16px;
-  border: 1px solid #cce7e9;
+  border: 1px solid #fbcbdb; /* lightPink */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 0.5rem;
 }
 
 .testimonial-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  background-color: #fbcbdb; /* lightPink */
 }
 
 .testimonial-text {
+  color: #012e33;
   font-style: italic;
-  font-size: 16px;
-  color: #003333;
+  font-size: 0.95rem;
+  line-height: 1.6;
   margin-bottom: 20px;
 }
 
@@ -230,21 +225,21 @@
 }
 
 .author-name {
-  font-size: 18px;
+  font-size: 1.1rem;
   font-weight: bold;
-  color: #003333;
+  color: #012e33; /* darkTeal */
 }
 
 .author-business {
-  font-size: 15px;
-  color: #006666;
+  font-size: 0.9rem;
+  color: #9CAF88; /* sage */
 }
 
 /* Preguntas Frecuentes */
 .vende-faq {
-  padding: 80px 20px;
-  background: #003333;
-  color: #ffffff;
+  padding: 2rem 1rem;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .vende-faq h2 {
@@ -253,25 +248,108 @@
 }
 
 .faq-item {
-  background: #004c4c;
+  background: white;
   border-radius: 16px;
-  padding: 25px;
-  margin-bottom: 20px;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease;
+  padding: 1rem;
+  margin: 0.75rem 0;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 2px solid #fbcbdb;
 }
 
 .faq-item:hover {
-  transform: translateY(-5px);
+  background-color: #fbcbdb;
+  border-color: #cbb4db;
 }
 
 .faq-item h3 {
+  color: #012e33;
+  font-weight: 600;
   margin-bottom: 10px;
-  font-size: 20px;
-  color: #ffffff;
+  font-size: 1.2rem;
 }
 
 .faq-item p {
-  color: #dddddd;
-  font-size: 16px;
+  color: #012e33;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Títulos responsivos */
+h2 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Media queries para ajustes específicos */
+@media (max-width: 768px) {
+  .hero-section {
+    height: 60vh; /* Mantenemos el alto en móvil también */
+  }
+  
+  .vende-container {
+    padding: 0 0.5rem;
+  }
+  
+  .vende-stats {
+    padding: 0.5rem;
+  }
+  
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .highlighted {
+    transform: none;
+  }
+  
+  .plan-card {
+    margin: 0.25rem;
+  }
+  
+  .benefit-item {
+    margin: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    height: 50vh; /* Ligero ajuste para móviles muy pequeños */
+  }
+  
+  .hero-section h1 {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+  }
+  
+  .hero-section p {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+  }
+  
+  .vende-header {
+    padding: 1.5rem 0.5rem;
+  }
+  
+  .vende-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .plans-title {
+    font-size: 1.8rem;
+  }
+  
+  .plans-grid,
+  .benefits-grid,
+  .testimonials-container {
+    gap: 1rem;
+  }
+}
+
+/* Ajustes de contenedor para pantallas grandes */
+@media (min-width: 1400px) {
+  .vende-container > * {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
