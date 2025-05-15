@@ -17,7 +17,7 @@ const floreriasProveedores = [
     id: 1,
     nombre: "Florería Bella Rosa",
     descripcion: "Arreglos florales para todo tipo de eventos",
-    imagen: "/api/placeholder/300/200",
+    imagen: "https://images.unsplash.com/photo-1508610048659-a06b669e3321?q=80&w=300&h=200&auto=format&fit=crop",
     calificacion: 4.8,
     ubicacion: "Ciudad de México",
     precioPromedio: "$$",
@@ -27,7 +27,7 @@ const floreriasProveedores = [
     id: 2,
     nombre: "Flores del Jardín",
     descripcion: "Flores frescas y arreglos personalizados",
-    imagen: "/api/placeholder/300/200",
+    imagen: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?q=80&w=300&h=200&auto=format&fit=crop",
     calificacion: 4.5,
     ubicacion: "Guadalajara",
     precioPromedio: "$$$",
@@ -37,7 +37,7 @@ const floreriasProveedores = [
     id: 3,
     nombre: "Floristería Primavera",
     descripcion: "Expertos en decoración floral para bodas y eventos corporativos",
-    imagen: "/api/placeholder/300/200",
+    imagen: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?q=80&w=300&h=200&auto=format&fit=crop",
     calificacion: 4.9,
     ubicacion: "Monterrey",
     precioPromedio: "$$$$",
@@ -47,7 +47,7 @@ const floreriasProveedores = [
     id: 4,
     nombre: "Arte Floral",
     descripcion: "Diseños únicos y creativos para cualquier ocasión",
-    imagen: "/api/placeholder/300/200",
+    imagen: "https://images.unsplash.com/photo-1583008584407-ab6e98944f5d?q=80&w=300&h=200&auto=format&fit=crop",
     calificacion: 4.7,
     ubicacion: "Puebla",
     precioPromedio: "$$$",
@@ -57,7 +57,7 @@ const floreriasProveedores = [
     id: 5,
     nombre: "Flores y Más",
     descripcion: "Soluciones florales completas para eventos",
-    imagen: "/api/placeholder/300/200",
+    imagen: "https://images.unsplash.com/photo-1515696955266-4f67e13219e8?q=80&w=300&h=200&auto=format&fit=crop",
     calificacion: 4.6,
     ubicacion: "Mérida",
     precioPromedio: "$$",
@@ -67,7 +67,7 @@ const floreriasProveedores = [
     id: 6,
     nombre: "Florería Encanto",
     descripcion: "Arreglos elegantes y sofisticados",
-    imagen: "/api/placeholder/300/200",
+    imagen: "https://images.unsplash.com/photo-1561181278-a5e969228d5c?q=80&w=300&h=200&auto=format&fit=crop",
     calificacion: 4.8,
     ubicacion: "Querétaro",
     precioPromedio: "$$$",
@@ -80,7 +80,7 @@ const proveedorDetalle = {
   id: 1,
   nombre: "Florería Bella Rosa",
   descripcion: "Somos expertos en arreglos florales para todo tipo de eventos. Nos especializamos en bodas, eventos corporativos y celebraciones especiales.",
-  imagen: "/api/placeholder/800/400",
+  imagen: "https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?q=80&w=800&h=400&auto=format&fit=crop",
   calificacion: 4.8,
   ubicacion: "Av. Reforma 234, Col. Juárez, Ciudad de México",
   telefono: "(55) 1234-5678",
@@ -100,12 +100,12 @@ const proveedorDetalle = {
     { nombre: "Corsages y boutonnieres", precio: "$200 - $500" }
   ],
   galeria: [
-    "/api/placeholder/400/300",
-    "/api/placeholder/400/300",
-    "/api/placeholder/400/300",
-    "/api/placeholder/400/300",
-    "/api/placeholder/400/300",
-    "/api/placeholder/400/300"
+    "https://images.unsplash.com/photo-1562690868-60bbe7293e94?q=80&w=400&h=300&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1519750287407-b2ec3a8f1d2a?q=80&w=400&h=300&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1607035798067-31bbcb7a00fd?q=80&w=400&h=300&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1594055102298-bfc9daacce9e?q=80&w=400&h=300&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1612540942065-9fd0ca98fb3e?q=80&w=400&h=300&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1551733372-a27aaa888c4f?q=80&w=400&h=300&auto=format&fit=crop"
   ],
   resenas: [
     {
@@ -159,24 +159,6 @@ export default function ServiciosApp() {
 
   return (
     <div className="font-sans">
-      {/* Encabezado común */}
-      <header className="bg-sky-200 p-6">
-        <div className="container mx-auto">
-          <div className="flex justify-between items-center">
-            <div className="text-3xl font-bold text-slate-800">Évoca</div>
-            <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-slate-700 hover:text-slate-900">Inicio</a>
-              <a href="#" className="text-slate-900 font-semibold border-b-2 border-slate-900">Servicios</a>
-              <a href="#" className="text-slate-700 hover:text-slate-900">Productos</a>
-              <a href="#" className="text-slate-700 hover:text-slate-900">Vende con nosotros</a>
-            </nav>
-            <button className="bg-slate-700 text-white px-4 py-2 rounded-md hover:bg-slate-800 transition">
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Contenido principal */}
       <main className="container mx-auto p-6">
         {/* Barra de navegación de migas de pan */}
