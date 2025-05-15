@@ -8,14 +8,14 @@ const DatosProveedor = () => {
 
   const [formData, setFormData] = useState({
     ...location.state?.formData,
-    nombre_empresa: '',
-    email_empresa: '',
-    telefono_empresa: '',
-    tipo_servicio: '',
-    fecha_creacion: '',
-    direccion: '',
-    descripcion: '',
-    redes_sociales: ''
+    nombre_empresa: 'nombre_empresa',
+    email_empresa: 'email_empresa',
+    telefono_empresa: 'telefono_empresa',
+    tipo_servicio: 'tipo_servicio',
+    fecha_creacion: 'fecha_creacion',
+    direccion: 'direccion',
+    descripcion: 'descripcion',
+    redes_sociales: 'redes_sociales'
   });
 
   const handleChange = (e) => {

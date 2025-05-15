@@ -23,6 +23,12 @@ app.get('/proveedores', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener los proveedores' });
   }
 });
+app.post('/crear_proveedores', (req, res) => {
+  const proveedor = req.body;
+  console.log('Proveedor recibido:', proveedor);
+  res.status(201).json({ message: 'Proveedor creado con éxito' });
+});
+
 
 async function startServer() {
   try {
