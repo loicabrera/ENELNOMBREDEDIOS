@@ -145,3 +145,25 @@ button:focus-visible {
 .font-medium { font-weight: 500; }
 .font-semibold { font-weight: 600; }
 .font-bold { font-weight: 700; }
+
+/* Estilos específicos para el logo */
+.logo-container {
+  position: relative;
+}
+
+.logo-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: radial-gradient(circle at center, rgba(251, 203, 219, 0.1), transparent);
+  pointer-events: none;
+}
+
+.logo-container img {
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover img {
+  transform: translateY(-5px);
+}
