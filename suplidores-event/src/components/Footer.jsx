@@ -7,7 +7,8 @@ const colors = {
   lightPink: "#fbcbdb",
   darkTeal: "#012e33",
 };
-function footer() {
+
+function Footer() {
   return (
     <footer
       style={{ backgroundColor: colors.darkTeal }}
@@ -199,4 +200,4 @@ function footer() {
   );
 }
 
-export default footer;
+export default Footer;

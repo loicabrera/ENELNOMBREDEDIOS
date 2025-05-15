@@ -81,12 +81,43 @@ function App() {
               <Perfil />
             </Layout>
           }
+          
+        />
+        <Route
+          path="/datospersonas"
+          element={
+            <Layout>
+              <DatosPersonas />
+            </Layout>
+          }
+        />
+        <Route
+          path="/datosproveedor"
+          element={
+            <Layout>
+              <DatosProveedor />
+            </Layout>
+          }
         />
 
         {/* Rutas sin Navbar */}
         <Route path="/login" element={<Login />} />
-        <Route path="/registro/:plan" element={<DatosPersonas />} />
-        <Route path="/registro/evento" element={<DatosProveedor />} />
+        <Route
+          path="/registro/:plan"
+          element={
+            <Layout>
+              <DatosPersonas />
+            </Layout>
+          }
+        />
+        <Route
+          path="/registro/evento"
+          element={
+            <Layout>
+              <DatosProveedor />
+            </Layout>
+          }
+        />
       </Routes>
     </Router>
   );
