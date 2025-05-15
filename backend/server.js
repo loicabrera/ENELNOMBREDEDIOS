@@ -2,7 +2,7 @@
 import express from 'express';
 import conexion from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
-import { Persona } from './Models/Persona.js';
+import { PERSONA } from './Models/Persona.js';
 
 const app = express();
 const PORT = 3000;
@@ -24,62 +24,86 @@ app.get('/proveedores', async (req, res) => {
     res.status(500).json({ error: 'Error al obtener los proveedores' });
   }
 });
+
 app.get('/persona', async (req, res) => {
   try {
-    const personas = await Persona.findAll();
+    const personas = await PERSONA.findAll();
     res.json(personas);
   } catch (error) {
     console.error('Error al obtener proveedores:', error);
     res.status(500).json({ error: 'Error al obtener los proveedores' });
   }
 });
-app.post('/crear_proveedores', async (req, res) => {
-    try {
-        const {
-            id_proveedor,
-            nombre_empresa,
-            email_empresa,
-            telefono_empresa,
-            tipo_servicio,
-            fecha_creacion, // opcional
-            direccion,
-            redes_sociales,
-            PERSONA_cedula
-        } = req.body;
 
-        // Validación básica (puedes agregar más según necesidades)
-        if (!id_proveedor || !nombre_empresa || !email_empresa || !telefono_empresa || !tipo_servicio || !direccion || !PERSONA_cedula) {
-            return res.status(400).json({ error: 'Faltan campos obligatorios' });
-        }
+app.post ('/crear_persona', async (req, res) => {
+  try {
+    const { nombre, apellido, telefono, email, cedula } = req.body;
 
-        const nuevoProveedor = await Proveedor.create({
-          id_proveedor,
-            nombre_empresa,
-            email_empresa,
-            telefono_empresa,
-            tipo_servicio,
-            fecha_creacion: fecha_creacion ? new Date(fecha_creacion) : new Date(), // si no viene, se asigna la actual
-            direccion,
-            redes_sociales,
-            PERSONA_cedula
-        });
-
-        console.log('Proveedor creado:', nuevoProveedor);
-        res.status(201).json({ message: 'Proveedor creado con éxito', proveedor: nuevoProveedor });
-    } catch (error) {
-        console.error('Error al crear proveedor:', error);
-        res.status(500).json({ error: 'Error al crear el proveedor' });
+    // Validación básica
+    if (!nombre || !apellido ||  !telefono || !email || !cedula) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
+
+    const nuevaPersona = await PERSONA.create({
+      nombre,
+      apellido,
+      telefono,
+      email,
+      cedula,
+    });
+
+    console.log('Persona creada:', nuevaPersona);
+    res.status(201).json({ message: 'Persona creada con éxito', persona: nuevaPersona });
+  } catch (error) {
+    console.error('Error al crear persona:', error);
+    res.status(500).json({ error: 'Error al crear la persona' });
+  }
 });
 
+app.post('/crear_proveedores', async (req, res) => {
+  try {
+    const {
+      nombre_empresa,
+      email_empresa,
+      telefono_empresa,
+      tipo_servicio,
+      fecha_creacion,
+      direccion,
+      redes_sociales,
+      PERSONA_cedula,
+    } = req.body;
+
+    // Validación básica
+    if (!nombre_empresa || !email_empresa || !telefono_empresa || !tipo_servicio || !direccion || !PERSONA_cedula) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    const nuevoProveedor = await Proveedor.create({
+      nombre_empresa,
+      email_empresa,
+      telefono_empresa,
+      tipo_servicio,
+      fecha_creacion: fecha_creacion ? new Date(fecha_creacion) : new Date(), // Si no viene, se asigna la fecha actual
+      direccion,
+      redes_sociales,
+      PERSONA_id_persona: PERSONA_cedula, // Asegúrate de que este campo coincida con el modelo
+    });
+
+    console.log('Proveedor creado:', nuevoProveedor);
+    res.status(201).json({ message: 'Proveedor creado con éxito', proveedor: nuevoProveedor });
+  } catch (error) {
+    console.error('Error al crear proveedor:', error);
+    res.status(500).json({ error: 'Error al crear el proveedor' });
+  }
+});
 
 async function startServer() {
   try {
     await conexion.authenticate();
     console.log('Conectado a la base de datos.');
 
-    // Opcional: sincronizar modelos si quieres crear tablas automáticamente
-    // await conexion.sync();
+    // Sincronizar modelos (opcional, solo si necesitas crear tablas automáticamente)
+    await conexion.sync();
 
     app.listen(PORT, () => {
       console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
