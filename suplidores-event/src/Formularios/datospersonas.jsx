@@ -16,12 +16,12 @@ const DatosPersonas = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    cedula: '',
-    telefono: '',
-    direccion: '',
-    email: '',
+    nombre: 'nombre',
+    apellido: 'apellido',
+    cedula: 'cedula',
+    telefono: 'telefono',
+    direccion: 'direccion',
+    email: 'email',
     planSeleccionado: plan || 'destacado'
   });
 
