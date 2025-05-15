@@ -3,8 +3,16 @@ import { Link } from "react-router-dom";
 const Vende = () => {
   return (
     <div className="vende-container">
+      {/* Hero Section */}
+      <section className="hero-section">
+        <div className="hero-overlay">
+          <h1>Vende con nosotros</h1>
+          <p>Lleva tu negocio de eventos al siguiente nivel</p>
+        </div>
+      </section>
+
       <div className="vende-header">
-        <h1>Registra tu Servicio</h1>
+        <h1>Vende con nosotros</h1>
         <p className="vende-subtitle">
           En Évoca recibimos miles de visitantes interesados en contratar
           servicios para eventos cada mes. Somos el mayor directorio

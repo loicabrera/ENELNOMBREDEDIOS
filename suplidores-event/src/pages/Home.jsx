@@ -5,11 +5,18 @@ import {
   ShoppingBag,
   Star,
   Users,
+  Camera,
+  Music,
+  Sparkles,
+  Building,
+  Flower2,
+  UtensilsCrossed,
+  Building2,
 } from "lucide-react";
 import { useEffect } from "react";
-// Colores de la nueva paleta
+// Colores definidos
 const colors = {
-  lightBlue: "#bbe3fb",
+  sage: "#9CAF88",
   purple: "#cbb4db",
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
@@ -52,20 +59,50 @@ const proveedoresDestacados = [
   },
 ];
 
-// Categorías de ejemplo
+// Actualizar las categorías con los colores definidos
 const categorias = [
-  { id: 1, nombre: "Tecnología", icono: <ShoppingBag size={24} /> },
-  { id: 2, nombre: "Papelería", icono: <MessageCircle size={24} /> },
-  { id: 3, nombre: "Mobiliario", icono: <Users size={24} /> },
-  { id: 4, nombre: "Construcción", icono: <Award size={24} /> },
-  { id: 5, nombre: "Servicios", icono: <Star size={24} /> },
-  { id: 6, nombre: "Electrónica", icono: <ShoppingBag size={24} /> },
+  { 
+    id: 1, 
+    nombre: "Florerías", 
+    icono: <Flower2 size={24} style={{ color: colors.pink }} />, 
+    bgColor: colors.lightPink
+  },
+  { 
+    id: 2, 
+    nombre: "Catering", 
+    icono: <UtensilsCrossed size={24} style={{ color: colors.purple }} />, 
+    bgColor: `${colors.purple}40` // Añadiendo transparencia
+  },
+  { 
+    id: 3, 
+    nombre: "Fotografía", 
+    icono: <Camera size={24} style={{ color: colors.darkTeal }} />, 
+    bgColor: `${colors.sage}40`
+  },
+  { 
+    id: 4, 
+    nombre: "Música", 
+    icono: <Music size={24} style={{ color: colors.purple }} />, 
+    bgColor: `${colors.purple}30`
+  },
+  { 
+    id: 5, 
+    nombre: "Decoración", 
+    icono: <Sparkles size={24} style={{ color: colors.pink }} />, 
+    bgColor: colors.lightPink
+  },
+  { 
+    id: 6, 
+    nombre: "Salones", 
+    icono: <Building2 size={24} style={{ color: colors.darkTeal }} />, 
+    bgColor: `${colors.sage}40`
+  },
 ];
 
 // Componente para la tarjeta de proveedor
-const ProveedorCard = ({ proveedor }) => {
+const ProveedorCard = ({ proveedor, colors }) => {
   return (
-    <div className=" flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
+    <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
       <div className="h-48 relative">
         <img
           src={proveedor.imagen}
@@ -117,7 +154,7 @@ const ProveedorCard = ({ proveedor }) => {
             backgroundColor: "white",
           }}
           onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = colors.lightBlue;
+            e.currentTarget.style.backgroundColor = colors.lightPink;
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.backgroundColor = "white";
@@ -184,7 +221,7 @@ export default function Home() {
               >
                 Explora por categorías
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg mb-4" style={{ color: colors.darkTeal }}>
                 Encuentra rápidamente los proveedores especializados en lo que
                 tu negocio necesita
               </p>
@@ -194,12 +231,11 @@ export default function Home() {
               {categorias.map((categoria) => (
                 <div
                   key={categoria.id}
-                  className="flex flex-col items-center p-4 rounded-lg hover:bg-opacity-80 transition-colors cursor-pointer"
-                  style={{ backgroundColor: colors.white, hover:colors.lightBlue }}
+                  className="flex flex-col items-center p-4 rounded-lg transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105"
+                  style={{ backgroundColor: categoria.bgColor }}
                 >
                   <div
                     className="w-14 h-14 flex items-center justify-center bg-white rounded-full mb-3 shadow-sm"
-                    style={{ color: colors.purple }}
                   >
                     {categoria.icono}
                   </div>
@@ -216,7 +252,7 @@ export default function Home() {
         </section>
 
         {/* Proveedores Destacados */}
-        <section className="py-12 md:py-16 ">
+        <section className="py-12 md:py-16">
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
               <h2
@@ -228,12 +264,12 @@ export default function Home() {
               <a
                 href="#"
                 className="font-medium flex items-center transition-colors"
-                style={{ color: colors.purple }}
+                style={{ color: colors.darkTeal }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.color = colors.pink;
+                  e.currentTarget.style.color = colors.purple;
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = colors.purple;
+                  e.currentTarget.style.color = colors.darkTeal;
                 }}
               >
                 Ver todos <ChevronRight size={16} className="ml-1" />
@@ -242,24 +278,27 @@ export default function Home() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {proveedoresDestacados.map((proveedor) => (
-                <ProveedorCard key={proveedor.id} proveedor={proveedor} />
+                <ProveedorCard key={proveedor.id} proveedor={proveedor} colors={colors} />
               ))}
             </div>
           </div>
         </section>
 
         {/* Sección "Vende con nosotros" */}
-        <section
-          className="py-16"
-        
-        >
+        <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="md:w-1/2 mb-8 md:mb-0">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-darkTeal mb-4">
+                <h2 
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
+                  style={{ color: colors.darkTeal }}
+                >
                   ¿Eres proveedor? Vende con nosotros
                 </h2>
-                <p className="text-base sm:text-lg text-darkTeal opacity-90 mb-6 max-w-lg">
+                <p 
+                  className="text-base sm:text-lg mb-6 max-w-lg"
+                  style={{ color: colors.darkTeal }}
+                >
                   Únete a nuestra red de proveedores y conecta con miles de
                   empresas que buscan tus productos y servicios. Aumenta tu
                   visibilidad y consigue nuevos clientes.
@@ -269,15 +308,31 @@ export default function Home() {
                     className="bg-white py-3 px-6 rounded-lg font-medium transition-colors"
                     style={{ color: colors.darkTeal }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.lightBlue;
+                      e.currentTarget.style.backgroundColor = colors.purple;
+                      e.currentTarget.style.color = 'white';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "white";
+                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.color = colors.darkTeal;
                     }}
                   >
                     Comenzar ahora
                   </button>
-                  <button className="bg-transparent border border-white text-white py-3 px-6 rounded-lg font-medium hover:bg-white hover:bg-opacity-10 transition-colors">
+                  <button 
+                    className="bg-transparent border py-3 px-6 rounded-lg font-medium transition-colors"
+                    style={{ 
+                      color: colors.darkTeal,
+                      borderColor: colors.darkTeal 
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.darkTeal;
+                      e.currentTarget.style.color = 'white';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = colors.darkTeal;
+                    }}
+                  >
                     Saber más
                   </button>
                 </div>

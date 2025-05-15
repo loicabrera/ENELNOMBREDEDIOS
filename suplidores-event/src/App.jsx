@@ -19,13 +19,16 @@ import Vende from "./pages/Vende";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 
-// Nuevo componente Layout
+// Nuevo componente Layout más flexible
 function Layout({ children }) {
   return (
-    <>
-      <Navbar>{children}</Navbar>
-      <Footer />
-    </>
+    <div className="flex h-screen">
+      <Navbar />
+      <div className="flex-1 overflow-auto">
+        {children}
+        <Footer />
+      </div>
+    </div>
   );
 }
 
