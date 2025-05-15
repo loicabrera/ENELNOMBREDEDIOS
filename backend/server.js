@@ -35,6 +35,31 @@ app.get('/persona', async (req, res) => {
   }
 });
 
+app.post ('/crear_persona', async (req, res) => {
+  try {
+    const { nombre, apellido, telefono, email, cedula } = req.body;
+
+    // Validación básica
+    if (!nombre || !apellido ||  !telefono || !email || !cedula) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    const nuevaPersona = await PERSONA.create({
+      nombre,
+      apellido,
+      telefono,
+      email,
+      cedula,
+    });
+
+    console.log('Persona creada:', nuevaPersona);
+    res.status(201).json({ message: 'Persona creada con éxito', persona: nuevaPersona });
+  } catch (error) {
+    console.error('Error al crear persona:', error);
+    res.status(500).json({ error: 'Error al crear la persona' });
+  }
+});
+
 app.post('/crear_proveedores', async (req, res) => {
   try {
     const {
