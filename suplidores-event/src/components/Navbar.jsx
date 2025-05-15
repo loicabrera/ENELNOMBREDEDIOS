@@ -1,23 +1,20 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Home, ShoppingBag, Store, DollarSign, User } from "lucide-react";
 
 const colors = {
-  lightBlue: "#bbe3fb",
+  sage: "#9CAF88",
   purple: "#cbb4db",
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
   darkTeal: "#012e33",
 };
+
 function Navbar({ children }) {
   const [profileOpen, setProfileOpen] = useState(false);
   const [asideOpen, setAsideOpen] = useState(true);
-  const [activeButton, setActiveButton] = useState(null);
 
-  const handleButtonClick = (id) => {
-    setActiveButton(id);
-  };
-
-  const isActive = (id) => activeButton === id;
-
+  const location = useLocation();
   const toggleProfile = () => {
     setProfileOpen(!profileOpen);
   };
@@ -27,15 +24,21 @@ function Navbar({ children }) {
   };
 
   return (
-    <main className="min-h-screen w-full  text-gray-700">
+    <div className="flex flex-col h-screen">
       {/* Header */}
-      <header class="flex w-full items-center justify-between border-b-2 border-gray-200  p-2">
+      <header className="flex w-full items-center justify-between border-b-2 border-gray-200 p-2">
         {/* Logo */}
         <div className="flex items-center space-x-2">
-          <button type="button" className="text-3xl" onClick={toggleAside}>
-            ☰
+          <button type="button" className="text-2xl" onClick={toggleAside}>
+            <i class="fi fi-br-bars-sort"></i>
           </button>
-          <div>Logo</div>
+          <div>
+            {" "}
+            <img
+              src="/suplidores-event/img/logos.svg"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
 
         {/* Button Profile */}
@@ -60,10 +63,10 @@ function Navbar({ children }) {
                   alt="perfil"
                   className="h-9 w-9 rounded-full"
                 />
-                <div className="font-medium">Hafiz Haziq</div>
+                <div className=" font-medium">Hafiz Haziq</div>
               </div>
 
-              <div className="flex flex-col space-y-3 p-2">
+              <div className="flex flex-col bg-white space-y-3 p-2">
                 <a href="#" className="transition hover:text-blue-600">
                   Mi Perfil
                 </a>
@@ -99,105 +102,82 @@ function Navbar({ children }) {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         {/* Aside/Sidebar */}
         {asideOpen && (
           <aside
-            className="flex w-72 flex-col space-y-2 p-2"
-            style={{ height: "90.5vh", backgroundColor: "transparent" }}
+            className="w-72 flex-shrink-0 overflow-y-auto transition-all duration-300"
+            style={{ backgroundColor: "transparent" }}
           >
             <a
               href="/Home"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:text-gray-500"
-              onClick={() => handleButtonClick(1)}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = colors.lightBlue)
-              }
-              onMouseOut={(e) => {
-                if (!isActive(1))
-                  e.currentTarget.style.backgroundColor = "white";
-              }}
-              style={{
-                backgroundColor: isActive(1) ? colors.black : "white",
-              }}
+              className={`flex items-center space-x-3 rounded-md px-4 py-3 transition-all duration-200 text-gray-700 ${
+                location.pathname === "/Home" 
+                  ? 'bg-purple/30' 
+                  : 'hover:bg-purple/20'
+              }`}
             >
-              <span className="text-2xl"></span>
+              <Home size={20} />
               <span>Inicio</span>
             </a>
 
             <a
               href="/servicios"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
+              className={`flex items-center space-x-3 rounded-md px-4 py-3 transition-all duration-200 text-gray-700 ${
+                location.pathname === "/servicios" 
+                  ? 'bg-purple/30' 
+                  : 'hover:bg-purple/20'
+              }`}
             >
-              <span className="text-2xl"></span>
+              <ShoppingBag size={20} />
               <span>Servicios</span>
             </a>
 
             <a
               href="/Productos"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
+              className={`flex items-center space-x-3 rounded-md px-4 py-3 transition-all duration-200 text-gray-700 ${
+                location.pathname === "/Productos" 
+                  ? 'bg-purple/30' 
+                  : 'hover:bg-purple/20'
+              }`}
             >
-              <span className="text-2xl"></span>
+              <Store size={20} />
               <span>Productos</span>
             </a>
 
             <a
               href="/Vende"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
+              className={`flex items-center space-x-3 rounded-md px-4 py-3 transition-all duration-200 text-gray-700 ${
+                location.pathname === "/Vende" 
+                  ? 'bg-purple/30' 
+                  : 'hover:bg-purple/20'
+              }`}
             >
-              <span className="text-2xl"></span>
+              <DollarSign size={20} />
               <span>Vende</span>
             </a>
 
             <a
               href="/perfil"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
+              className={`flex items-center space-x-3 rounded-md px-4 py-3 transition-all duration-200 text-gray-700 ${
+                location.pathname === "/perfil" 
+                  ? 'bg-purple/30' 
+                  : 'hover:bg-purple/20'
+              }`}
             >
-              <span className="text-2xl"></span>
-              <span></span>
+              <User size={20} />
+              <span>Perfil</span>
             </a>
           </aside>
         )}
         {/* Main Content */}
-        <div className="w-full p-4">{children}</div>
+        <main 
+          className={`flex-1 transition-all duration-300 overflow-auto`}
+        >
+          {children}
+        </main>
       </div>
-    </main>
+    </div>
   );
 }
 

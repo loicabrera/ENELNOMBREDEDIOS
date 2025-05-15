@@ -145,21 +145,19 @@ export default function Home() {
   }, []); // Asegúrate de que el array de dependencias esté vacío o contenga las dependencias necesarias
 
   return (
-    <div className=" w-full p-4 min-h-screen flex flex-col bg-gray-50">
-      {/* Navigation */}
-
-      <main className="flex-grow">
+    <div className="flex flex-col min-h-full">
+      <main className="flex-1">
         {/* Hero Section - Cambiado a imagen simple sin gradiente */}
         <section className="relative py-16 md:py-24">
           <div className="absolute inset-0 overflow-hidden">
             <img
-              src="/api/placeholder/1600/500"
+              src="https://i.pinimg.com/736x/92/bc/9a/92bc9aa264a241f8c85a0d64a6955f61.jpg"
               alt="Hero background"
               className="w-full h-full object-cover"
             />
             <div
               className="absolute inset-0"
-              style={{ backgroundColor: colors.darkTeal, opacity: 0.7 }}
+              style={{ backgroundColor: colors.darkTeal, opacity: 0.4 }}
             ></div>
           </div>
 
@@ -197,7 +195,7 @@ export default function Home() {
                 <div
                   key={categoria.id}
                   className="flex flex-col items-center p-4 rounded-lg hover:bg-opacity-80 transition-colors cursor-pointer"
-                  style={{ backgroundColor: colors.lightBlue }}
+                  style={{ backgroundColor: colors.white, hover:colors.lightBlue }}
                 >
                   <div
                     className="w-14 h-14 flex items-center justify-center bg-white rounded-full mb-3 shadow-sm"
@@ -218,7 +216,7 @@ export default function Home() {
         </section>
 
         {/* Proveedores Destacados */}
-        <section className="py-12 md:py-16 bg-gray-50">
+        <section className="py-12 md:py-16 ">
           <div className="container mx-auto px-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
               <h2
@@ -253,17 +251,15 @@ export default function Home() {
         {/* Sección "Vende con nosotros" */}
         <section
           className="py-16"
-          style={{
-            background: `linear-gradient(to right, ${colors.pink}, ${colors.purple})`,
-          }}
+        
         >
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="md:w-1/2 mb-8 md:mb-0">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-darkTeal mb-4">
                   ¿Eres proveedor? Vende con nosotros
                 </h2>
-                <p className="text-base sm:text-lg text-white opacity-90 mb-6 max-w-lg">
+                <p className="text-base sm:text-lg text-darkTeal opacity-90 mb-6 max-w-lg">
                   Únete a nuestra red de proveedores y conecta con miles de
                   empresas que buscan tus productos y servicios. Aumenta tu
                   visibilidad y consigue nuevos clientes.
