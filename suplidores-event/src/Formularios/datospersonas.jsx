@@ -64,7 +64,7 @@ const DatosPersonas = () => {
     telefono: '',
     direccion: '',
     email: '',
-    planSeleccionado: planSeleccionado
+    planSeleccionado: plan || 'destacado'
   });
 
   const handleChange = (e) => {

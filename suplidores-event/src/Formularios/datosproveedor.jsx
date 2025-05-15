@@ -8,14 +8,14 @@ const DatosProveedor = () => {
 
   const [formData, setFormData] = useState({
     ...location.state?.formData,
-    nombre_empresa: '',
-    email_empresa: '',
-    telefono_empresa: '',
-    tipo_servicio: '',
-    fecha_creacion: '',
-    direccion: '',
-    descripcion: '',
-    redes_sociales: ''
+    nombre_empresa: 'nombre_empresa',
+    email_empresa: 'email_empresa',
+    telefono_empresa: 'telefono_empresa',
+    tipo_servicio: 'tipo_servicio',
+    fecha_creacion: 'fecha_creacion',
+    direccion: 'direccion',
+    descripcion: 'descripcion',
+    redes_sociales: 'redes_sociales'
   });
 
   const handleChange = (e) => {
@@ -25,11 +25,29 @@ const DatosProveedor = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log('Datos del proveedor:', formData);
-    navigate('/registro/confirmacion', { state: { formData } });
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  try {
+    const response = await fetch('http://localhost:3000/crear_proveedores', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('Proveedor creado con éxito:', data);
+      navigate('/crear_proveedores', { state: { formData } });
+    } else {
+      console.error('Error al crear el proveedor:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error al conectar con el servidor:', error);
+  }
+}
 
   // Información sobre el registro del proveedor
   const proveedorInfo = {
@@ -188,9 +206,10 @@ const DatosProveedor = () => {
                       placeholder="Describa brevemente su empresa y servicios..."
                     ></textarea>
                   </div>
-
+{/*boton de siguiente*/}
                   <div className="pt-4">
                     <button 
+                    onClick={() => navigate('/crear_proveedores', { state: { formData } })}
                       type="submit" 
                       className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out"
                     >
