@@ -5,17 +5,19 @@
   color: #012e33; /* darkTeal */
   width: 100%;
   overflow-x: hidden;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-/* Hero Section */
+/* Hero Section restaurado a su tamaño original */
 .hero-section {
   position: relative;
-  height: 50vh;
-  min-height: 300px;
+  height: 60vh;
+  min-height: 400px;
   background-image: url('https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1969&auto=format&fit=crop');
   background-size: cover;
   background-position: center;
-  padding: 1rem;
+  margin-bottom: 2rem;
 }
 
 .hero-overlay {
@@ -27,44 +29,41 @@
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 1rem;
+  padding: 2rem;
 }
 
 .hero-section h1 {
   color: white;
-  font-size: clamp(2rem, 5vw, 3.5rem);
-  margin-bottom: 1rem;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  margin-bottom: 1.5rem;
+  font-weight: 700;
 }
 
 .hero-section p {
   color: white;
-  font-size: clamp(1rem, 3vw, 1.5rem);
-  max-width: 90%;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
+  max-width: 800px;
 }
 
 /* Contenido principal */
 .vende-header {
-  padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 2rem 1rem;
+  max-width: 1000px;
 }
 
-/* Títulos principales */
 .vende-header h1 {
-  color: #012e33; /* darkTeal */
-  font-size: 2.8rem;
-  margin-top: 5rem;
-  margin-bottom: 3rem;
-  font-weight: 700;
+  color: #012e33;
+  font-size: 2rem;
+  margin-bottom: 2rem;
   text-align: center;
 }
 
-/* Subtítulo */
 .vende-subtitle {
-  font-size: clamp(1rem, 2.5vw, 1.2rem);
-  margin: 2rem auto;
-  padding: 0 1rem;
-  max-width: 90%;
+  font-size: 1rem;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 3rem;
 }
 
 /* Stats */
@@ -73,164 +72,138 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1rem;
   padding: 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1000px;
 }
 
 .stat-item {
-  background-color: #fbcbdb;
+  background-color: #fbcbdb20;
   padding: 1rem;
-  border-radius: 8px;
+  border-radius: 12px;
+  border: 2px solid #fbcbdb;
+  transition: all 0.3s ease;
+  margin: 0.5rem;
+}
+
+.stat-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(1, 46, 51, 0.1);
 }
 
 /* Planes */
 .vende-plans {
   padding: 2rem 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  background-color: #f8f9fa;
+}
+
+.plans-title {
+  text-align: center;
+  color: #012e33;
+  font-size: 2rem;
+  margin-bottom: 3rem;
 }
 
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  justify-items: center;
+  max-width: 1000px;
+  padding: 0 1rem;
 }
 
 .plan-card {
-  width: 100%;
-  max-width: 350px;
-  margin: 0 auto;
-}
-
-/* Plan destacado */
-.highlighted {
-  background-color: #fbcbdb;
-  border: 2px solid #cbb4db;
-}
-
-.highlighted:hover {
-  background-color: #b8a1c8; /* purple más oscuro */
-}
-
-/* Contenido dentro de cada plan */
-.plan-content h3 {
-  color: #012e33;
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-}
-
-.plan-description, .plan-features li {
-  color: #012e33;
-}
-
-.plan-price {
-  font-size: 1.8rem;
-  font-weight: bold;
-  margin: 1rem 0;
-}
-
-.plan-features {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
-  text-align: left;
-}
-
-.plan-features li {
-  margin-bottom: 0.5rem;
-  padding-left: 1.5rem;
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
   position: relative;
+  margin: 0.5rem;
 }
 
-.plan-features li::before {
-  content: "✓";
-  color: #012e33; /* darkTeal */
-  font-weight: bold;
+.highlighted {
+  background-color: #fbcbdb10;
+  border: 2px solid #cbb4db;
+  transform: translateY(-10px);
+}
+
+.plan-badge {
   position: absolute;
-  left: 0;
-}
-
-/* Botón dentro del plan */
-.plan-button {
+  top: -12px;
+  right: 20px;
   background-color: #012e33;
   color: white;
-  padding: 1rem 2rem;
-  margin-top: 1.5rem;
-  border-radius: 8px;
-  font-weight: bold;
-  text-decoration: none;
-  display: inline-block;
-  transition: all 0.3s ease;
-}
-
-.plan-button:hover {
-  background-color: #cbb4db;
-  color: #012e33;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
 }
 
 /* Beneficios */
 .vende-benefits {
   padding: 2rem 1rem;
+  background-color: white;
 }
 
 .benefits-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: 1000px;
+  margin: 2rem auto;
 }
 
 .benefit-item {
   background: white;
-  padding: 30px 20px;
+  padding: 1.5rem;
   border-radius: 16px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  border: 2px solid #fbcbdb;
+  text-align: center;
+  margin: 0.5rem;
 }
 
 .benefit-item:hover {
-  border-color: #cbb4db;
-  background-color: #fbcbdb;
+  transform: translateY(-5px);
 }
 
 .benefit-icon {
-  font-size: 48px;
-  color: #8abdc0; /* Azul claro bonito */
-  margin-bottom: 20px;
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  color: #012e33;
 }
 
 .benefit-item h3 {
-  color: #012e33;
-  font-size: 1.4rem;
-  margin-bottom: 10px;
+  font-size: 1.3rem;
+  margin: 1rem 0;
 }
 
 .benefit-item p {
-  color: #012e33;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Testimonios */
 .vende-testimonials {
   padding: 2rem 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
 }
 
 .testimonials-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 1rem;
 }
 
 .testimonial-card {
   background: white;
-  padding: 30px;
+  padding: 1.5rem;
   border-radius: 16px;
   border: 1px solid #fbcbdb; /* lightPink */
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  margin: 0.5rem;
 }
 
 .testimonial-card:hover {
@@ -242,7 +215,8 @@
 .testimonial-text {
   color: #012e33;
   font-style: italic;
-  font-size: 16px;
+  font-size: 0.95rem;
+  line-height: 1.6;
   margin-bottom: 20px;
 }
 
@@ -251,20 +225,20 @@
 }
 
 .author-name {
-  font-size: 18px;
+  font-size: 1.1rem;
   font-weight: bold;
   color: #012e33; /* darkTeal */
 }
 
 .author-business {
-  font-size: 15px;
+  font-size: 0.9rem;
   color: #9CAF88; /* sage */
 }
 
 /* Preguntas Frecuentes */
 .vende-faq {
   padding: 2rem 1rem;
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -276,8 +250,8 @@
 .faq-item {
   background: white;
   border-radius: 16px;
-  padding: 25px;
-  margin-bottom: 20px;
+  padding: 1rem;
+  margin: 0.75rem 0;
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   border: 2px solid #fbcbdb;
@@ -292,12 +266,13 @@
   color: #012e33;
   font-weight: 600;
   margin-bottom: 10px;
-  font-size: 20px;
+  font-size: 1.2rem;
 }
 
 .faq-item p {
   color: #012e33;
-  font-size: 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
 }
 
 /* Títulos responsivos */
@@ -309,30 +284,64 @@ h2 {
 
 /* Media queries para ajustes específicos */
 @media (max-width: 768px) {
-  .plan-card {
-    max-width: 100%;
+  .hero-section {
+    height: 60vh; /* Mantenemos el alto en móvil también */
   }
   
-  .stat-item {
-    padding: 0.8rem;
+  .vende-container {
+    padding: 0 0.5rem;
   }
   
   .vende-stats {
+    padding: 0.5rem;
+  }
+  
+  .plans-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .highlighted {
+    transform: none;
+  }
+  
+  .plan-card {
+    margin: 0.25rem;
+  }
+  
+  .benefit-item {
+    margin: 0.25rem;
   }
 }
 
 @media (max-width: 480px) {
   .hero-section {
-    height: 40vh;
+    height: 50vh; /* Ligero ajuste para móviles muy pequeños */
   }
   
-  .plan-features {
-    padding-left: 0.5rem;
+  .hero-section h1 {
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
   }
   
-  .benefit-item {
-    padding: 1rem;
+  .hero-section p {
+    font-size: clamp(0.9rem, 2vw, 1.2rem);
+  }
+  
+  .vende-header {
+    padding: 1.5rem 0.5rem;
+  }
+  
+  .vende-header h1 {
+    font-size: 1.8rem;
+  }
+  
+  .plans-title {
+    font-size: 1.8rem;
+  }
+  
+  .plans-grid,
+  .benefits-grid,
+  .testimonials-container {
+    gap: 1rem;
   }
 }
 
