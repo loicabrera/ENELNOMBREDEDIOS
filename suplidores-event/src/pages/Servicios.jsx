@@ -159,24 +159,6 @@ export default function ServiciosApp() {
 
   return (
     <div className="font-sans">
-      {/* Encabezado común */}
-      <header className="bg-sky-200 p-6">
-        <div className="container mx-auto">
-          <div className="flex justify-between items-center">
-            <div className="text-3xl font-bold text-slate-800">Évoca</div>
-            <nav className="hidden md:flex space-x-8">
-              <a href="#" className="text-slate-700 hover:text-slate-900">Inicio</a>
-              <a href="#" className="text-slate-900 font-semibold border-b-2 border-slate-900">Servicios</a>
-              <a href="#" className="text-slate-700 hover:text-slate-900">Productos</a>
-              <a href="#" className="text-slate-700 hover:text-slate-900">Vende con nosotros</a>
-            </nav>
-            <button className="bg-slate-700 text-white px-4 py-2 rounded-md hover:bg-slate-800 transition">
-              Iniciar sesión
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Contenido principal */}
       <main className="container mx-auto p-6">
         {/* Barra de navegación de migas de pan */}
