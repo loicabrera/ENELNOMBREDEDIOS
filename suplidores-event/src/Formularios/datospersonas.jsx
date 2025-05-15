@@ -18,6 +18,7 @@ const DatosPersonas = () => {
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
+    cedula: '',
     telefono: '',
     direccion: '',
     email: '',
@@ -112,6 +113,22 @@ const DatosPersonas = () => {
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                       style={{ borderColor: colors.purple, background: colors.lightPink }}
                       placeholder="Ingrese su apellido"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1" style={{ color: colors.darkTeal }}>
+                      Cédula:
+                    </label>
+                    <input
+                      type="text"
+                      name="cedula"
+                      value={formData.cedula}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                      style={{ borderColor: colors.purple, background: colors.lightPink }}
+                      placeholder="Ingrese su cédula"
+                      maxLength={13}
                     />
                   </div>
                 </div>
