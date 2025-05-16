@@ -1,5 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
+import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
 
 
 import "./App.css";
@@ -18,6 +19,8 @@ import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
+import Pago from "./pages/Pago";
+
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
@@ -61,6 +64,14 @@ function App() {
           element={
             <Layout>
               <Servicios />
+            </Layout>
+          }
+        />
+        <Route
+          path="/pago"
+          element={
+            <Layout>
+              <Pago />
             </Layout>
           }
         />
@@ -129,6 +140,12 @@ function App() {
   path="/dashboardproveedor"
   element={<HomeProveedor />}
 />
+
+<Route 
+  path="/dashboardadmin"
+  element={<SidebarAdmin />}
+/>
+
 
       </Routes>
     </Router>

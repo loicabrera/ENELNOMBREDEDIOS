@@ -112,7 +112,7 @@ const DatosProveedor = () => {
 
       const success = await insertarDatos();
       if (success) {
-        navigate('/registro/confirmacion', { state: { formData } });
+        navigate('/pago', { state: { formData } });
       }
     } catch (error) {
       console.error('Error en el envío:', error);
