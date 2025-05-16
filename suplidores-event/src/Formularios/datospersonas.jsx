@@ -15,16 +15,14 @@ const colors = {
 const DatosPersonas = () => {
   const { plan } = useParams();
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellido: '',
-    cedula: '',
-    telefono: '',
+    nombre: 'nombre',
+    apellido: 'apellido',
+    cedula: 'cedula',
+    telefono: 'telefono',
     direccion: 'direccion',
-    email: '',
+    email: 'email',
     planSeleccionado: plan || 'destacado'
   });
 
@@ -132,36 +130,10 @@ const DatosPersonas = () => {
     }
   };
 
-  // Información de los planes según el documento proporcionado
-  const planInfo = {
-    destacado: {
-      titulo: "Plan Destacado",
-      descripcion: "Obtenga mayor visibilidad para sus servicios y productos",
-      beneficios: [
-        "Publicaciones destacadas en las búsquedas",
-        "Mayor número de productos/servicios para publicar",
-        "Acceso a estadísticas de visualización",
-        "Prioridad en los resultados de búsqueda"
-      ]
-    }
-  };
-
-  const planActual = planInfo[formData.planSeleccionado] || planInfo.destacado;
+  const planActual = planInfo[planSeleccionado];
 
   return (
-    <div className="min-h-screen" style={{ background: `linear-gradient(135deg, ${colors.lightPink} 60%, ${colors.purple} 100%)` }}>
-      {/* Navbar superior */}
-      <nav className="w-full shadow-md sticky top-0 z-20" style={{ background: colors.darkTeal }}>
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <span className="text-2xl font-bold tracking-tight" style={{ color: colors.lightPink }}>
-            EN EL NOMBRE DE DIOS
-          </span>
-          <span className="text-sm font-medium" style={{ color: colors.pink }}>
-            Registro de Usuario
-          </span>
-        </div>
-      </nav>
-
+    <div className="min-h-screen bg-white">
       {/* Contenedor principal */}
       <div className="max-w-5xl mx-auto flex flex-col items-center justify-center min-h-[90vh]">
         {/* ProgressBar */}
@@ -171,7 +143,7 @@ const DatosPersonas = () => {
         {/* Contenido principal */}
         <div className="w-full flex flex-col md:flex-row gap-8 items-center justify-center px-2 md:px-0">
           {/* Formulario */}
-          <div className="md:w-2/3 w-full bg-white rounded-2xl shadow-xl overflow-hidden border border-[#cbb4db]" style={{ boxShadow: `0 4px 24px 0 ${colors.purple}33` }}>
+          <div className="md:w-2/3 w-full rounded-2xl shadow-xl overflow-hidden border border-[#cbb4db]" style={{ boxShadow: `0 4px 24px 0 ${colors.purple}33`, background: colors.purple }}>
             <div className="px-8 py-10">
               <h2 className="text-3xl font-bold mb-6 text-center" style={{ color: colors.darkTeal }}>Datos Personales</h2>
               {error && (
@@ -194,7 +166,7 @@ const DatosPersonas = () => {
                       value={formData.nombre}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                       style={{ borderColor: colors.purple, background: colors.lightPink }}
                       placeholder="Ingrese su nombre"
                     />
@@ -209,7 +181,7 @@ const DatosPersonas = () => {
                       value={formData.apellido}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                       style={{ borderColor: colors.purple, background: colors.lightPink }}
                       placeholder="Ingrese su apellido"
                     />
@@ -224,9 +196,9 @@ const DatosPersonas = () => {
                       value={formData.cedula}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                       style={{ borderColor: colors.purple, background: colors.lightPink }}
-                      placeholder="000-0000000-0"
+                      placeholder="Ingrese su cédula"
                       maxLength={13}
                     />
                   </div>
@@ -241,9 +213,9 @@ const DatosPersonas = () => {
                     value={formData.telefono}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                     style={{ borderColor: colors.purple, background: colors.lightPink }}
-                    placeholder="000-000-0000"
+                    placeholder="Ej: +34 600 123 456"
                   />
                 </div>
                 <div>
@@ -256,8 +228,8 @@ const DatosPersonas = () => {
                     value={formData.direccion}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
-                    style={{ borderColor: colors.purple, background: colors.lightPink }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 bg-white"
+                    style={{ borderColor: colors.purple }}
                     placeholder="Ingrese su dirección completa"
                   />
                 </div>
@@ -271,7 +243,7 @@ const DatosPersonas = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                     style={{ borderColor: colors.purple, background: colors.lightPink }}
                     placeholder="ejemplo@correo.com"
                   />

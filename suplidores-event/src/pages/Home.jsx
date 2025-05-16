@@ -23,37 +23,37 @@ const colors = {
   darkTeal: "#012e33",
 };
 
-// Datos de ejemplo de proveedores destacados
+// Datos actualizados de proveedores destacados con imágenes reales
 const proveedoresDestacados = [
   {
     id: 1,
-    nombre: "Suministros Profesionales",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Tecnología",
+    nombre: "Eventos Elegantes",
+    imagen: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1298&auto=format&fit=crop",
+    categoria: "Decoración",
     rating: 4.8,
     reviews: 124,
   },
   {
     id: 2,
-    nombre: "Distribuidora Ejecutiva",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Papelería",
+    nombre: "Sweet Moments Catering",
+    imagen: "https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1470&auto=format&fit=crop",
+    categoria: "Catering",
     rating: 4.7,
     reviews: 98,
   },
   {
     id: 3,
-    nombre: "InsumosTech",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Electrónica",
+    nombre: "Captura Mágica",
+    imagen: "https://images.unsplash.com/photo-1537633552985-df8429e8048b?q=80&w=1470&auto=format&fit=crop",
+    categoria: "Fotografía",
     rating: 4.9,
     reviews: 156,
   },
   {
     id: 4,
-    nombre: "Materiales Express",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Construcción",
+    nombre: "Jardín de Eventos",
+    imagen: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?q=80&w=1469&auto=format&fit=crop",
+    categoria: "Salones",
     rating: 4.6,
     reviews: 87,
   },
@@ -188,7 +188,7 @@ export default function Home() {
         <section className="relative py-16 md:py-24">
           <div className="absolute inset-0 overflow-hidden">
             <img
-              src="https://i.pinimg.com/736x/92/bc/9a/92bc9aa264a241f8c85a0d64a6955f61.jpg"
+              src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1470&auto=format&fit=crop"
               alt="Hero background"
               className="w-full h-full object-cover"
             />
@@ -201,10 +201,10 @@ export default function Home() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-                Encuentra los mejores proveedores para tu negocio
+                ÉVOCA
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-white opacity-90 mb-8">
-                Conectamos tu empresa con proveedores de calidad que ofrecen los
+              Proveedores de calidad que ofrecen los
                 productos y servicios que necesitas
               </p>
             </div>
@@ -340,9 +340,9 @@ export default function Home() {
 
               <div className="md:w-1/2 flex justify-center">
                 <img
-                  src="/api/placeholder/500/400"
+                  src="https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1374&auto=format&fit=crop"
                   alt="Vender con nosotros"
-                  className="rounded-lg shadow-xl max-w-full md:max-w-md"
+                  className="rounded-lg shadow-xl max-w-full md:max-w-md object-cover h-[400px]"
                 />
               </div>
             </div>

@@ -1,4 +1,7 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import HomeProveedor from "./dashboardProveedor/homeproveedor";
+
+
 import "./App.css";
 import "./Formularios/datos.css";
 import "./home.css";
@@ -84,12 +87,49 @@ function App() {
               <Perfil />
             </Layout>
           }
+          
+        />
+        <Route
+          path="/datospersonas"
+          element={
+            <Layout>
+              <DatosPersonas />
+            </Layout>
+          }
+        />
+        <Route
+          path="/datosproveedor"
+          element={
+            <Layout>
+              <DatosProveedor />
+            </Layout>
+          }
         />
 
         {/* Rutas sin Navbar */}
         <Route path="/login" element={<Login />} />
-        <Route path="/registro/:plan" element={<DatosPersonas />} />
-        <Route path="/registro/evento" element={<DatosProveedor />} />
+        <Route
+          path="/registro/:plan"
+          element={
+            <Layout>
+              <DatosPersonas />
+            </Layout>
+          }
+        />
+        <Route
+          path="/registro/evento"
+          element={
+            <Layout>
+              <DatosProveedor />
+            </Layout>
+          }
+        />
+
+<Route 
+  path="/dashboardproveedor"
+  element={<HomeProveedor />}
+/>
+
       </Routes>
     </Router>
   );

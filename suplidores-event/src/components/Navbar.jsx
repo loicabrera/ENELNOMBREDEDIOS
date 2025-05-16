@@ -31,17 +31,7 @@ function Navbar() {
       </header>
 
       {/* Login Section */}
-      <div className="p-6 border-b border-gray-200">
-        <a
-          href="/login"
-          className={`flex items-center rounded-md transition-all duration-200 text-gray-700 hover:bg-purple/20 ${
-            asideOpen ? 'px-4 py-3 ml-2' : 'justify-center p-3'
-          }`}
-        >
-          <LogIn size={18} />
-          {asideOpen && <span className="ml-3 text-sm">Iniciar Sesión</span>}
-        </a>
-        </div>
+     
 
       {/* Sidebar */}
       <nav className={`flex-1 transition-all duration-300 ${asideOpen ? 'w-56' : 'w-16'}`}>
