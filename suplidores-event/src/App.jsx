@@ -1,4 +1,7 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import HomeProveedor from "./dashboardProveedor/homeproveedor";
+
+
 import "./App.css";
 import "./Formularios/datos.css";
 import "./home.css";
@@ -121,6 +124,12 @@ function App() {
             </Layout>
           }
         />
+
+<Route 
+  path="/dashboardproveedor"
+  element={<HomeProveedor />}
+/>
+
       </Routes>
     </Router>
   );
