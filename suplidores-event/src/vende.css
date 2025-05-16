@@ -353,3 +353,29 @@ h2 {
     margin-right: auto;
   }
 }
+
+.plan-button {
+  display: block;
+  width: 100%;
+  padding: 0.85rem 0;
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #cbb4db 0%, #9CAF88 100%);
+  border: none;
+  border-radius: 30px;
+  box-shadow: 0 4px 12px rgba(1, 46, 51, 0.09);
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+}
+.plan-button:hover, .plan-button:focus {
+  background: linear-gradient(90deg, #9CAF88 0%, #cbb4db 100%);
+  color: #012e33;
+  transform: scale(1.04);
+  box-shadow: 0 8px 24px rgba(1, 46, 51, 0.15);
+  outline: none;
+}
