@@ -18,8 +18,17 @@ const DatosProveedor = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Verificar si tenemos el ID de la persona
+  React.useEffect(() => {
+    const personaId = location.state?.formData?.id_persona;
+    if (!personaId) {
+      setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
+      // Opcional: redirigir a la página de datos personales
+      // navigate('/registro/persona');
+    }
+  }, [location.state]);
+
   const [formData, setFormData] = useState({
-    ...location.state?.formData,
     nombre_empresa: '',
     email_empresa: '',
     telefono_empresa: '',
@@ -77,12 +86,23 @@ const DatosProveedor = () => {
 
   const insertarDatos = async () => {
     try {
+      // Obtener el ID de la persona del estado de navegación
+      const personaId = location.state?.formData?.id_persona;
+      if (!personaId) {
+        throw new Error('No se encontró el ID de la persona registrada');
+      }
+
+      console.log('ID de persona a usar:', personaId); // Para debugging
+
       const response = await fetch('http://localhost:3000/crear_proveedores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          p_e_r_s_o_n_a_id_persona: personaId
+        }),
       });
 
       const data = await response.json();

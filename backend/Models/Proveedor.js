@@ -1,6 +1,7 @@
 // backend/Models/Proveedor.js
 import { Sequelize, DataTypes } from 'sequelize';
 import conexion from '../db.js';
+import { PERSONA } from './Persona.js';
 
 export const Proveedor = conexion.define('provedor_negocio', {
   id_proveedor: {
@@ -40,14 +41,26 @@ export const Proveedor = conexion.define('provedor_negocio', {
     type: DataTypes.STRING,
     allowNull: true
   },
-  PERSONA_id_persona: {
+  p_e_r_s_o_n_a_id_persona: {
     type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'p_e_r_s_o_n_a_id_persona',
     references: {
-      model: 'Persona',
+      model: PERSONA,
       key: 'id_persona'
-    }
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'SET NULL'
   }
 }, {
   tableName: 'provedor_negocio',
   timestamps: false
+});
+
+// Definir la relación
+Proveedor.belongsTo(PERSONA, {
+  foreignKey: 'p_e_r_s_o_n_a_id_persona',
+  targetKey: 'id_persona',
+  onDelete: 'SET NULL',
+  onUpdate: 'CASCADE'
 });

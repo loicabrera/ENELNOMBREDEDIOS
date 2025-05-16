@@ -101,11 +101,18 @@ const DatosPersonas = () => {
         throw new Error(data.error || 'Error al crear la persona');
       }
 
-      return true;
+      // Actualizar formData con el ID de la persona creada
+      const updatedFormData = {
+        ...formData,
+        id_persona: data.persona.id_persona
+      };
+      setFormData(updatedFormData);
+      
+      return { success: true, updatedFormData };
     } catch (error) {
       console.error('Error al crear persona:', error);
       setError(error.message);
-      return false;
+      return { success: false };
     }
   };
 
@@ -120,9 +127,14 @@ const DatosPersonas = () => {
         return;
       }
 
-      const success = await insertarPersona();
-      if (success) {
-        navigate('/registro/evento', { state: { formData } });
+      const result = await insertarPersona();
+      if (result.success) {
+        // Navegar a la página de proveedor con los datos actualizados
+        navigate('/registro/evento', { 
+          state: { 
+            formData: result.updatedFormData
+          } 
+        });
       }
     } catch (error) {
       console.error('Error en el envío:', error);
