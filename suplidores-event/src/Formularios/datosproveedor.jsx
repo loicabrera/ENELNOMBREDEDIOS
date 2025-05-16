@@ -2,72 +2,125 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
+// Paleta de colores pastel
+const colors = {
+  darkTeal: '#012e33',
+  lightPink: '#fbcbdb',
+  pink: '#fbaccb',
+  purple: '#cbb4db',
+  sage: '#9CAF88',
+  error: '#ff6b6b',
+};
+
 const DatosProveedor = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     ...location.state?.formData,
-    nombre_empresa: 'nombre_empresa',
-    email_empresa: 'email_empresa',
-    telefono_empresa: 'telefono_empresa',
-    tipo_servicio: 'tipo_servicio',
-    fecha_creacion: 'fecha_creacion',
-    direccion: 'direccion',
-    descripcion: 'descripcion',
-    redes_sociales: 'redes_sociales'
+    nombre_empresa: '',
+    email_empresa: '',
+    telefono_empresa: '',
+    tipo_servicio: '',
+    fecha_creacion: '',
+    direccion: '',
+    descripcion: '',
+    redes_sociales: ''
   });
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+  // Función para validar el formato del teléfono (000-000-0000)
+  const validarTelefono = (telefono) => {
+    const regex = /^\d{3}-\d{3}-\d{4}$/;
+    return regex.test(telefono);
   };
+
+  // Función para validar el email
+  const validarEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError(null); // Limpiar error cuando el usuario modifica algún campo
+  };
+
+  const validarFormulario = () => {
+    if (!formData.nombre_empresa.trim()) {
+      setError('El nombre de la empresa es requerido');
+      return false;
+    }
+    if (!validarEmail(formData.email_empresa)) {
+      setError('El email de la empresa no es válido');
+      return false;
+    }
+    if (!validarTelefono(formData.telefono_empresa)) {
+      setError('El teléfono debe tener el formato: 000-000-0000');
+      return false;
+    }
+    if (!formData.tipo_servicio.trim()) {
+      setError('El tipo de servicio es requerido');
+      return false;
+    }
+    if (!formData.fecha_creacion) {
+      setError('La fecha de creación es requerida');
+      return false;
+    }
+    return true;
+  };
+
   const insertarDatos = async () => {
-  try {
-    const response = await fetch('http://localhost:3000/crear_proveedores', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(formData),
-    });
+    try {
+      const response = await fetch('http://localhost:3000/crear_proveedores', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    if (response.ok) {
       const data = await response.json();
-      console.log('Proveedor creado con éxito:', data);
-      navigate('/registro/confirmacion', { state: { formData } }); // Redirige a una página de confirmación
-    } else {
-      console.error('Error al crear el proveedor:', response.statusText);
-      alert('Hubo un error al crear el proveedor. Inténtalo de nuevo.');
-    }
-  } catch (error) {
-    console.error('Error al conectar con el servidor:', error);
-    alert('No se pudo conectar con el servidor. Verifica tu conexión.');
-  }
-};
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  // Aquí puedes realizar la lógica para enviar los datos al servidor
-  // Por ejemplo, usando fetch para enviar una solicitud POST
-  fetch('http://localhost:3000/crear_proveedores', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(formData),
-  })
-    .then((response) => {
-      if (response.ok) {
-        return response.json();
-      } else {
-        throw new Error('Error en la respuesta del servidor');
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al crear el proveedor');
       }
+
+      return true;
+    } catch (error) {
+      console.error('Error al crear proveedor:', error);
+      setError(error.message);
+      return false;
     }
-    )
-  }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!validarFormulario()) {
+        setLoading(false);
+        return;
+      }
+
+      const success = await insertarDatos();
+      if (success) {
+        navigate('/registro/confirmacion', { state: { formData } });
+      }
+    } catch (error) {
+      console.error('Error en el envío:', error);
+      setError('Error al procesar el formulario');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Información sobre el registro del proveedor
   const proveedorInfo = {
@@ -95,6 +148,12 @@ const handleSubmit = async (e) => {
               <div className="px-6 py-6">
                 <h2 className="text-2xl font-bold text-gray-800 mb-6">Datos del Proveedor</h2>
                 
+                {error && (
+                  <div className="mb-6 p-3 bg-red-50 rounded-md border border-red-200">
+                    <p className="text-red-700">{error}</p>
+                  </div>
+                )}
+
                 <div className="mb-6 p-3 bg-blue-50 rounded-md border border-blue-200">
                   <p className="text-blue-700">
                     <span className="font-semibold">Información de empresa:</span> Complete los datos de su negocio
@@ -146,7 +205,7 @@ const handleSubmit = async (e) => {
                         onChange={handleChange} 
                         required 
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ej: +34 900 123 456"
+                        placeholder="000-000-0000"
                       />
                     </div>
 
@@ -226,16 +285,16 @@ const handleSubmit = async (e) => {
                       placeholder="Describa brevemente su empresa y servicios..."
                     ></textarea>
                   </div>
-{/*boton de siguiente*/}
-<div className="pt-4">
-  <button
-  onClick={insertarDatos}
-    type="submit" // Este tipo asegura que se ejecute el onSubmit del formulario
-    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out"
-  >
-    Siguiente
-  </button>
-</div>
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50"
+                    >
+                      {loading ? 'Procesando...' : 'Siguiente'}
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>

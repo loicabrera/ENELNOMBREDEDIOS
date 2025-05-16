@@ -149,36 +149,93 @@ app.post('/crear_proveedores', async (req, res) => {
       tipo_servicio,
       fecha_creacion,
       direccion,
-      redes_sociales,
-      PERSONA_cedula,
+      descripcion,
+      redes_sociales
     } = req.body;
 
-    // Validación básica
-    if (!nombre_empresa || !email_empresa || !telefono_empresa || !tipo_servicio || !direccion || !PERSONA_cedula) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    // Log de datos recibidos
+    console.log('📝 Datos recibidos:', req.body);
+
+    // Validación de campos requeridos
+    const camposFaltantes = [];
+    if (!nombre_empresa) camposFaltantes.push('nombre de empresa');
+    if (!email_empresa) camposFaltantes.push('email de empresa');
+    if (!telefono_empresa) camposFaltantes.push('teléfono de empresa');
+    if (!tipo_servicio) camposFaltantes.push('tipo de servicio');
+    if (!direccion) camposFaltantes.push('dirección');
+
+    if (camposFaltantes.length > 0) {
+      console.log('❌ Campos faltantes:', camposFaltantes);
+      return res.status(400).json({
+        error: `Faltan campos obligatorios: ${camposFaltantes.join(', ')}`
+      });
     }
 
+    // Validación de formato de teléfono (ejemplo: 000-000-0000)
+    const telefonoRegex = /^\d{3}-\d{3}-\d{4}$/;
+    if (!telefonoRegex.test(telefono_empresa)) {
+      console.log('❌ Formato de teléfono inválido:', telefono_empresa);
+      return res.status(400).json({
+        error: 'El formato del teléfono debe ser: 000-000-0000'
+      });
+    }
+
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email_empresa)) {
+      console.log('❌ Formato de email inválido:', email_empresa);
+      return res.status(400).json({
+        error: 'El formato del email es inválido'
+      });
+    }
+
+    // Verificar si la empresa ya existe con el mismo nombre
+    const proveedorExistente = await Proveedor.findOne({ where: { nombre_empresa } });
+    if (proveedorExistente) {
+      console.log('❌ Empresa ya registrada:', nombre_empresa);
+      return res.status(400).json({
+        error: 'Ya existe una empresa registrada con este nombre'
+      });
+    }
+
+    // Crear el nuevo proveedor
     const nuevoProveedor = await Proveedor.create({
-      nombre_empresa,
-      email_empresa,
+      nombre_empresa: nombre_empresa.trim(),
+      email_empresa: email_empresa.trim(),
       telefono_empresa,
-      tipo_servicio,
+      tipo_servicio: tipo_servicio.trim(),
       fecha_creacion: fecha_creacion ? new Date(fecha_creacion) : new Date(),
-      direccion,
-      redes_sociales,
-      PERSONA_id_persona: PERSONA_cedula,
+      direccion: direccion.trim(),
+      descripcion: descripcion ? descripcion.trim() : null,
+      redes_sociales: redes_sociales ? redes_sociales.trim() : null
     });
 
-    console.log('✅ Proveedor creado:', nuevoProveedor);
+    console.log('✅ Proveedor creado exitosamente:', nuevoProveedor.toJSON());
     res.status(201).json({
       message: 'Proveedor creado exitosamente',
       proveedor: nuevoProveedor
     });
+
   } catch (error) {
     console.error('❌ Error al crear proveedor:', error);
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        error: 'Error de validación',
+        detalles: error.errors.map(e => e.message)
+      });
+    }
+    
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({
+        error: 'Ya existe una empresa con estos datos'
+      });
+    }
+    
+    // Error general del servidor
     res.status(500).json({
-      error: 'Error al crear el proveedor',
-      detalles: error.message
+      error: 'Error interno del servidor',
+      detalles: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
