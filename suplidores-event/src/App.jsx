@@ -1,7 +1,8 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
-
-
+import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
+import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
+import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 import "./App.css";
 import "./Formularios/datos.css";
 import "./home.css";
@@ -35,6 +36,21 @@ function Layout({ children }) {
   );
 }
 
+function AdminLayout() {
+  return (
+    <div className="flex">
+      <SidebarAdmin />
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<AdminHomeDashboard />} />
+          <Route path="proveedores" element={<AdminProveedor />} />
+          {/* Aquí puedes agregar más rutas internas del admin */}
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
@@ -56,6 +72,11 @@ function App() {
             </Layout>
           }
         />
+        <Route
+          path="/dashboardadmin/*"
+          element={<AdminLayout />}
+        />
+
         <Route
           path="/servicios"
           element={
