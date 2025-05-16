@@ -151,7 +151,7 @@ app.post('/crear_proveedores', async (req, res) => {
       direccion,
       descripcion,
       redes_sociales,
-      PERSONA_id_persona
+      p_e_r_s_o_n_a_id_persona
     } = req.body;
 
     // Log de datos recibidos
@@ -164,7 +164,7 @@ app.post('/crear_proveedores', async (req, res) => {
     if (!telefono_empresa) camposFaltantes.push('teléfono de empresa');
     if (!tipo_servicio) camposFaltantes.push('tipo de servicio');
     if (!direccion) camposFaltantes.push('dirección');
-    if (!PERSONA_id_persona) camposFaltantes.push('id de persona');
+    if (!p_e_r_s_o_n_a_id_persona) camposFaltantes.push('id de persona');
 
     if (camposFaltantes.length > 0) {
       console.log('❌ Campos faltantes:', camposFaltantes);
@@ -201,9 +201,9 @@ app.post('/crear_proveedores', async (req, res) => {
     }
 
     // Verificar si la persona existe
-    const personaExistente = await PERSONA.findByPk(PERSONA_id_persona);
+    const personaExistente = await PERSONA.findByPk(p_e_r_s_o_n_a_id_persona);
     if (!personaExistente) {
-      console.log('❌ Persona no encontrada:', PERSONA_id_persona);
+      console.log('❌ Persona no encontrada:', p_e_r_s_o_n_a_id_persona);
       return res.status(400).json({
         error: 'La persona asociada no existe'
       });
@@ -219,7 +219,7 @@ app.post('/crear_proveedores', async (req, res) => {
       direccion: direccion.trim(),
       descripcion: descripcion ? descripcion.trim() : null,
       redes_sociales: redes_sociales ? redes_sociales.trim() : null,
-      p_e_r_s_o_n_a_id_persona: PERSONA_id_persona
+      p_e_r_s_o_n_a_id_persona
     });
 
     console.log('✅ Proveedor creado exitosamente:', nuevoProveedor.toJSON());

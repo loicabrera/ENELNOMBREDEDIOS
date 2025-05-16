@@ -92,7 +92,10 @@ const DatosProveedor = () => {
         throw new Error('No se encontró el ID de la persona registrada');
       }
 
-      console.log('ID de persona a usar:', personaId); // Para debugging
+      console.log('Enviando datos al servidor:', {
+        ...formData,
+        p_e_r_s_o_n_a_id_persona: personaId
+      });
 
       const response = await fetch('http://localhost:3000/crear_proveedores', {
         method: 'POST',
