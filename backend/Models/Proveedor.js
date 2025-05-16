@@ -2,7 +2,7 @@
 import { Sequelize, DataTypes } from 'sequelize';
 import conexion from '../db.js';
 
-export const Proveedor = conexion.define('provedor_membresia', {
+export const Proveedor = conexion.define('provedor_negocio', {
   id_proveedor: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -48,6 +48,6 @@ export const Proveedor = conexion.define('provedor_membresia', {
     }
   }
 }, {
-  tableName: 'provedor_membresia',
+  tableName: 'provedor_negocio',
   timestamps: false
 });
