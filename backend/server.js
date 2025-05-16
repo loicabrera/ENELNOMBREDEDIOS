@@ -1,15 +1,12 @@
 // backend/server.js
 import express from 'express';
 import cors from 'cors';
-import Stripe from 'stripe';
-
 import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const stripe = Stripe('sk_test_51RPQBGH99ZRyC1yofIHLx7g4x9qQV9fPoRNC8bAlxM2kIrUSKvDO5lcuHPINVUQ1PrknbXMbgcZ1CB6aWjYunOIC00PhriOz2t');
 
 // Middleware
 app.use(cors());
@@ -19,38 +16,6 @@ app.use(express.urlencoded({ extended: true }));
 // Rutas básicas
 app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
-});
-
-
-app.post('/create-checkout-session', async (req, res) => {
-  const { plan, email } = req.body;
-
-  // Reemplaza estos IDs por los de tus productos/precios reales en Stripe
-  const prices = {
-    basico: 'price_xxx',      // <-- Cambia esto por el ID real de tu precio en Stripe
-    destacado: 'price_yyy',
-    premium: 'price_zzz'
-  };
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: [
-        {
-          price: prices[plan], // El ID del precio de Stripe
-          quantity: 1,
-        },
-      ],
-      customer_email: email,
-      success_url: 'http://localhost:5173/pago-exitoso',
-      cancel_url: 'http://localhost:5173/pago-cancelado',
-    });
-
-    res.json({ url: session.url });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
 });
 
 // Ruta para obtener todas las personas
