@@ -9,53 +9,14 @@ const colors = {
   pink: '#fbaccb',
   purple: '#cbb4db',
   sage: '#9CAF88',
+  error: '#ff6b6b',
 };
 
 const DatosPersonas = () => {
   const { plan } = useParams();
   const navigate = useNavigate();
-
-  // Información de los planes
-  const planInfo = {
-    basico: {
-      titulo: "Plan Básico",
-      descripcion: "Publica hasta 3 servicios y 3 productos por 30 días.",
-      beneficios: [
-        "3 publicaciones de servicios",
-        "3 publicaciones de productos",
-        "Hasta 8 fotos por servicio y productos",
-        "Duración: 30 días"
-      ]
-    },
-    destacado: {
-      titulo: "Plan Destacado",
-      descripcion: "Anuncia hasta 6 servicios y 7 productos por 60 días, con visibilidad destacada.",
-      beneficios: [
-        "6 publicaciones de servicios",
-        "7 publicaciones de productos",
-        "Hasta 15 fotos por servicio y productos",
-        "Posición destacada en resultados de búsqueda por 7 días",
-        "25% más de visibilidad que el plan básico",
-        "Duración: 60 días"
-      ]
-    },
-    premium: {
-      titulo: "Plan Premium",
-      descripcion: "Máxima visibilidad, publicaciones ilimitadas y destacado permanente por 90 días.",
-      beneficios: [
-        "Publicaciones ilimitadas de servicios y productos",
-        "Hasta 25 fotos por servicio y productos",
-        "Aparición en portada por 15 días + destacado permanente",
-        "Posición premium en resultados de búsqueda",
-        "Badge verificado en tu perfil",
-        "Estadísticas avanzadas de visitas y contactos",
-        "Duración: 90 días"
-      ]
-    }
-  };
-
-  // El plan seleccionado se toma de la URL, si no existe, se usa 'destacado' por defecto
-  const planSeleccionado = planInfo[plan] ? plan : 'destacado';
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     nombre: '',
@@ -67,20 +28,125 @@ const DatosPersonas = () => {
     planSeleccionado: plan || 'destacado'
   });
 
+  // Función para validar el formato de la cédula (000-0000000-0)
+  const validarCedula = (cedula) => {
+    const regex = /^\d{3}-\d{7}-\d{1}$/;
+    return regex.test(cedula);
+  };
+
+  // Función para validar el formato del teléfono (000-000-0000)
+  const validarTelefono = (telefono) => {
+    const regex = /^\d{3}-\d{3}-\d{4}$/;
+    return regex.test(telefono);
+  };
+
+  // Función para validar el email
+  const validarEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    setError(null); // Limpiar error cuando el usuario modifica algún campo
   };
 
-  const handleSubmit = (e) => {
+  const validarFormulario = () => {
+    if (!formData.nombre.trim()) {
+      setError('El nombre es requerido');
+      return false;
+    }
+    if (!formData.apellido.trim()) {
+      setError('El apellido es requerido');
+      return false;
+    }
+    if (!validarCedula(formData.cedula)) {
+      setError('La cédula debe tener el formato: 000-0000000-0');
+      return false;
+    }
+    if (!validarTelefono(formData.telefono)) {
+      setError('El teléfono debe tener el formato: 000-000-0000');
+      return false;
+    }
+    if (!validarEmail(formData.email)) {
+      setError('El email no es válido');
+      return false;
+    }
+    return true;
+  };
+
+  const insertarPersona = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/crear_persona', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nombre: formData.nombre.trim(),
+          apellido: formData.apellido.trim(),
+          cedula: formData.cedula,
+          telefono: formData.telefono,
+          email: formData.email.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Error al crear la persona');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error al crear persona:', error);
+      setError(error.message);
+      return false;
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Datos ingresados:', formData);
-    navigate('/registro/evento', { state: { formData } });
+    setError(null);
+    setLoading(true);
+
+    try {
+      if (!validarFormulario()) {
+        setLoading(false);
+        return;
+      }
+
+      const success = await insertarPersona();
+      if (success) {
+        navigate('/registro/evento', { state: { formData } });
+      }
+    } catch (error) {
+      console.error('Error en el envío:', error);
+      setError('Error al procesar el formulario');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const planActual = planInfo[planSeleccionado];
+  // Información de los planes
+  const planInfo = {
+    destacado: {
+      titulo: "Plan Destacado",
+      descripcion: "Obtenga mayor visibilidad para sus servicios y productos",
+      beneficios: [
+        "Publicaciones destacadas en las búsquedas",
+        "Mayor número de productos/servicios para publicar",
+        "Acceso a estadísticas de visualización",
+        "Prioridad en los resultados de búsqueda"
+      ]
+    }
+  };
+
+  const planActual = planInfo[formData.planSeleccionado] || planInfo.destacado;
 
   return (
     <div className="min-h-screen bg-white">
@@ -96,6 +162,11 @@ const DatosPersonas = () => {
           <div className="md:w-2/3 w-full rounded-2xl shadow-xl overflow-hidden border border-[#cbb4db]" style={{ boxShadow: `0 4px 24px 0 ${colors.purple}33`, background: colors.purple }}>
             <div className="px-8 py-10">
               <h2 className="text-3xl font-bold mb-6 text-center" style={{ color: colors.darkTeal }}>Datos Personales</h2>
+              {error && (
+                <div className="mb-4 p-3 rounded-md text-white text-center" style={{ background: colors.error }}>
+                  {error}
+                </div>
+              )}
               <div className="mb-6 p-3 rounded-md border text-center" style={{ background: colors.lightPink, borderColor: colors.purple, color: colors.darkTeal }}>
                 <span className="font-semibold">Plan seleccionado:</span> {planActual.titulo}
               </div>
@@ -111,8 +182,8 @@ const DatosPersonas = () => {
                       value={formData.nombre}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 bg-white"
-                      style={{ borderColor: colors.purple }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                      style={{ borderColor: colors.purple, background: colors.lightPink }}
                       placeholder="Ingrese su nombre"
                     />
                   </div>
@@ -126,8 +197,8 @@ const DatosPersonas = () => {
                       value={formData.apellido}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 bg-white"
-                      style={{ borderColor: colors.purple }}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                      style={{ borderColor: colors.purple, background: colors.lightPink }}
                       placeholder="Ingrese su apellido"
                     />
                   </div>
@@ -141,9 +212,9 @@ const DatosPersonas = () => {
                       value={formData.cedula}
                       onChange={handleChange}
                       required
-                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 bg-white"
-                      style={{ borderColor: colors.purple }}
-                      placeholder="Ingrese su cédula"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                      style={{ borderColor: colors.purple, background: colors.lightPink }}
+                      placeholder="000-0000000-0"
                       maxLength={13}
                     />
                   </div>
@@ -158,9 +229,9 @@ const DatosPersonas = () => {
                     value={formData.telefono}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 bg-white"
-                    style={{ borderColor: colors.purple }}
-                    placeholder="Ej: +34 600 123 456"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                    style={{ borderColor: colors.purple, background: colors.lightPink }}
+                    placeholder="000-000-0000"
                   />
                 </div>
                 <div>
@@ -188,18 +259,19 @@ const DatosPersonas = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 bg-white"
-                    style={{ borderColor: colors.purple }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
+                    style={{ borderColor: colors.purple, background: colors.lightPink }}
                     placeholder="ejemplo@correo.com"
                   />
                 </div>
                 <div className="pt-4">
                   <button
                     type="submit"
-                    className="w-full py-3 px-4 rounded-md font-medium transition duration-300 text-white shadow-md"
+                    disabled={loading}
+                    className="w-full py-3 px-4 rounded-md font-medium transition duration-300 text-white shadow-md disabled:opacity-50"
                     style={{ background: colors.pink, boxShadow: `0 2px 8px 0 ${colors.purple}33` }}
                   >
-                    Siguiente
+                    {loading ? 'Procesando...' : 'Siguiente'}
                   </button>
                 </div>
               </form>
