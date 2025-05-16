@@ -15,14 +15,16 @@ const colors = {
 const DatosPersonas = () => {
   const { plan } = useParams();
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    nombre: 'nombre',
-    apellido: 'apellido',
-    cedula: 'cedula',
-    telefono: 'telefono',
-    direccion: 'direccion',
-    email: 'email',
+    nombre: '',
+    apellido: '',
+    cedula: '',
+    telefono: '',
+    direccion: '',
+    email: '',
     planSeleccionado: plan || 'destacado'
   });
 
@@ -130,7 +132,21 @@ const DatosPersonas = () => {
     }
   };
 
-  const planActual = planInfo[planSeleccionado];
+  // Información de los planes
+  const planInfo = {
+    destacado: {
+      titulo: "Plan Destacado",
+      descripcion: "Obtenga mayor visibilidad para sus servicios y productos",
+      beneficios: [
+        "Publicaciones destacadas en las búsquedas",
+        "Mayor número de productos/servicios para publicar",
+        "Acceso a estadísticas de visualización",
+        "Prioridad en los resultados de búsqueda"
+      ]
+    }
+  };
+
+  const planActual = planInfo[formData.planSeleccionado] || planInfo.destacado;
 
   return (
     <div className="min-h-screen bg-white">
@@ -198,7 +214,7 @@ const DatosPersonas = () => {
                       required
                       className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                       style={{ borderColor: colors.purple, background: colors.lightPink }}
-                      placeholder="Ingrese su cédula"
+                      placeholder="000-0000000-0"
                       maxLength={13}
                     />
                   </div>
@@ -215,7 +231,7 @@ const DatosPersonas = () => {
                     required
                     className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2"
                     style={{ borderColor: colors.purple, background: colors.lightPink }}
-                    placeholder="Ej: +34 600 123 456"
+                    placeholder="000-000-0000"
                   />
                 </div>
                 <div>
