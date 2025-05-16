@@ -41,8 +41,12 @@ export const testConnection = async () => {
     await conexion.authenticate();
     console.log('✅ Conexión a la base de datos establecida correctamente.');
     
-    // Sincronizar con alter:true para actualizar la estructura de la tabla
-    await conexion.sync({ alter: true });
+    // Sincronizar con alter:true y force:false para actualizar la estructura de la tabla suavemente
+    await conexion.sync({ 
+      alter: true,
+      force: false,
+      logging: console.log
+    });
     console.log('✅ Modelos sincronizados con la base de datos.');
     
     return true;
