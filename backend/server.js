@@ -1,20 +1,134 @@
 // backend/server.js
 import express from 'express';
-import conexion from './db.js';
+import cors from 'cors';
+import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-console.log('Conectando a la base de datos...');
+// Middleware
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Rutas básicas
 app.get('/', (req, res) => {
-  res.send('Servidor funcionando');
+  res.send('Servidor funcionando correctamente');
 });
 
+// Ruta para obtener todas las personas
+app.get('/persona', async (req, res) => {
+  try {
+    const personas = await PERSONA.findAll();
+    res.json(personas);
+  } catch (error) {
+    console.error('Error al obtener personas:', error);
+    res.status(500).json({ error: 'Error al obtener las personas' });
+  }
+});
+
+// Ruta para crear una nueva persona
+app.post('/crear_persona', async (req, res) => {
+  try {
+    const { nombre, apellido, telefono, email, cedula } = req.body;
+
+    // Log de datos recibidos
+    console.log('📝 Datos recibidos:', { id_persona: 0, nombre, apellido, telefono, email, cedula });
+
+    // Validación de campos requeridos
+    const camposFaltantes = [];
+    if (!nombre) camposFaltantes.push('nombre');
+    if (!apellido) camposFaltantes.push('apellido');
+    if (!telefono) camposFaltantes.push('teléfono');
+    if (!email) camposFaltantes.push('email');
+    if (!cedula) camposFaltantes.push('cédula');
+
+    if (camposFaltantes.length > 0) {
+      console.log('❌ Campos faltantes:', camposFaltantes);
+      return res.status(400).json({
+        error: `Faltan campos obligatorios: ${camposFaltantes.join(', ')}`
+      });
+    }
+
+    // Validación de formato de cédula (ejemplo: 000-0000000-0)
+    const cedulaRegex = /^\d{3}-\d{7}-\d{1}$/;
+    if (!cedulaRegex.test(cedula)) {
+      console.log('❌ Formato de cédula inválido:', cedula);
+      return res.status(400).json({
+        error: 'El formato de la cédula debe ser: 000-0000000-0'
+      });
+    }
+
+    // Validación de formato de teléfono (ejemplo: 000-000-0000)
+    const telefonoRegex = /^\d{3}-\d{3}-\d{4}$/;
+    if (!telefonoRegex.test(telefono)) {
+      console.log('❌ Formato de teléfono inválido:', telefono);
+      return res.status(400).json({
+        error: 'El formato del teléfono debe ser: 000-000-0000'
+      });
+    }
+
+    // Validación de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log('❌ Formato de email inválido:', email);
+      return res.status(400).json({
+        error: 'El formato del email es inválido'
+      });
+    }
+
+    // Verificar si la cédula ya existe
+    const personaExistente = await PERSONA.findOne({ where: { cedula } });
+    if (personaExistente) {
+      console.log('❌ Cédula ya registrada:', cedula);
+      return res.status(400).json({
+        error: 'La cédula ya está registrada en el sistema'
+      });
+    }
+
+    // Crear la nueva persona con id_persona en 0
+    const nuevaPersona = await PERSONA.create({
+      id_persona: 0, // Esto permitirá que MySQL use auto-increment
+      nombre: nombre.trim(),
+      apellido: apellido.trim(),
+      telefono,
+      email: email.trim(),
+      cedula
+    });
+
+    console.log('✅ Persona creada exitosamente:', nuevaPersona.toJSON());
+    res.status(201).json({
+      message: 'Persona creada exitosamente',
+      persona: nuevaPersona
+    });
+
+  } catch (error) {
+    console.error('❌ Error al crear persona:', error);
+    
+    if (error.name === 'SequelizeValidationError') {
+      return res.status(400).json({
+        error: 'Error de validación',
+        detalles: error.errors.map(e => e.message)
+      });
+    }
+    
+    if (error.name === 'SequelizeUniqueConstraintError') {
+      return res.status(400).json({
+        error: 'La cédula ya existe en la base de datos'
+      });
+    }
+    
+    // Error general del servidor
+    res.status(500).json({
+      error: 'Error interno del servidor',
+      detalles: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Ruta para obtener proveedores
 app.get('/proveedores', async (req, res) => {
   try {
     const proveedores = await Proveedor.findAll();
@@ -25,41 +139,7 @@ app.get('/proveedores', async (req, res) => {
   }
 });
 
-app.get('/persona', async (req, res) => {
-  try {
-    const personas = await PERSONA.findAll();
-    res.json(personas);
-  } catch (error) {
-    console.error('Error al obtener proveedores:', error);
-    res.status(500).json({ error: 'Error al obtener los proveedores' });
-  }
-});
-
-app.post ('/crear_persona', async (req, res) => {
-  try {
-    const { nombre, apellido, telefono, email, cedula } = req.body;
-
-    // Validación básica
-    if (!nombre || !apellido ||  !telefono || !email || !cedula) {
-      return res.status(400).json({ error: 'Faltan campos obligatorios' });
-    }
-
-    const nuevaPersona = await PERSONA.create({
-      nombre,
-      apellido,
-      telefono,
-      email,
-      cedula,
-    });
-
-    console.log('Persona creada:', nuevaPersona);
-    res.status(201).json({ message: 'Persona creada con éxito', persona: nuevaPersona });
-  } catch (error) {
-    console.error('Error al crear persona:', error);
-    res.status(500).json({ error: 'Error al crear la persona' });
-  }
-});
-
+// Ruta para crear un nuevo proveedor
 app.post('/crear_proveedores', async (req, res) => {
   try {
     const {
@@ -83,33 +163,45 @@ app.post('/crear_proveedores', async (req, res) => {
       email_empresa,
       telefono_empresa,
       tipo_servicio,
-      fecha_creacion: fecha_creacion ? new Date(fecha_creacion) : new Date(), // Si no viene, se asigna la fecha actual
+      fecha_creacion: fecha_creacion ? new Date(fecha_creacion) : new Date(),
       direccion,
       redes_sociales,
-      PERSONA_id_persona: PERSONA_cedula, // Asegúrate de que este campo coincida con el modelo
+      PERSONA_id_persona: PERSONA_cedula,
     });
 
-    console.log('Proveedor creado:', nuevoProveedor);
-    res.status(201).json({ message: 'Proveedor creado con éxito', proveedor: nuevoProveedor });
+    console.log('✅ Proveedor creado:', nuevoProveedor);
+    res.status(201).json({
+      message: 'Proveedor creado exitosamente',
+      proveedor: nuevoProveedor
+    });
   } catch (error) {
-    console.error('Error al crear proveedor:', error);
-    res.status(500).json({ error: 'Error al crear el proveedor' });
+    console.error('❌ Error al crear proveedor:', error);
+    res.status(500).json({
+      error: 'Error al crear el proveedor',
+      detalles: error.message
+    });
   }
 });
 
+// Iniciar el servidor
 async function startServer() {
   try {
-    await conexion.authenticate();
-    console.log('Conectado a la base de datos.');
+    // Probar conexión a la base de datos
+    const connected = await testConnection();
+    
+    if (!connected) {
+      console.error('❌ No se pudo establecer conexión con la base de datos. El servidor no se iniciará.');
+      process.exit(1);
+    }
 
-    // Sincronizar modelos (opcional, solo si necesitas crear tablas automáticamente)
-    await conexion.sync();
-
+    // Iniciar el servidor HTTP
     app.listen(PORT, () => {
-      console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+      console.log(`✅ Servidor ejecutándose en http://localhost:${PORT}`);
     });
+
   } catch (error) {
-    console.error('Error al conectar con la base de datos:', error);
+    console.error('❌ Error al iniciar el servidor:', error);
+    process.exit(1);
   }
 }
 

@@ -1,15 +1,55 @@
 import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno
+dotenv.config();
+
+const dbConfig = {
+  host: process.env.DB_HOST || 'bad7nkcdovetz0xcd7tt-mysql.services.clever-cloud.com',
+  user: process.env.DB_USER || 'uj3nqin9zmxkkhr4',
+  password: process.env.DB_PASSWORD || '51GsplIbrfLHDFhNd29',
+  database: process.env.DB_NAME || 'bad7nkcdovetz0xcd7tt',
+  port: process.env.DB_PORT || 20695
+};
 
 const conexion = new Sequelize(
-  'bad7nkcdovetz0xcd7tt',    // reemplaza con MYSQL_ADDON_DB
-  'uj3nqin9zmxkkhr4',                 // reemplaza con MYSQL_ADDON_USER
-  '51GsplIbrfLHDFhNd29',              // reemplaza con MYSQL_ADDON_PASSWORD
+  dbConfig.database,
+  dbConfig.user,
+  dbConfig.password,
   {
-    host: 'bad7nkcdovetz0xcd7tt-mysql.services.clever-cloud.com',            // reemplaza con MYSQL_ADDON_HOST
-    port: 20695,              // verifica si es diferente
+    host: dbConfig.host,
+    port: dbConfig.port,
     dialect: 'mysql',
-    logging: false,          // o true si quieres ver logs
+    logging: console.log, // Activamos logging para ver las consultas SQL
+    pool: {
+      max: 5, // Máximo de conexiones en el pool
+      min: 0, // Mínimo de conexiones en el pool
+      acquire: 30000, // Tiempo máximo en ms que el pool tratará de obtener una conexión antes de lanzar error
+      idle: 10000 // Tiempo máximo en ms que una conexión puede estar inactiva antes de ser liberada
+    },
+    define: {
+      timestamps: false, // Por defecto, no agregar timestamps
+      freezeTableName: true, // Usar exactamente el nombre de modelo que definimos
+      underscored: true // Usar snake_case en lugar de camelCase para los nombres de columnas
+    }
   }
 );
+
+// Función para probar la conexión
+export const testConnection = async () => {
+  try {
+    await conexion.authenticate();
+    console.log('✅ Conexión a la base de datos establecida correctamente.');
+    
+    // Sincronizar con alter:true para actualizar la estructura de la tabla
+    await conexion.sync({ alter: true });
+    console.log('✅ Modelos sincronizados con la base de datos.');
+    
+    return true;
+  } catch (error) {
+    console.error('❌ Error al conectar con la base de datos:', error);
+    return false;
+  }
+};
 
 export default conexion;
