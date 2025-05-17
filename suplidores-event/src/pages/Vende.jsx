@@ -1,15 +1,38 @@
 import { Link } from "react-router-dom";
-
+const colors = {
+  sage: "#9CAF88",
+  purple: "#cbb4db",
+  pink: "#fbaccb",
+  lightPink: "#fbcbdb",
+  darkTeal: "#012e33",
+};
 const Vende = () => {
   return (
-    <div className="vende-container">
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-overlay">
-          <h1>Vende con nosotros</h1>
-          <p>Lleva tu negocio de eventos al siguiente nivel</p>
-        </div>
-      </section>
+<div className="flex flex-col min-h-full">       {/* Hero Section - Cambiado a imagen simple sin gradiente */}
+       <section className="relative py-16 md:py-24">
+          <div className="absolute inset-0 overflow-hidden">
+            <img
+              src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1470&auto=format&fit=crop"
+              alt="Hero background"
+              className="w-full h-full object-cover"
+            />
+            <div
+              className="absolute inset-0"
+              style={{ backgroundColor: colors.darkTeal, opacity: 0.4 }}
+            ></div>
+          </div>
+
+          <div className="container mx-auto px-4 relative z-10">
+            <div className="max-w-3xl mx-auto text-center">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
+                Vende con nosotros 
+              </h2>
+              <p className="text-base sm:text-lg md:text-xl text-white opacity-90 mb-8">
+             Lleva tu negocio con nosotros al siguiente nivel 
+              </p>
+            </div>
+          </div>
+        </section>
 
       <div className="vende-header">
         <h1>Vende con nosotros</h1>

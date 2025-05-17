@@ -161,34 +161,7 @@ export default function ServiciosApp() {
     <div className="font-sans">
       {/* Contenido principal */}
       <main className="container mx-auto p-6">
-        {/* Barra de navegación de migas de pan */}
-        <div className="mb-8">
-          <div className="flex items-center text-sm">
-            <a href="#" className="text-sky-600 hover:underline">Inicio</a>
-            <span className="mx-2">›</span>
-            <a href="#" className="text-sky-600 hover:underline" 
-              onClick={() => setVista('categorias')}>Servicios</a>
-            
-            {vista === 'proveedores' && (
-              <>
-                <span className="mx-2">›</span>
-                <span className="text-slate-700">{categoriaSeleccionada?.nombre || "Florerías"}</span>
-              </>
-            )}
-            
-            {vista === 'detalle' && (
-              <>
-                <span className="mx-2">›</span>
-                <a href="#" className="text-sky-600 hover:underline" 
-                  onClick={() => setVista('proveedores')}>
-                  {categoriaSeleccionada?.nombre || "Florerías"}
-                </a>
-                <span className="mx-2">›</span>
-                <span className="text-slate-700">{proveedorSeleccionado?.nombre || proveedorDetalle.nombre}</span>
-              </>
-            )}
-          </div>
-        </div>
+     
 
         {/* Vista de categorías de servicios */}
         {vista === 'categorias' && (
