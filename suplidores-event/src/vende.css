@@ -18,6 +18,9 @@
   background-size: cover;
   background-position: center;
   margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .hero-overlay {
@@ -30,6 +33,8 @@
   align-items: center;
   text-align: center;
   padding: 2rem;
+  width: 100%;
+  height: 100%;
 }
 
 .hero-section h1 {
@@ -37,18 +42,27 @@
   font-size: clamp(2.5rem, 5vw, 4rem);
   margin-bottom: 1.5rem;
   font-weight: 700;
+  text-align: center;
+  width: 100%;
 }
 
 .hero-section p {
   color: white;
   font-size: clamp(1.2rem, 3vw, 1.8rem);
   max-width: 800px;
+  text-align: center;
+  margin: 0 auto;
 }
 
 /* Contenido principal */
 .vende-header {
   padding: 2rem 1rem;
   max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .vende-header h1 {
@@ -56,6 +70,7 @@
   font-size: 2rem;
   margin-bottom: 2rem;
   text-align: center;
+  width: 100%;
 }
 
 .vende-subtitle {
@@ -352,4 +367,30 @@ h2 {
     margin-left: auto;
     margin-right: auto;
   }
+}
+
+.plan-button {
+  display: block;
+  width: 100%;
+  padding: 0.85rem 0;
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(90deg, #cbb4db 0%, #9CAF88 100%);
+  border: none;
+  border-radius: 30px;
+  box-shadow: 0 4px 12px rgba(1, 46, 51, 0.09);
+  cursor: pointer;
+  text-align: center;
+  letter-spacing: 0.5px;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+  text-decoration: none;
+}
+.plan-button:hover, .plan-button:focus {
+  background: linear-gradient(90deg, #9CAF88 0%, #cbb4db 100%);
+  color: #012e33;
+  transform: scale(1.04);
+  box-shadow: 0 8px 24px rgba(1, 46, 51, 0.15);
+  outline: none;
 }

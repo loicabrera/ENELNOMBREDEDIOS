@@ -222,8 +222,7 @@ export default function Home() {
                 Explora por categorías
               </h2>
               <p className="text-lg mb-4" style={{ color: colors.darkTeal }}>
-                Encuentra rápidamente los proveedores especializados en lo que
-                tu negocio necesita
+                Encuentra rápidamente los Servicios que necesitas para tu evento.
               </p>
             </div>
 
