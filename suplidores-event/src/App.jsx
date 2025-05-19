@@ -1,9 +1,9 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
-import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
-import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
-import AdminProveedor from "./dashboardAdmin/AdminProveedor";
+
+
 import "./App.css";
+
 import "./Formularios/datos.css";
 import "./home.css";
 import "./index.css";
@@ -14,7 +14,7 @@ import DatosPersonas from "./Formularios/datospersonas";
 import DatosProveedor from "./Formularios/datosproveedor";
 
 import Home from "./pages/Home";
-import Login from "./inicioSeccion/Login";
+import Login from "./pages/Login";
 import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
@@ -153,16 +153,6 @@ function App() {
 <Route 
   path="/dashboardproveedor"
   element={<HomeProveedor />}
-/>
-
-<Route 
-  path="/pago"
-  element={<PaymentContainer />}
-/>
-
-<Route 
-  path="/confirmacion"
-  element={<Confirmacion />}
 />
 
       </Routes>
