@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@flaticon/flaticon-uicons": "^3.3.1",
+    "@heroicons/react": "^2.2.0",
     "@paypal/checkout-server-sdk": "^1.0.3",
     "axios": "^1.9.0",
     "cors": "^2.8.5",

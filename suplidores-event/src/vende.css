@@ -2,15 +2,15 @@
 h2 {
   text-align: center;
   color: #012e33;
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  margin-bottom: clamp(1.5rem, 3vw, 2rem);
   font-weight: bold;
 }
 
 .vende-header {
-  padding: 2rem 1rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  max-width: min(1200px, 90%);
+  margin: 1rem auto;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -20,40 +20,41 @@ h2 {
 
 .vende-header h1 {
   color: #012e33;
-  font-size: 2.5rem;
-  margin-bottom: 1.5rem;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  margin-bottom: clamp(1rem, 2vw, 1.5rem);
   text-align: center;
   width: 100%;
 }
 
 .vende-subtitle {
-  font-size: 1.1rem;
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
   line-height: 1.6;
   text-align: center;
-  max-width: 800px;
-  margin: 0 auto 2rem;
+  max-width: min(800px, 95%);
+  margin: 0 auto clamp(1.5rem, 3vw, 2rem);
   color: #012e33;
 }
 
 /* Stats */
 .vende-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.5rem;
-  padding: 1rem;
-  max-width: 1200px;
-  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+  padding: clamp(0.5rem, 2vw, 1rem);
+  width: min(1200px, 95%);
+  margin: 0 auto;
 }
 
 .stat-item {
   background-color: rgba(251, 203, 219, 0.1);
-  padding: 1.5rem;
+  padding: clamp(1rem, 2vw, 1.5rem);
   border-radius: 12px;
   border: 2px solid #fbaccb;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .stat-item:hover {
@@ -75,9 +76,9 @@ h2 {
 
 /* Planes */
 .vende-plans {
-  padding: 4rem 1rem;
+  padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem);
   background-color: rgba(156, 175, 136, 0.1);
-  margin-top: 3rem;
+  margin-top: clamp(2rem, 3vw, 3rem);
 }
 
 .plans-title {
@@ -90,17 +91,16 @@ h2 {
 
 .plans-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1.5rem, 3vw, 2rem);
+  width: min(1200px, 95%);
   margin: 0 auto;
-  padding: 0 1rem;
 }
 
 .plan-card {
   background: white;
   border-radius: 16px;
-  padding: 2rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
   box-shadow: 0 8px 24px rgba(1, 46, 51, 0.08);
   display: flex;
   flex-direction: column;
@@ -126,23 +126,37 @@ h2 {
   font-weight: 500;
 }
 
+.plan-content {
+  flex: 1;
+}
+
+.plan-card h3 {
+  font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+  margin-bottom: clamp(0.8rem, 2vw, 1rem);
+}
+
+.plan-description {
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
+  margin-bottom: clamp(1rem, 2vw, 1.5rem);
+}
+
 /* Beneficios */
 .vende-benefits {
-  padding: 4rem 1rem;
+  padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem);
   background-color: white;
 }
 
 .benefits-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 2rem auto;
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
+  gap: clamp(1.5rem, 3vw, 2rem);
+  width: min(1200px, 95%);
+  margin: 0 auto;
 }
 
 .benefit-item {
   background: white;
-  padding: 2rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(1, 46, 51, 0.08);
   transition: all 0.3s ease;
@@ -156,8 +170,8 @@ h2 {
 }
 
 .benefit-icon {
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
+  font-size: clamp(2rem, 4vw, 2.5rem);
+  margin-bottom: clamp(0.8rem, 2vw, 1rem);
   color: #012e33;
 }
 
@@ -176,22 +190,21 @@ h2 {
 
 /* Testimonios */
 .vende-testimonials {
-  padding: 4rem 1rem;
-  max-width: 1200px;
+  padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem);
+  width: min(1200px, 95%);
   margin: 0 auto;
   background-color: white;
 }
 
 .testimonials-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  padding: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: clamp(1.5rem, 3vw, 2rem);
 }
 
 .testimonial-card {
   background: white;
-  padding: 2rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
   border-radius: 16px;
   border: 1px solid #fbaccb;
   transition: all 0.3s ease;
@@ -206,9 +219,9 @@ h2 {
 .testimonial-text {
   color: #012e33;
   font-style: italic;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
   line-height: 1.6;
-  margin-bottom: 1.5rem;
+  margin-bottom: clamp(1rem, 2vw, 1.5rem);
 }
 
 .testimonial-author {
@@ -229,8 +242,8 @@ h2 {
 
 /* FAQ */
 .vende-faq {
-  padding: 4rem 1rem;
-  max-width: 1200px;
+  padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 2vw, 2rem);
+  width: min(1200px, 95%);
   margin: 0 auto;
 }
 
@@ -244,9 +257,9 @@ h2 {
 
 .faq-item {
   background: white;
-  padding: 2rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
   border-radius: 16px;
-  margin-bottom: 1.5rem;
+  margin-bottom: clamp(1rem, 2vw, 1.5rem);
   box-shadow: 0 8px 24px rgba(1, 46, 51, 0.08);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -260,14 +273,14 @@ h2 {
 
 .faq-item h3 {
   color: #012e33;
-  font-size: 1.2rem;
+  font-size: clamp(1.1rem, 2vw, 1.2rem);
   font-weight: 600;
-  margin-bottom: 1rem;
+  margin-bottom: clamp(0.8rem, 1.5vw, 1rem);
 }
 
 .faq-item p {
   color: #012e33;
-  font-size: 1rem;
+  font-size: clamp(0.9rem, 1.8vw, 1rem);
   line-height: 1.6;
 }
 
@@ -275,9 +288,9 @@ h2 {
 .plan-button {
   display: block;
   width: 100%;
-  padding: 0.85rem 0;
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
+  padding: clamp(0.7rem, 1.5vw, 0.85rem) clamp(1rem, 2vw, 1.5rem);
+  margin-top: clamp(1rem, 2vw, 1.5rem);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
   font-weight: 600;
   color: #fff;
   background: linear-gradient(90deg, #cbb4db 0%, #9CAF88 100%);
@@ -293,12 +306,12 @@ h2 {
 .plan-button:hover, .plan-button:focus {
   background: linear-gradient(90deg, #9CAF88 0%, #cbb4db 100%);
   color: #012e33;
-  transform: scale(1.04);
+  transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(1, 46, 51, 0.15);
   outline: none;
 }
 
-/* Responsive */
+/* Media Queries mejorados */
 @media (max-width: 768px) {
   .vende-header {
     padding: 1rem;
@@ -308,14 +321,22 @@ h2 {
     font-size: 2rem;
   }
 
-  .plans-grid,
-  .benefits-grid,
-  .testimonials-container {
+  .vende-stats {
     grid-template-columns: 1fr;
   }
 
-  .highlighted {
+  .stat-item {
+    text-align: left;
+    justify-content: flex-start;
+  }
+
+  .plan-card.highlighted {
     transform: none;
+  }
+
+  .benefit-item,
+  .testimonial-card {
+    padding: clamp(1rem, 2vw, 1.5rem);
   }
 }
 
@@ -324,12 +345,45 @@ h2 {
     font-size: 1.8rem;
   }
 
+  .plan-badge {
+    position: static;
+    margin-bottom: 1rem;
+    display: inline-block;
+  }
+
+  .stat-icon {
+    font-size: clamp(1.2rem, 3vw, 1.5rem);
+  }
+
+  .stat-text {
+    font-size: clamp(0.85rem, 2vw, 1rem);
+  }
+
   .stat-item,
   .plan-card,
   .benefit-item,
   .testimonial-card,
   .faq-item {
     padding: 1.5rem;
+  }
+}
+
+/* Ajustes para pantallas muy pequeñas */
+@media (max-width: 360px) {
+  .vende-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .plan-card,
+  .benefit-item,
+  .testimonial-card,
+  .faq-item {
+    padding: 1rem;
+  }
+
+  .plan-button {
+    padding: 0.7rem;
+    font-size: 0.9rem;
   }
 }
 
