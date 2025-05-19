@@ -5,8 +5,7 @@ export const PERSONA = conexion.define('Persona', {
   id_persona: {
     type: DataTypes.INTEGER,
     primaryKey: true,
-    autoIncrement: true,
-    defaultValue: 0
+    autoIncrement: true
   },
   nombre: {
     type: DataTypes.STRING,
@@ -34,11 +33,18 @@ export const PERSONA = conexion.define('Persona', {
   }
 }, {
   tableName: 'PERSONA',
-  timestamps: false,
-  hooks: {
-    beforeCreate: (persona, options) => {
-      // Asegurarse de que no se envíe un id_persona
-      persona.id_persona = null;
-    }
-  }
+  timestamps: false
 });
+
+// Método para obtener el último ID de persona
+export const getLastPersonaId = async () => {
+  try {
+    const lastPersona = await PERSONA.findOne({
+      order: [['id_persona', 'DESC']]
+    });
+    return lastPersona ? lastPersona.id_persona : null;
+  } catch (error) {
+    console.error('Error al obtener el último ID de persona:', error);
+    return null;
+  }
+};

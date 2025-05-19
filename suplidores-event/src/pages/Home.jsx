@@ -12,6 +12,8 @@ import {
   Flower2,
   UtensilsCrossed,
   Building2,
+  Package,
+  Wrench,
 } from "lucide-react";
 import { useEffect } from "react";
 // Colores definidos
@@ -59,44 +61,76 @@ const proveedoresDestacados = [
   },
 ];
 
-// Actualizar las categorías con los colores definidos
-const categorias = [
-  { 
-    id: 1, 
-    nombre: "Florerías", 
-    icono: <Flower2 size={24} style={{ color: colors.pink }} />, 
-    bgColor: colors.lightPink
+// Datos de servicios destacados
+const serviciosDestacados = [
+  {
+    id: 1,
+    nombre: "Decoración de Eventos",
+    descripcion: "Transformamos espacios en momentos mágicos",
+    icono: <Sparkles size={24} style={{ color: colors.pink }} />,
+    bgColor: colors.lightPink,
+    proveedores: 45
   },
-  { 
-    id: 2, 
-    nombre: "Catering", 
-    icono: <UtensilsCrossed size={24} style={{ color: colors.purple }} />, 
-    bgColor: `${colors.purple}40` // Añadiendo transparencia
+  {
+    id: 2,
+    nombre: "Catering Premium",
+    descripcion: "Experiencias culinarias inolvidables",
+    icono: <UtensilsCrossed size={24} style={{ color: colors.purple }} />,
+    bgColor: `${colors.purple}40`,
+    proveedores: 32
   },
-  { 
-    id: 3, 
-    nombre: "Fotografía", 
-    icono: <Camera size={24} style={{ color: colors.darkTeal }} />, 
-    bgColor: `${colors.sage}40`
+  {
+    id: 3,
+    nombre: "Fotografía Profesional",
+    descripcion: "Capturando momentos especiales",
+    icono: <Camera size={24} style={{ color: colors.darkTeal }} />,
+    bgColor: `${colors.sage}40`,
+    proveedores: 28
   },
-  { 
-    id: 4, 
-    nombre: "Música", 
-    icono: <Music size={24} style={{ color: colors.purple }} />, 
-    bgColor: `${colors.purple}30`
+  {
+    id: 4,
+    nombre: "Música en Vivo",
+    descripcion: "Ambiente perfecto para tu evento",
+    icono: <Music size={24} style={{ color: colors.purple }} />,
+    bgColor: `${colors.purple}30`,
+    proveedores: 36
+  }
+];
+
+// Datos de productos destacados
+const productosDestacados = [
+  {
+    id: 1,
+    nombre: "Mobiliario para Eventos",
+    descripcion: "Sillas, mesas y más para tu evento",
+    icono: <Package size={24} style={{ color: colors.pink }} />,
+    bgColor: colors.lightPink,
+    proveedores: 25
   },
-  { 
-    id: 5, 
-    nombre: "Decoración", 
-    icono: <Sparkles size={24} style={{ color: colors.pink }} />, 
-    bgColor: colors.lightPink
+  {
+    id: 2,
+    nombre: "Equipos de Sonido",
+    descripcion: "Sistemas profesionales de audio",
+    icono: <Music size={24} style={{ color: colors.purple }} />,
+    bgColor: `${colors.purple}40`,
+    proveedores: 18
   },
-  { 
-    id: 6, 
-    nombre: "Salones", 
-    icono: <Building2 size={24} style={{ color: colors.darkTeal }} />, 
-    bgColor: `${colors.sage}40`
+  {
+    id: 3,
+    nombre: "Iluminación",
+    descripcion: "Equipos de iluminación profesional",
+    icono: <Sparkles size={24} style={{ color: colors.darkTeal }} />,
+    bgColor: `${colors.sage}40`,
+    proveedores: 22
   },
+  {
+    id: 4,
+    nombre: "Equipos Técnicos",
+    descripcion: "Todo lo necesario para tu evento",
+    icono: <Wrench size={24} style={{ color: colors.purple }} />,
+    bgColor: `${colors.purple}30`,
+    proveedores: 15
+  }
 ];
 
 // Componente para la tarjeta de proveedor
@@ -211,7 +245,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Categorías Section */}
+        {/* Servicios Section */}
         <section className="py-12 md:py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -219,31 +253,94 @@ export default function Home() {
                 className="text-3xl font-bold mb-4"
                 style={{ color: colors.darkTeal }}
               >
-                Explora por categorías
+                Servicios Destacados
               </h2>
               <p className="text-lg mb-4" style={{ color: colors.darkTeal }}>
-                Encuentra rápidamente los Servicios que necesitas para tu evento.
+                Descubre los mejores servicios para tu evento
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {categorias.map((categoria) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {serviciosDestacados.map((servicio) => (
                 <div
-                  key={categoria.id}
-                  className="flex flex-col items-center p-4 rounded-lg transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105"
-                  style={{ backgroundColor: categoria.bgColor }}
+                  key={servicio.id}
+                  className="flex flex-col p-6 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105"
+                  style={{ backgroundColor: servicio.bgColor }}
                 >
-                  <div
-                    className="w-14 h-14 flex items-center justify-center bg-white rounded-full mb-3 shadow-sm"
-                  >
-                    {categoria.icono}
+                  <div className="w-12 h-12 flex items-center justify-center bg-white rounded-full mb-4 shadow-sm">
+                    {servicio.icono}
                   </div>
                   <h3
-                    className="font-medium"
+                    className="text-xl font-semibold mb-2"
                     style={{ color: colors.darkTeal }}
                   >
-                    {categoria.nombre}
+                    {servicio.nombre}
                   </h3>
+                  <p className="text-gray-600 mb-4 flex-grow">
+                    {servicio.descripcion}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {servicio.proveedores} proveedores
+                    </span>
+                    <button
+                      className="text-sm font-medium flex items-center gap-1"
+                      style={{ color: colors.purple }}
+                    >
+                      Explorar <ChevronRight size={16} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Productos Section */}
+        <section className="py-12 md:py-16" style={{ backgroundColor: `${colors.sage}10` }}>
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2
+                className="text-3xl font-bold mb-4"
+                style={{ color: colors.darkTeal }}
+              >
+                Productos Destacados
+              </h2>
+              <p className="text-lg mb-4" style={{ color: colors.darkTeal }}>
+                Encuentra los productos que necesitas para tu evento
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {productosDestacados.map((producto) => (
+                <div
+                  key={producto.id}
+                  className="flex flex-col p-6 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105 bg-white"
+                >
+                  <div className="w-12 h-12 flex items-center justify-center rounded-full mb-4 shadow-sm"
+                    style={{ backgroundColor: producto.bgColor }}>
+                    {producto.icono}
+                  </div>
+                  <h3
+                    className="text-xl font-semibold mb-2"
+                    style={{ color: colors.darkTeal }}
+                  >
+                    {producto.nombre}
+                  </h3>
+                  <p className="text-gray-600 mb-4 flex-grow">
+                    {producto.descripcion}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-500">
+                      {producto.proveedores} proveedores
+                    </span>
+                    <button
+                      className="text-sm font-medium flex items-center gap-1"
+                      style={{ color: colors.purple }}
+                    >
+                      Explorar <ChevronRight size={16} />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -251,34 +348,43 @@ export default function Home() {
         </section>
 
         {/* Proveedores Destacados */}
-        <section className="py-12 md:py-16">
+        <section className="py-12 md:py-16 bg-white">
           <div className="container mx-auto px-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+            <div className="text-center mb-12">
               <h2
-                className="text-3xl font-bold mb-4 sm:mb-0"
+                className="text-3xl font-bold mb-4"
                 style={{ color: colors.darkTeal }}
               >
                 Proveedores Destacados
               </h2>
-              <a
-                href="#"
-                className="font-medium flex items-center transition-colors"
-                style={{ color: colors.darkTeal }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.color = colors.purple;
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.color = colors.darkTeal;
-                }}
-              >
-                Ver todos <ChevronRight size={16} className="ml-1" />
-              </a>
+              <p className="text-lg mb-4" style={{ color: colors.darkTeal }}>
+                Descubre los mejores proveedores para tu evento
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
               {proveedoresDestacados.map((proveedor) => (
                 <ProveedorCard key={proveedor.id} proveedor={proveedor} colors={colors} />
               ))}
+            </div>
+
+            <div className="text-center mt-8">
+              <a
+                href="#"
+                className="inline-flex items-center px-6 py-3 rounded-full transition-colors"
+                style={{ 
+                  backgroundColor: colors.purple,
+                  color: 'white'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.pink;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.purple;
+                }}
+              >
+                Ver todos los proveedores <ChevronRight size={16} className="ml-2" />
+              </a>
             </div>
           </div>
         </section>
