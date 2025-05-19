@@ -129,10 +129,10 @@ const DatosPersonas = () => {
 
       const result = await insertarPersona();
       if (result.success) {
-        // Navegar a la página de proveedor con los datos actualizados
-        navigate('/registro/evento', { 
+        // Navegar a la página de proveedor con el ID de la persona
+        navigate('/datosproveedor', { 
           state: { 
-            formData: result.updatedFormData
+            id_persona: result.updatedFormData.id_persona
           } 
         });
       }

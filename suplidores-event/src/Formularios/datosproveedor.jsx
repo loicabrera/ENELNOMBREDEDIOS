@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
@@ -17,16 +17,18 @@ const DatosProveedor = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [personaId, setPersonaId] = useState(null);
 
   // Verificar si tenemos el ID de la persona
-  React.useEffect(() => {
-    const personaId = location.state?.formData?.id_persona;
-    if (!personaId) {
+  useEffect(() => {
+    const id = location.state?.id_persona;
+    if (!id) {
       setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
-      // Opcional: redirigir a la página de datos personales
-      // navigate('/registro/persona');
+      navigate('/datospersonas');
+    } else {
+      setPersonaId(id);
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   const [formData, setFormData] = useState({
     nombre_empresa: '',
@@ -86,8 +88,6 @@ const DatosProveedor = () => {
 
   const insertarDatos = async () => {
     try {
-      // Obtener el ID de la persona del estado de navegación
-      const personaId = location.state?.formData?.id_persona;
       if (!personaId) {
         throw new Error('No se encontró el ID de la persona registrada');
       }
@@ -101,7 +101,7 @@ const DatosProveedor = () => {
         },
         body: JSON.stringify({
           ...formData,
-          p_e_r_s_o_n_a_id_persona: personaId
+          id_persona: personaId // Enviamos el id_persona
         }),
       });
 

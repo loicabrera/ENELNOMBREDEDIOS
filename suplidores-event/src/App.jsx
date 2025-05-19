@@ -14,7 +14,7 @@ import DatosPersonas from "./Formularios/datospersonas";
 import DatosProveedor from "./Formularios/datosproveedor";
 
 import Home from "./pages/Home";
-import Login from "./pages/Login";
+import Login from "./inicioSeccion/Login";
 import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
@@ -55,6 +55,9 @@ function App() {
   return (
     <Router>
       <Routes>
+        {/* Rutas sin Navbar - Login debe estar antes de las rutas con Layout */}
+        <Route path="/login" element={<Login />} />
+        
         {/* Rutas con Navbar */}
         <Route
           path="/"
@@ -128,7 +131,6 @@ function App() {
         />
 
         {/* Rutas sin Navbar */}
-        <Route path="/login" element={<Login />} />
         <Route
           path="/registro/:plan"
           element={

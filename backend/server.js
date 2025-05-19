@@ -150,7 +150,8 @@ app.post('/crear_proveedores', async (req, res) => {
       fecha_creacion,
       direccion,
       descripcion,
-      redes_sociales
+      redes_sociales,
+      id_persona
     } = req.body;
 
     // Log de datos recibidos
@@ -163,11 +164,20 @@ app.post('/crear_proveedores', async (req, res) => {
     if (!telefono_empresa) camposFaltantes.push('teléfono de empresa');
     if (!tipo_servicio) camposFaltantes.push('tipo de servicio');
     if (!direccion) camposFaltantes.push('dirección');
+    if (!id_persona) camposFaltantes.push('ID de persona');
 
     if (camposFaltantes.length > 0) {
       console.log('❌ Campos faltantes:', camposFaltantes);
       return res.status(400).json({
         error: `Faltan campos obligatorios: ${camposFaltantes.join(', ')}`
+      });
+    }
+
+    // Verificar si la persona existe
+    const persona = await PERSONA.findByPk(id_persona);
+    if (!persona) {
+      return res.status(400).json({
+        error: 'La persona especificada no existe'
       });
     }
 
@@ -198,7 +208,7 @@ app.post('/crear_proveedores', async (req, res) => {
       });
     }
 
-    // Crear el nuevo proveedor
+    // Crear el nuevo proveedor con el id_persona
     const nuevoProveedor = await Proveedor.create({
       nombre_empresa: nombre_empresa.trim(),
       email_empresa: email_empresa.trim(),
@@ -207,7 +217,8 @@ app.post('/crear_proveedores', async (req, res) => {
       fecha_creacion: fecha_creacion ? new Date(fecha_creacion) : new Date(),
       direccion: direccion.trim(),
       descripcion: descripcion ? descripcion.trim() : null,
-      redes_sociales: redes_sociales ? redes_sociales.trim() : null
+      redes_sociales: redes_sociales ? redes_sociales.trim() : null,
+      p_e_r_s_o_n_a_id_persona: id_persona
     });
 
     console.log('✅ Proveedor creado exitosamente:', nuevoProveedor.toJSON());
