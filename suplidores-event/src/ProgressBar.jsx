@@ -9,7 +9,7 @@ const colors = {
 };
 
 const ProgressBar = ({ currentStep }) => {
-  const steps = ['Datos', 'Proveedor', 'Confirmación'];
+  const steps = ['Datos', 'Proveedor', 'Pago'];
 
   return (
     <div className="flex justify-center items-center my-10 px-4 max-w-3xl mx-auto">

@@ -22,6 +22,8 @@ import Vende from "./pages/Vende";
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
+import PaymentContainer from './components/PaymentContainer';
+import Confirmacion from './components/Confirmacion';
 
 // Nuevo componente Layout más flexible
 function Layout({ children }) {
@@ -151,6 +153,16 @@ function App() {
 <Route 
   path="/dashboardproveedor"
   element={<HomeProveedor />}
+/>
+
+<Route 
+  path="/pago"
+  element={<PaymentContainer />}
+/>
+
+<Route 
+  path="/confirmacion"
+  element={<Confirmacion />}
 />
 
       </Routes>

@@ -121,18 +121,19 @@ const DatosProveedor = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
 
     try {
-      if (!validarFormulario()) {
-        setLoading(false);
-        return;
-      }
-
       const success = await insertarDatos();
       if (success) {
-        navigate('/registro/confirmacion', { state: { formData } });
+        // Redirigir a la página de pago
+        navigate('/pago', { 
+          state: { 
+            amount: 99.99, // Monto del plan
+            planName: 'Plan Destacado'
+          } 
+        });
       }
     } catch (error) {
       console.error('Error en el envío:', error);
