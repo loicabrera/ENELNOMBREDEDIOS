@@ -4,6 +4,7 @@ import cors from 'cors';
 import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
+import stripe from './config/stripe.js';
 import { INICIO_SECCION } from './Models/inicio_seccion.js';
 import { sendCredentialsEmail } from './services/emailService.js';
 import dotenv from 'dotenv';
@@ -215,6 +216,15 @@ app.post('/crear_proveedores', async (req, res) => {
       });
     }
 
+    // Verificar si la persona existe
+    const personaExistente = await PERSONA.findByPk(personaId);
+    if (!personaExistente) {
+      console.log('❌ Persona no encontrada:', personaId);
+      return res.status(400).json({
+        error: 'La persona asociada no existe'
+      });
+    }
+
     // Validación de formato de teléfono (ejemplo: 000-000-0000)
     const telefonoRegex = /^\d{3}-\d{3}-\d{4}$/;
     if (!telefonoRegex.test(telefono_empresa)) {
@@ -239,15 +249,6 @@ app.post('/crear_proveedores', async (req, res) => {
       console.log('❌ Empresa ya registrada:', nombre_empresa);
       return res.status(400).json({
         error: 'Ya existe una empresa registrada con este nombre'
-      });
-    }
-
-    // Verificar si la persona existe
-    const personaExistente = await PERSONA.findByPk(personaId);
-    if (!personaExistente) {
-      console.log('❌ Persona no encontrada:', personaId);
-      return res.status(400).json({
-        error: 'La persona asociada no existe'
       });
     }
 
@@ -280,16 +281,35 @@ app.post('/crear_proveedores', async (req, res) => {
       });
     }
     
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        error: 'Ya existe una empresa con estos datos'
-      });
-    }
-    
-    // Error general del servidor
     res.status(500).json({
       error: 'Error interno del servidor',
       detalles: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Ruta para crear un intent de pago
+app.post('/create-payment-intent', async (req, res) => {
+  try {
+    const { amount, planName } = req.body;
+
+    // Crear un PaymentIntent con Stripe
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount, // El monto ya viene en centavos desde el frontend
+      currency: 'usd',
+      metadata: {
+        planName: planName
+      }
+    });
+
+    // Enviar el client secret al frontend
+    res.json({
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.error('Error al crear el intent de pago:', error);
+    res.status(500).json({
+      error: 'Error al procesar el pago'
     });
   }
 });

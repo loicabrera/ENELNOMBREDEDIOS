@@ -1,189 +1,81 @@
-import { useState } from 'react';
-import { 
-  BellIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
-  InformationCircleIcon,
-  ClockIcon
-} from '@heroicons/react/24/outline';
+import { BellIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline';
 
 const Notifications = () => {
-  const [notifications, setNotifications] = useState([
+  const notifications = [
     {
       id: 1,
       type: 'success',
       title: 'Publicación Aprobada',
-      message: 'Tu publicación "Servicio de Consultoría Empresarial" ha sido aprobada.',
-      date: '2024-03-15 10:30',
+      message: 'Tu publicación "Servicio de Catering para Eventos" ha sido aprobada.',
+      time: 'Hace 2 horas',
       read: false
     },
     {
       id: 2,
-      type: 'warning',
-      title: 'Membresía por Vencer',
-      message: 'Tu membresía Premium vencerá en 7 días. Renueva ahora para mantener tus beneficios.',
-      date: '2024-03-14 15:45',
+      type: 'info',
+      title: 'Nuevo Mensaje',
+      message: 'María González ha enviado un mensaje sobre tu servicio.',
+      time: 'Hace 5 horas',
       read: false
     },
     {
       id: 3,
-      type: 'error',
-      title: 'Publicación Rechazada',
-      message: 'Tu publicación "Asesoría Financiera" ha sido rechazada. Revisa los comentarios del administrador.',
-      date: '2024-03-13 09:15',
-      read: true
-    },
-    {
-      id: 4,
-      type: 'info',
-      title: 'Nueva Solicitud',
-      message: 'Has recibido una nueva solicitud de contacto de Juan Pérez.',
-      date: '2024-03-12 14:20',
+      type: 'warning',
+      title: 'Membresía por Vencer',
+      message: 'Tu membresía Premium vencerá en 15 días.',
+      time: 'Hace 1 día',
       read: true
     }
-  ]);
+  ];
 
   const getNotificationIcon = (type) => {
-    const icons = {
-      success: CheckCircleIcon,
-      warning: ExclamationTriangleIcon,
-      error: XCircleIcon,
-      info: InformationCircleIcon
-    };
-
-    const colors = {
-      success: 'text-green-500',
-      warning: 'text-yellow-500',
-      error: 'text-red-500',
-      info: 'text-blue-500'
-    };
-
-    const Icon = icons[type];
-    return <Icon className={`h-6 w-6 ${colors[type]}`} />;
+    switch (type) {
+      case 'success':
+        return <CheckCircleIcon className="w-6 h-6 text-green-500" />;
+      case 'error':
+        return <XCircleIcon className="w-6 h-6 text-red-500" />;
+      default:
+        return <BellIcon className="w-6 h-6 text-blue-500" />;
+    }
   };
-
-  const getNotificationColor = (type) => {
-    const colors = {
-      success: 'bg-green-50 border-green-200',
-      warning: 'bg-yellow-50 border-yellow-200',
-      error: 'bg-red-50 border-red-200',
-      info: 'bg-blue-50 border-blue-200'
-    };
-
-    return colors[type];
-  };
-
-  const markAsRead = (id) => {
-    setNotifications(notifications.map(notification =>
-      notification.id === id ? { ...notification, read: true } : notification
-    ));
-  };
-
-  const markAllAsRead = () => {
-    setNotifications(notifications.map(notification => ({
-      ...notification,
-      read: true
-    })));
-  };
-
-  const deleteNotification = (id) => {
-    setNotifications(notifications.filter(notification => notification.id !== id));
-  };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold text-gray-800">Notificaciones</h1>
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllAsRead}
-            className="text-sm text-blue-600 hover:text-blue-800"
-          >
-            Marcar todas como leídas
-          </button>
-        )}
-      </div>
-
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        <div className="divide-y divide-gray-200">
-          {notifications.length > 0 ? (
-            notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-4 ${getNotificationColor(notification.type)} ${
-                  !notification.read ? 'border-l-4' : ''
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="ml-3 flex-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">
-                          {notification.title}
-                        </p>
-                        <p className="mt-1 text-sm text-gray-600">
-                          {notification.message}
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">
-                          {new Date(notification.date).toLocaleString()}
-                        </span>
-                        {!notification.read && (
-                          <button
-                            onClick={() => markAsRead(notification.id)}
-                            className="text-blue-600 hover:text-blue-800"
-                            title="Marcar como leída"
-                          >
-                            <CheckCircleIcon className="h-5 w-5" />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => deleteNotification(notification.id)}
-                          className="text-gray-400 hover:text-gray-600"
-                          title="Eliminar notificación"
-                        >
-                          <XCircleIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              No hay notificaciones
-            </div>
-          )}
+        <div>
+          <h2 className="text-2xl font-bold">Notificaciones</h2>
+          <p className="text-gray-600">Mantente al día con las actualizaciones</p>
         </div>
+        <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900">
+          Marcar todas como leídas
+        </button>
       </div>
 
-      {/* Membership Expiration Warning */}
-      {notifications.some(n => n.type === 'warning' && !n.read) && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-400" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-yellow-700">
-                Tu membresía está por vencer. 
-                <a href="#" className="font-medium underline text-yellow-700 hover:text-yellow-600 ml-1">
-                  Renueva ahora
-                </a>
-                para mantener tus beneficios.
-              </p>
+      <div className="space-y-4">
+        {notifications.map((notification) => (
+          <div
+            key={notification.id}
+            className={`bg-white rounded-lg shadow-sm p-4 ${
+              !notification.read ? 'border-l-4 border-blue-500' : ''
+            }`}
+          >
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                {getNotificationIcon(notification.type)}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-gray-900">
+                    {notification.title}
+                  </h3>
+                  <span className="text-xs text-gray-500">{notification.time}</span>
+                </div>
+                <p className="mt-1 text-sm text-gray-600">{notification.message}</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 };

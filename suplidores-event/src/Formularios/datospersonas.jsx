@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
 // Paleta de colores pastel
@@ -12,8 +12,45 @@ const colors = {
   error: '#ff6b6b',
 };
 
+// Información de los planes
+const planInfo = {
+  basico: {
+    titulo: "Plan Básico",
+    descripcion: "Ideal para comenzar a promocionar tus servicios",
+    beneficios: [
+      "3 publicaciones de servicios",
+      "3 publicaciones de productos",
+      "Hasta 8 fotos por publicación",
+      "Duración de 30 días"
+    ]
+  },
+  destacado: {
+    titulo: "Plan Destacado",
+    descripcion: "Obtén mayor visibilidad para tus servicios",
+    beneficios: [
+      "6 publicaciones de servicios",
+      "7 publicaciones de productos",
+      "Hasta 15 fotos por publicación",
+      "Posición destacada por 7 días",
+      "Duración de 60 días"
+    ]
+  },
+  premium: {
+    titulo: "Plan Premium",
+    descripcion: "Máxima visibilidad para tu negocio",
+    beneficios: [
+      "Publicaciones ilimitadas",
+      "Hasta 25 fotos por publicación",
+      "Aparición en portada por 15 días",
+      "Posición premium en búsquedas",
+      "Badge verificado",
+      "Duración de 90 días"
+    ]
+  }
+};
+
 const DatosPersonas = () => {
-  const { plan } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -25,8 +62,10 @@ const DatosPersonas = () => {
     telefono: '',
     direccion: '',
     email: '',
-    planSeleccionado: plan || 'destacado'
+    planSeleccionado: location.state?.plan || 'basico'
   });
+
+  const planActual = planInfo[formData.planSeleccionado] || planInfo.basico;
 
   // Función para validar el formato de la cédula (000-0000000-0)
   const validarCedula = (cedula) => {
@@ -118,21 +157,18 @@ const DatosPersonas = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
 
     try {
-      if (!validarFormulario()) {
-        setLoading(false);
-        return;
-      }
-
       const result = await insertarPersona();
       if (result.success) {
-        // Navegar a la página de proveedor con los datos actualizados
-        navigate('/registro/evento', { 
+        // Navegar a la página de proveedor con el ID de la persona y el plan
+        navigate('/datosproveedor', { 
           state: { 
-            formData: result.updatedFormData
+            id_persona: result.updatedFormData.id_persona,
+            plan: formData.planSeleccionado,
+            amount: location.state?.amount
           } 
         });
       }
@@ -143,22 +179,6 @@ const DatosPersonas = () => {
       setLoading(false);
     }
   };
-
-  // Información de los planes
-  const planInfo = {
-    destacado: {
-      titulo: "Plan Destacado",
-      descripcion: "Obtenga mayor visibilidad para sus servicios y productos",
-      beneficios: [
-        "Publicaciones destacadas en las búsquedas",
-        "Mayor número de productos/servicios para publicar",
-        "Acceso a estadísticas de visualización",
-        "Prioridad en los resultados de búsqueda"
-      ]
-    }
-  };
-
-  const planActual = planInfo[formData.planSeleccionado] || planInfo.destacado;
 
   return (
     <div className="min-h-screen bg-white">
