@@ -1,7 +1,6 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
 import DashboardLayout from './dashboardProveedor/DashboardLayout';
-import Home from './dashboardProveedor/Homeprov';
 import Profile from './dashboardProveedor/Profile';
 import Publications from './dashboardProveedor/Publications';
 import ContactRequests from './dashboardProveedor/ContactRequests';
@@ -25,6 +24,7 @@ import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
+import Home from "./pages/Home";
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
@@ -94,7 +94,6 @@ function App() {
               <Perfil />
             </Layout>
           }
-          
         />
         <Route
           path="/datospersonas"
@@ -132,8 +131,9 @@ function App() {
           }
         />
 
+        {/* Rutas del Dashboard del Proveedor */}
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Home />} />
+          <Route index element={<HomeProveedor />} />
           <Route path="perfil" element={<Profile />} />
           <Route path="publicaciones" element={<Publications />} />
           <Route path="solicitudes" element={<ContactRequests />} />
@@ -142,11 +142,11 @@ function App() {
           <Route path="notificaciones" element={<Notifications />} />
         </Route>
 
+        {/* Ruta alternativa para el dashboard del proveedor */}
         <Route 
           path="/dashboardproveedor"
           element={<HomeProveedor />}
         />
-
       </Routes>
     </Router>
   );
