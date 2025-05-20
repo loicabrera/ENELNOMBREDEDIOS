@@ -1,7 +1,11 @@
 import Stripe from 'stripe';
+import dotenv from 'dotenv';
 
-// Inicializar Stripe con tu clave secreta
-const stripe = new Stripe('sk_test_51RPQBGH99ZRyC1yofIHLx7g4x9qQV9fPoRNC8bAlxM2kIrUSKvDO5lcuHPINVUQ1PrknbXMbgcZ1CB6aWjYunOIC00PhriOz2t', {
+// Cargar variables de entorno
+dotenv.config();
+
+// Inicializar Stripe con tu clave secreta desde variables de entorno
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: '2023-10-16', // Usa la versión más reciente de la API
 });
 
