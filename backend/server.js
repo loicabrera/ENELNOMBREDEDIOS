@@ -179,9 +179,9 @@ app.post('/crear_proveedores', async (req, res) => {
     }
 
     // Verificar si la persona existe
-    const personaExistente = await PERSONA.findByPk(p_e_r_s_o_n_a_id_persona);
+    const personaExistente = await PERSONA.findByPk(personaId);
     if (!personaExistente) {
-      console.log('❌ Persona no encontrada:', p_e_r_s_o_n_a_id_persona);
+      console.log('❌ Persona no encontrada:', personaId);
       return res.status(400).json({
         error: 'La persona asociada no existe'
       });
@@ -214,15 +214,6 @@ app.post('/crear_proveedores', async (req, res) => {
       });
     }
 
-    // Verificar si la persona existe
-    const personaExistente = await PERSONA.findByPk(personaId);
-    if (!personaExistente) {
-      console.log('❌ Persona no encontrada:', personaId);
-      return res.status(400).json({
-        error: 'La persona asociada no existe'
-      });
-    }
-
     // Crear el nuevo proveedor
     const nuevoProveedor = await Proveedor.create({
       nombre_empresa: nombre_empresa.trim(),
@@ -252,13 +243,6 @@ app.post('/crear_proveedores', async (req, res) => {
       });
     }
     
-    if (error.name === 'SequelizeUniqueConstraintError') {
-      return res.status(400).json({
-        error: 'Ya existe una empresa con estos datos'
-      });
-    }
-    
-    // Error general del servidor
     res.status(500).json({
       error: 'Error interno del servidor',
       detalles: process.env.NODE_ENV === 'development' ? error.message : undefined

@@ -12,7 +12,6 @@ import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
 import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 
 import "./App.css";
-
 import "./Formularios/datos.css";
 import "./home.css";
 import "./index.css";
@@ -22,14 +21,12 @@ import "./vende.css";
 import DatosPersonas from "./Formularios/datospersonas";
 import DatosProveedor from "./Formularios/datosproveedor";
 
-import Login from "./pages/Login";
-import Home from "./pages/Home";
 import Login from "./inicioSeccion/Login";
+import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
-import Home from "./pages/Home";
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
