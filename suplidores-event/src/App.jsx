@@ -14,7 +14,7 @@ import DatosPersonas from "./Formularios/datospersonas";
 import DatosProveedor from "./Formularios/datosproveedor";
 
 import Home from "./pages/Home";
-import Login from "./pages/Login";
+import Login from "./inicioSeccion/Login";
 import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
@@ -128,6 +128,24 @@ function App() {
           element={
             <Layout>
               <DatosProveedor />
+            </Layout>
+          }
+        />
+
+        {/* Rutas de pago y confirmación */}
+        <Route
+          path="/pago"
+          element={
+            <Layout>
+              <PaymentContainer />
+            </Layout>
+          }
+        />
+        <Route
+          path="/confirmacion"
+          element={
+            <Layout>
+              <Confirmacion />
             </Layout>
           }
         />

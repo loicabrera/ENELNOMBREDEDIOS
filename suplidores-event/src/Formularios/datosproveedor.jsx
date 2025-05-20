@@ -19,14 +19,37 @@ const DatosProveedor = () => {
   const [loading, setLoading] = useState(false);
   const [personaId, setPersonaId] = useState(null);
 
-  // Verificar si tenemos el ID de la persona
+  // Definir los planes y sus montos
+  const planes = {
+    basico: {
+      nombre: 'Plan Básico',
+      monto: 2000
+    },
+    destacado: {
+      nombre: 'Plan Destacado',
+      monto: 4000
+    },
+    premium: {
+      nombre: 'Plan Premium',
+      monto: 8000
+    }
+  };
+
+  // Verificar si tenemos el ID de la persona y el plan seleccionado
   useEffect(() => {
     const id = location.state?.id_persona;
+    const plan = location.state?.plan;
+    
     if (!id) {
       setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
       navigate('/datospersonas');
     } else {
       setPersonaId(id);
+    }
+
+    if (!plan || !planes[plan]) {
+      setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
+      navigate('/');
     }
   }, [location.state, navigate]);
 
@@ -104,7 +127,7 @@ const DatosProveedor = () => {
         },
         body: JSON.stringify({
           ...formData,
-          id_persona: personaId // Enviamos el id_persona
+          p_e_r_s_o_n_a_id_persona: personaId
         }),
       });
 
@@ -130,11 +153,14 @@ const DatosProveedor = () => {
     try {
       const success = await insertarDatos();
       if (success) {
-        // Redirigir a la página de pago
+        const plan = location.state?.plan;
+        const planInfo = planes[plan];
+        
+        // Redirigir a la página de pago con el monto correcto
         navigate('/pago', { 
           state: { 
-            amount: 99.99, // Monto del plan
-            planName: 'Plan Destacado'
+            amount: planInfo.monto,
+            planName: planInfo.nombre
           } 
         });
       }
@@ -162,7 +188,7 @@ const DatosProveedor = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Contenedor principal */}
       <div className="max-w-5xl mx-auto">
-        <ProgressBar currentStep={1} />
+        <ProgressBar currentStep={2} />
         
         {/* Contenido principal */}
         <div className="px-4 md:px-6 pb-12">

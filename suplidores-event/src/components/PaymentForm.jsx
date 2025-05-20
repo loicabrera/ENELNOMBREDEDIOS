@@ -20,9 +20,25 @@ const PaymentForm = ({ amount, planName }) => {
     }
 
     try {
-      const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
-        type: 'card',
-        card: elements.getElement(CardElement),
+      // Crear el PaymentIntent en el backend
+      const response = await fetch('http://localhost:3000/create-payment-intent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: Math.round(amount * 100), // Convertir a centavos
+          planName,
+        }),
+      });
+
+      const { clientSecret } = await response.json();
+
+      // Confirmar el pago con Stripe
+      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+        },
       });
 
       if (stripeError) {
@@ -30,22 +46,7 @@ const PaymentForm = ({ amount, planName }) => {
         return;
       }
 
-      // Aquí puedes enviar el paymentMethod.id a tu backend
-      const response = await fetch('http://localhost:3000/pago', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          paymentMethodId: paymentMethod.id,
-          amount,
-          planName,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
+      if (paymentIntent.status === 'succeeded') {
         navigate('/confirmacion', { 
           state: { 
             success: true,
@@ -53,11 +54,10 @@ const PaymentForm = ({ amount, planName }) => {
             amount
           }
         });
-      } else {
-        setError(result.error || 'Error al procesar el pago');
       }
     } catch (err) {
-      setError('Error al procesar el pago');
+      console.error('Error:', err);
+      setError('Error al procesar el pago. Por favor, intente nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ const PaymentForm = ({ amount, planName }) => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto">
-        <ProgressBar currentStep={2} />
+        <ProgressBar currentStep={3} />
         
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto mt-8">
           <h2 className="text-2xl font-bold mb-6 text-center">Pago del Plan {planName}</h2>
