@@ -3,9 +3,9 @@ import HomeProveedor from "./dashboardProveedor/homeproveedor";
 import DashboardLayout from './dashboardProveedor/DashboardLayout';
 import Profile from './dashboardProveedor/Profile';
 import Publications from './dashboardProveedor/Publications';
-import ContactRequests from './dashboardProveedor/ContactRequests';
+import ContactRequests from './dashboardProveedor/Requests';
 import Membership from './dashboardProveedor/Membership';
-import Statistics from './dashboardProveedor/Statistics';
+import Stats from './dashboardProveedor/Stats';
 import Notifications from './dashboardProveedor/Notifications';
 
 import "./App.css";
@@ -138,7 +138,7 @@ function App() {
           <Route path="publicaciones" element={<Publications />} />
           <Route path="solicitudes" element={<ContactRequests />} />
           <Route path="membresia" element={<Membership />} />
-          <Route path="estadisticas" element={<Statistics />} />
+          <Route path="stats" element={<Stats />} />
           <Route path="notificaciones" element={<Notifications />} />
         </Route>
 
