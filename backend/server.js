@@ -5,6 +5,10 @@ import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 import { INICIO_SECCION } from './Models/inicio_seccion.js';
+import { sendCredentialsEmail } from './services/emailService.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -122,6 +126,15 @@ app.post('/crear_persona', async (req, res) => {
       password,
       PERSONA_id_persona: nuevaPersona.id_persona
     });
+
+    // Enviar credenciales por email
+    try {
+      await sendCredentialsEmail(email, user_name, password);
+      console.log('✅ Email de credenciales enviado exitosamente');
+    } catch (emailError) {
+      console.error('❌ Error al enviar email de credenciales:', emailError);
+      // No fallamos la creación si el email falla, solo lo registramos
+    }
 
     console.log('✅ Persona creada exitosamente:', nuevaPersona.toJSON());
     res.status(201).json({
