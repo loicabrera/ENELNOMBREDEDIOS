@@ -1,6 +1,8 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
-
+import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
+import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
+import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 
 import "./App.css";
 
