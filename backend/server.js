@@ -4,6 +4,7 @@ import cors from 'cors';
 import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
+import stripe from './config/stripe.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -177,6 +178,15 @@ app.post('/crear_proveedores', async (req, res) => {
       });
     }
 
+    // Verificar si la persona existe
+    const personaExistente = await PERSONA.findByPk(p_e_r_s_o_n_a_id_persona);
+    if (!personaExistente) {
+      console.log('❌ Persona no encontrada:', p_e_r_s_o_n_a_id_persona);
+      return res.status(400).json({
+        error: 'La persona asociada no existe'
+      });
+    }
+
     // Validación de formato de teléfono (ejemplo: 000-000-0000)
     const telefonoRegex = /^\d{3}-\d{3}-\d{4}$/;
     if (!telefonoRegex.test(telefono_empresa)) {
@@ -252,6 +262,32 @@ app.post('/crear_proveedores', async (req, res) => {
     res.status(500).json({
       error: 'Error interno del servidor',
       detalles: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Ruta para crear un intent de pago
+app.post('/create-payment-intent', async (req, res) => {
+  try {
+    const { amount, planName } = req.body;
+
+    // Crear un PaymentIntent con Stripe
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: amount, // El monto ya viene en centavos desde el frontend
+      currency: 'usd',
+      metadata: {
+        planName: planName
+      }
+    });
+
+    // Enviar el client secret al frontend
+    res.json({
+      clientSecret: paymentIntent.client_secret
+    });
+  } catch (error) {
+    console.error('Error al crear el intent de pago:', error);
+    res.status(500).json({
+      error: 'Error al procesar el pago'
     });
   }
 });

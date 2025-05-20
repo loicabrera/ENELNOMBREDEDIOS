@@ -78,7 +78,7 @@ button:focus-visible {
   }
 
   body {
-    @apply text-gray-800;
+    @apply text-gray-800 m-0 p-0;
     font-family: 'Outfit', system-ui, sans-serif;
   }
 

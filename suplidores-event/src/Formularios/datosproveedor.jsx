@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
@@ -17,16 +17,41 @@ const DatosProveedor = () => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [personaId, setPersonaId] = useState(null);
 
-  // Verificar si tenemos el ID de la persona
-  React.useEffect(() => {
-    const personaId = location.state?.formData?.id_persona;
-    if (!personaId) {
-      setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
-      // Opcional: redirigir a la página de datos personales
-      // navigate('/registro/persona');
+  // Definir los planes y sus montos
+  const planes = {
+    basico: {
+      nombre: 'Plan Básico',
+      monto: 2000
+    },
+    destacado: {
+      nombre: 'Plan Destacado',
+      monto: 4000
+    },
+    premium: {
+      nombre: 'Plan Premium',
+      monto: 8000
     }
-  }, [location.state]);
+  };
+
+  // Verificar si tenemos el ID de la persona y el plan seleccionado
+  useEffect(() => {
+    const id = location.state?.id_persona;
+    const plan = location.state?.plan;
+    
+    if (!id) {
+      setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
+      navigate('/datospersonas');
+    } else {
+      setPersonaId(id);
+    }
+
+    if (!plan || !planes[plan]) {
+      setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
+      navigate('/');
+    }
+  }, [location.state, navigate]);
 
   const [formData, setFormData] = useState({
     nombre_empresa: '',
@@ -86,8 +111,6 @@ const DatosProveedor = () => {
 
   const insertarDatos = async () => {
     try {
-      // Obtener el ID de la persona del estado de navegación
-      const personaId = location.state?.formData?.id_persona;
       if (!personaId) {
         throw new Error('No se encontró el ID de la persona registrada');
       }
@@ -124,18 +147,22 @@ const DatosProveedor = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
     setLoading(true);
+    setError(null);
 
     try {
-      if (!validarFormulario()) {
-        setLoading(false);
-        return;
-      }
-
       const success = await insertarDatos();
       if (success) {
-        navigate('/registro/confirmacion', { state: { formData } });
+        const plan = location.state?.plan;
+        const planInfo = planes[plan];
+        
+        // Redirigir a la página de pago con el monto correcto
+        navigate('/pago', { 
+          state: { 
+            amount: planInfo.monto,
+            planName: planInfo.nombre
+          } 
+        });
       }
     } catch (error) {
       console.error('Error en el envío:', error);
@@ -161,7 +188,7 @@ const DatosProveedor = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Contenedor principal */}
       <div className="max-w-5xl mx-auto">
-        <ProgressBar currentStep={1} />
+        <ProgressBar currentStep={2} />
         
         {/* Contenido principal */}
         <div className="px-4 md:px-6 pb-12">

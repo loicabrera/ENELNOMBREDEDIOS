@@ -75,14 +75,14 @@ const Vende = () => {
                 Con este plan puedes publicar hasta 3 servicios con descripción
                 detallada y 3 productos con una duración de 30 días:
               </p>
-              <p className="plan-price">RD$2000</p>
+              <p className="plan-price">RD$2,000</p>
               <ul className="plan-features">
                 <li>3 publicaciones de servicios</li>
                 <li>3 publicaciones de productos</li>
                 <li>Hasta 8 fotos por servicio y productos</li>
               </ul>
             </div>
-            <Link to="/registro/basico" className="plan-button">
+            <Link to="/registro/basico" className="plan-button" state={{ plan: 'basico', amount: 2000 }}>
               Elegir »
             </Link>
           </div>
@@ -95,7 +95,7 @@ const Vende = () => {
                 Anuncio con hasta 6 servicios, con descripción detallada y 7
                 productos con una duración de 60 días:
               </p>
-              <p className="plan-price">RD$4000</p>
+              <p className="plan-price">RD$4,000</p>
               <ul className="plan-features">
                 <li>6 publicaciones de servicios</li>
                 <li>7 publicaciones de productos</li>
@@ -104,7 +104,7 @@ const Vende = () => {
                 <li>25% más de visibilidad que el plan básico</li>
               </ul>
             </div>
-            <Link to="/registro/destacado" className="plan-button">
+            <Link to="/registro/destacado" className="plan-button" state={{ plan: 'destacado', amount: 4000 }}>
               Elegir »
             </Link>
           </div>
@@ -116,7 +116,7 @@ const Vende = () => {
                 Máxima visibilidad para tu negocio, incluye portada en página
                 principal, destacado permanente por 90 días:
               </p>
-              <p className="plan-price">RD$8000</p>
+              <p className="plan-price">RD$8,000</p>
               <ul className="plan-features">
                 <li>Publicaciones ilimitadas de servicios y productos</li>
                 <li>Hasta 25 fotos por servicio y productos</li>
@@ -126,7 +126,7 @@ const Vende = () => {
                 <li>Estadísticas avanzadas de visitas y contactos</li>
               </ul>
             </div>
-            <Link to="/registro/premium" className="plan-button">
+            <Link to="/registro/premium" className="plan-button" state={{ plan: 'premium', amount: 8000 }}>
               Elegir »
             </Link>
           </div>

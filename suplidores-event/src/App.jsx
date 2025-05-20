@@ -7,6 +7,9 @@ import ContactRequests from './dashboardProveedor/Requests';
 import Membership from './dashboardProveedor/Membership';
 import Stats from './dashboardProveedor/Stats';
 import Notifications from './dashboardProveedor/Notifications';
+import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
+import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
+import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 
 import "./App.css";
 
@@ -20,6 +23,8 @@ import DatosPersonas from "./Formularios/datospersonas";
 import DatosProveedor from "./Formularios/datosproveedor";
 
 import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Login from "./inicioSeccion/Login";
 import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
@@ -28,6 +33,8 @@ import Home from "./pages/Home";
 
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
+import PaymentContainer from './components/PaymentContainer';
+import Confirmacion from './components/Confirmacion';
 
 // Nuevo componente Layout más flexible
 function Layout({ children }) {
@@ -42,10 +49,28 @@ function Layout({ children }) {
   );
 }
 
+function AdminLayout() {
+  return (
+    <div className="flex">
+      <SidebarAdmin />
+      <div className="flex-1">
+        <Routes>
+          <Route path="/" element={<AdminHomeDashboard />} />
+          <Route path="proveedores" element={<AdminProveedor />} />
+          {/* Aquí puedes agregar más rutas internas del admin */}
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Rutas sin Navbar - Login debe estar antes de las rutas con Layout */}
+        <Route path="/login" element={<Login />} />
+        
         {/* Rutas con Navbar */}
         <Route
           path="/"
@@ -63,6 +88,11 @@ function App() {
             </Layout>
           }
         />
+        <Route
+          path="/dashboardadmin/*"
+          element={<AdminLayout />}
+        />
+
         <Route
           path="/servicios"
           element={
@@ -112,8 +142,25 @@ function App() {
           }
         />
 
+        {/* Rutas de pago y confirmación */}
+        <Route
+          path="/pago"
+          element={
+            <Layout>
+              <PaymentContainer />
+            </Layout>
+          }
+        />
+        <Route
+          path="/confirmacion"
+          element={
+            <Layout>
+              <Confirmacion />
+            </Layout>
+          }
+        />
+
         {/* Rutas sin Navbar */}
-        <Route path="/login" element={<Login />} />
         <Route
           path="/registro/:plan"
           element={
