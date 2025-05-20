@@ -1,120 +1,107 @@
 import { 
-  DocumentTextIcon, 
+  NewspaperIcon, 
   CalendarIcon, 
   ChatBubbleLeftRightIcon, 
   CheckCircleIcon 
 } from '@heroicons/react/24/outline';
 
-const Homeprov = () => {
-  // Mock data - replace with actual data from your backend
-  const profileData = {
-    name: "Servicios Profesionales XYZ",
-    serviceType: "Servicios de Consultoría",
-    plan: "Premium",
-    status: "Activo",
-    activePosts: 5,
-    membershipExpiry: "2024-12-31",
-    unreadMessages: 3,
-    lastPostStatus: "Aprobado"
-  };
-
-  const keyIndicators = [
-    {
-      title: "Publicaciones Activas",
-      value: profileData.activePosts,
-      icon: DocumentTextIcon,
-      color: "bg-blue-500"
-    },
-    {
-      title: "Vencimiento Membresía",
-      value: new Date(profileData.membershipExpiry).toLocaleDateString(),
-      icon: CalendarIcon,
-      color: "bg-green-500"
-    },
-    {
-      title: "Mensajes Nuevos",
-      value: profileData.unreadMessages,
-      icon: ChatBubbleLeftRightIcon,
-      color: "bg-purple-500"
-    },
-    {
-      title: "Última Publicación",
-      value: profileData.lastPostStatus,
-      icon: CheckCircleIcon,
-      color: "bg-yellow-500"
-    }
-  ];
-
+const HomeProveedor = () => {
   return (
     <div className="space-y-6">
-      {/* Profile Summary Card */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* Profile Summary */}
+      <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center space-x-4">
-          <img
-            src="https://via.placeholder.com/100"
-            alt="Logo"
-            className="h-20 w-20 rounded-lg object-cover"
-          />
+          <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+            <span className="text-2xl font-bold text-blue-600">JD</span>
+          </div>
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">{profileData.name}</h2>
-            <p className="text-gray-600">{profileData.serviceType}</p>
-            <div className="mt-2 flex items-center space-x-4">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                Plan {profileData.plan}
-              </span>
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                {profileData.status}
-              </span>
-            </div>
+            <h2 className="text-xl font-semibold">Juan Doe</h2>
+            <p className="text-gray-600">Servicios de Catering</p>
+            <span className="inline-block px-3 py-1 mt-2 text-sm font-medium text-green-600 bg-green-50 rounded-full">
+              Plan Premium
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Key Indicators Grid */}
+      {/* Key Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {keyIndicators.map((indicator, index) => (
-          <div key={index} className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">{indicator.title}</p>
-                <p className="text-2xl font-semibold text-gray-800 mt-1">
-                  {indicator.value}
-                </p>
-              </div>
-              <div className={`p-3 rounded-full ${indicator.color}`}>
-                <indicator.icon className="h-6 w-6 text-white" />
-              </div>
+        {/* Active Publications */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Publicaciones Activas</p>
+              <h3 className="text-2xl font-bold mt-1">12</h3>
+            </div>
+            <div className="p-3 bg-blue-50 rounded-full">
+              <NewspaperIcon className="w-6 h-6 text-blue-600" />
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Membership Expiration */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Vence en</p>
+              <h3 className="text-2xl font-bold mt-1">15 días</h3>
+            </div>
+            <div className="p-3 bg-yellow-50 rounded-full">
+              <CalendarIcon className="w-6 h-6 text-yellow-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Messages */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Mensajes Nuevos</p>
+              <h3 className="text-2xl font-bold mt-1">5</h3>
+            </div>
+            <div className="p-3 bg-green-50 rounded-full">
+              <ChatBubbleLeftRightIcon className="w-6 h-6 text-green-600" />
+            </div>
+          </div>
+        </div>
+
+        {/* Publication Status */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Aprobadas Recientes</p>
+              <h3 className="text-2xl font-bold mt-1">3</h3>
+            </div>
+            <div className="p-3 bg-purple-50 rounded-full">
+              <CheckCircleIcon className="w-6 h-6 text-purple-600" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-800">Actividad Reciente</h3>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            {/* Mock activity items - replace with actual data */}
-            <div className="flex items-center space-x-4">
-              <div className="p-2 bg-green-100 rounded-full">
-                <CheckCircleIcon className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-800">Nueva publicación aprobada</p>
-                <p className="text-xs text-gray-500">Hace 2 horas</p>
-              </div>
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h3 className="text-lg font-semibold mb-4">Actividad Reciente</h3>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+            <div className="p-2 bg-blue-50 rounded-full">
+              <NewspaperIcon className="w-5 h-5 text-blue-600" />
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="p-2 bg-blue-100 rounded-full">
-                <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-800">Nueva solicitud de contacto</p>
-                <p className="text-xs text-gray-500">Hace 5 horas</p>
-              </div>
+            <div>
+              <p className="font-medium">Nueva publicación aprobada</p>
+              <p className="text-sm text-gray-600">"Servicio de Catering para Eventos"</p>
             </div>
+            <span className="text-sm text-gray-500 ml-auto">Hace 2 horas</span>
+          </div>
+          <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
+            <div className="p-2 bg-green-50 rounded-full">
+              <ChatBubbleLeftRightIcon className="w-5 h-5 text-green-600" />
+            </div>
+            <div>
+              <p className="font-medium">Nuevo mensaje recibido</p>
+              <p className="text-sm text-gray-600">De: María González</p>
+            </div>
+            <span className="text-sm text-gray-500 ml-auto">Hace 5 horas</span>
           </div>
         </div>
       </div>
@@ -122,4 +109,4 @@ const Homeprov = () => {
   );
 };
 
-export default Homeprov; 
+export default HomeProveedor; 
