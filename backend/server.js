@@ -4,6 +4,7 @@ import cors from 'cors';
 import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
+import { INICIO_SECCION } from './Models/inicio_seccion.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +13,20 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Funciones para generar user_name y password
+function generarUserName(nombre, apellido) {
+  const randomNum = Math.floor(100 + Math.random() * 900);
+  return (nombre[0] + apellido + randomNum).toLowerCase().substring(0, 15);
+}
+function generarPassword() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let pass = '';
+  for (let i = 0; i < 7; i++) {
+    pass += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return pass;
+}
 
 // Rutas básicas
 app.get('/', (req, res) => {
@@ -96,6 +111,16 @@ app.post('/crear_persona', async (req, res) => {
       telefono,
       email: email.trim(),
       cedula
+    });
+
+    // Generar y guardar inicio de sesión
+    const user_name = generarUserName(nombre, apellido);
+    const password = generarPassword();
+    await INICIO_SECCION.create({
+      id_login: 0,
+      user_name,
+      password,
+      PERSONA_id_persona: nuevaPersona.id_persona
     });
 
     console.log('✅ Persona creada exitosamente:', nuevaPersona.toJSON());
