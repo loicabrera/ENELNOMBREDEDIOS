@@ -5,6 +5,7 @@ import conexion, { testConnection } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 import stripe from './config/stripe.js';
+import { Pago } from './Models/Pago.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -273,6 +274,65 @@ app.post('/create-payment-intent', async (req, res) => {
     res.status(500).json({
       error: 'Error al procesar el pago'
     });
+  }
+});
+
+// Ruta para registrar un pago
+app.post('/registrar_pago', async (req, res) => {
+  try {
+    const {
+      monto,
+      fecha_pago,
+      monto_pago,
+      MEMBRESIA_id_membresia,
+      provedor_negocio_id_provedor
+    } = req.body;
+
+    // Validar que los campos requeridos estén presentes
+    if (!monto || !fecha_pago || !monto_pago || !MEMBRESIA_id_membresia || !provedor_negocio_id_provedor) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios' });
+    }
+
+    // Crear el pago
+    const nuevoPago = await Pago.create({
+      monto,
+      fecha_pago,
+      monto_pago,
+      MEMBRESIA_id_membresia,
+      provedor_negocio_id_provedor
+    });
+
+    res.status(201).json({
+      message: 'Pago registrado exitosamente',
+      pago: nuevoPago
+    });
+  } catch (error) {
+    console.error('Error al registrar el pago:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Ruta para obtener todos los pagos con datos de proveedor y persona
+app.get('/pagos', async (req, res) => {
+  try {
+    const pagos = await Pago.findAll({
+      include: [
+        {
+          model: Proveedor,
+          as: 'proveedor',
+          include: [
+            {
+              model: PERSONA,
+              as: 'persona'
+            }
+          ]
+        }
+      ]
+    });
+    res.json(pagos);
+  } catch (error) {
+    console.error('Error al obtener los pagos:', error);
+    res.status(500).json({ error: 'Error al obtener los pagos' });
   }
 });
 

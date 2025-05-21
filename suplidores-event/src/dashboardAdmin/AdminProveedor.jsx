@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
 
 const AdminProveedor = () => {
@@ -27,6 +27,79 @@ const AdminProveedor = () => {
     });
   
     const [tab, setTab] = useState("dashboard");
+    const [proveedores, setProveedores] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [estados, setEstados] = useState({}); // Para activar/inactivar
+
+    // Filtros
+    const [filtroNombre, setFiltroNombre] = useState("");
+    const [filtroEstado, setFiltroEstado] = useState("todos");
+    const [filtroServicio, setFiltroServicio] = useState("todas");
+
+    useEffect(() => {
+      fetch('http://localhost:3000/proveedores')
+        .then(res => res.json())
+        .then(data => {
+          setProveedores(data);
+          // Inicializar todos como activos (simulado)
+          const initialEstados = {};
+          data.forEach(p => { initialEstados[p.id_provedor] = true; });
+          setEstados(initialEstados);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+    }, []);
+
+    // Simular activar/inactivar
+    const toggleEstado = (id) => {
+      setEstados(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    // Calcular estado de membresía (simulado, puedes mejorar con pagos reales)
+    const calcularEstadoMembresia = (proveedor) => {
+      // Aquí podrías usar la fecha del último pago si la tienes
+      return estados[proveedor.id_provedor] ? 'Activo' : 'Inactivo';
+    };
+
+    // Filtrar proveedores según los filtros
+    const proveedoresFiltrados = proveedores.filter((proveedor) => {
+      // Filtro por nombre/email
+      const nombreEmail = `${proveedor.nombre_empresa} ${proveedor.email_empresa}`.toLowerCase();
+      if (filtroNombre && !nombreEmail.includes(filtroNombre.toLowerCase())) return false;
+      // Filtro por estado
+      if (filtroEstado !== "todos") {
+        const estadoActual = estados[proveedor.id_provedor] ? 'activos' : 'inactivos';
+        if (filtroEstado !== estadoActual) return false;
+      }
+      // Filtro por servicio
+      if (filtroServicio !== "todas" && proveedor.tipo_servicio.toLowerCase() !== filtroServicio.toLowerCase()) return false;
+      // Filtro por plan eliminado
+      return true;
+    });
+
+    // Obtener servicios únicos para el filtro
+    const serviciosUnicos = Array.from(new Set(proveedores.map(p => p.tipo_servicio)));
+
+    // Calcular proveedores con membresía por vencer o vencida
+    const diasMembresia = 30;
+    const diasGracia = 7;
+    const hoy = new Date();
+    const proveedoresPorVencer = proveedores.filter((proveedor) => {
+      // Simulación: usar fecha de creación como fecha de inicio de membresía
+      if (!proveedor.fecha_creacion) return false;
+      const fechaInicio = new Date(proveedor.fecha_creacion);
+      const finMembresia = new Date(fechaInicio);
+      finMembresia.setDate(fechaInicio.getDate() + diasMembresia);
+      const diasRestantes = Math.ceil((finMembresia - hoy) / (1000 * 60 * 60 * 24));
+      return diasRestantes > 0 && diasRestantes <= 7;
+    });
+    const proveedoresVencidos = proveedores.filter((proveedor) => {
+      if (!proveedor.fecha_creacion) return false;
+      const fechaInicio = new Date(proveedor.fecha_creacion);
+      const finMembresia = new Date(fechaInicio);
+      finMembresia.setDate(fechaInicio.getDate() + diasMembresia + diasGracia);
+      return hoy > finMembresia;
+    });
 
     return (
       <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-6 pl-64 ml-4 border-l border-gray-200 shadow-lg">
@@ -56,7 +129,7 @@ const AdminProveedor = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full mb-8">
               <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
                 <div className="text-gray-500 text-sm mb-1">Total Proveedores</div>
-                <div className="text-3xl font-semibold">150</div>
+                <div className="text-3xl font-semibold">{proveedores.length}</div>
               </div>
               <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
                 <div className="text-gray-500 text-sm mb-1">Publicaciones Aprobadas</div>
@@ -64,7 +137,7 @@ const AdminProveedor = () => {
               </div>
               <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
                 <div className="text-gray-500 text-sm mb-1">Membresías Activas</div>
-                <div className="text-3xl font-semibold">120</div>
+                <div className="text-3xl font-semibold">{Object.values(estados).filter(e => e).length}</div>
               </div>
               <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
                 <div className="text-gray-500 text-sm mb-1">Solicitudes Recibidas Hoy</div>
@@ -126,11 +199,20 @@ const AdminProveedor = () => {
             <div className="flex flex-wrap gap-4 mb-6 w-full">
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium text-gray-700">Buscar</label>
-                <input placeholder="Nombre o email" className="max-w-sm px-3 py-2 border rounded-md" />
+                <input
+                  placeholder="Nombre o email"
+                  className="max-w-sm px-3 py-2 border rounded-md"
+                  value={filtroNombre}
+                  onChange={e => setFiltroNombre(e.target.value)}
+                />
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium text-gray-700">Estado</label>
-                <select className="px-3 py-2 border rounded-md">
+                <select
+                  className="px-3 py-2 border rounded-md"
+                  value={filtroEstado}
+                  onChange={e => setFiltroEstado(e.target.value)}
+                >
                   <option value="todos">Todos</option>
                   <option value="activos">Activos</option>
                   <option value="inactivos">Inactivos</option>
@@ -138,65 +220,72 @@ const AdminProveedor = () => {
               </div>
               <div className="flex flex-col space-y-1">
                 <label className="text-sm font-medium text-gray-700">Categoría</label>
-                <select className="px-3 py-2 border rounded-md">
+                <select
+                  className="px-3 py-2 border rounded-md"
+                  value={filtroServicio}
+                  onChange={e => setFiltroServicio(e.target.value)}
+                >
                   <option value="todas">Todas las categorías</option>
-                  <option value="floristería">Floristería</option>
-                  <option value="catering">Catering</option>
-                </select>
-              </div>
-              <div className="flex flex-col space-y-1">
-                <label className="text-sm font-medium text-gray-700">Plan</label>
-                <select className="px-3 py-2 border rounded-md">
-                  <option value="todos">Todos los planes</option>
-                  <option value="básico">Básico</option>
-                  <option value="premium">Premium</option>
+                  {serviciosUnicos.map(servicio => (
+                    <option key={servicio} value={servicio}>{servicio}</option>
+                  ))}
                 </select>
               </div>
             </div>
 
-            {/* Listado de proveedores */}
+            {/* Alerta visual de membresías por vencer o vencidas */}
+            {(proveedoresPorVencer.length > 0 || proveedoresVencidos.length > 0) && (
+              <div className="mb-4">
+                {proveedoresPorVencer.length > 0 && (
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-2">
+                    <p>¡Hay {proveedoresPorVencer.length} proveedor(es) con membresía por vencer en los próximos 7 días!</p>
+                  </div>
+                )}
+                {proveedoresVencidos.length > 0 && (
+                  <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                    <p>¡Hay {proveedoresVencidos.length} proveedor(es) con membresía vencida!</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Listado de proveedores reales */}
             <div className="overflow-x-auto w-full">
               <table className="min-w-full bg-white border border-gray-200">
                 <thead>
                   <tr className="bg-gray-100 text-left">
                     <th className="p-2 border">Nombre</th>
                     <th className="p-2 border">Email</th>
-                    <th className="p-2 border">Estado</th>
+                    <th className="p-2 border">Estado Membresía</th>
                     <th className="p-2 border">Servicio</th>
-                    <th className="p-2 border">Plan</th>
                     <th className="p-2 border">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {[1, 2, 3].map((_, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <td className="p-2 border">Proveedor {i + 1}</td>
-                      <td className="p-2 border">email{i + 1}@correo.com</td>
-                      <td className="p-2 border">Activo</td>
-                      <td className="p-2 border">Floristería</td>
-                      <td className="p-2 border">Premium</td>
-                      <td className="p-2 border space-x-2">
-                        <button className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm">Ver</button>
-                        <button className="px-3 py-1 bg-gray-300 text-gray-800 rounded-md text-sm">Editar</button>
-                        <button className="px-3 py-1 bg-red-500 text-white rounded-md text-sm">Suspender</button>
-                      </td>
-                    </tr>
-                  ))}
+                  {loading ? (
+                    <tr><td colSpan={6} className="text-center p-4">Cargando...</td></tr>
+                  ) : proveedoresFiltrados.length === 0 ? (
+                    <tr><td colSpan={6} className="text-center p-4">No hay proveedores registrados.</td></tr>
+                  ) : (
+                    proveedoresFiltrados.map((proveedor) => (
+                      <tr key={proveedor.id_provedor} className="hover:bg-gray-50">
+                        <td className="p-2 border">{proveedor.nombre_empresa}</td>
+                        <td className="p-2 border">{proveedor.email_empresa}</td>
+                        <td className="p-2 border">{calcularEstadoMembresia(proveedor)}</td>
+                        <td className="p-2 border">{proveedor.tipo_servicio}</td>
+                        <td className="p-2 border space-x-2">
+                          <button
+                            className={`px-3 py-1 rounded-md text-sm ${estados[proveedor.id_provedor] ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}
+                            onClick={() => toggleEstado(proveedor.id_provedor)}
+                          >
+                            {estados[proveedor.id_provedor] ? 'Inactivar' : 'Activar'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
-            </div>
-
-            {/* Crear nuevo proveedor */}
-            <div className="bg-white rounded-lg shadow p-6 mt-8 w-full max-w-xl mx-auto">
-              <div className="font-medium mb-4 text-center">Crear Nuevo Proveedor</div>
-              <div className="space-y-4">
-                <input placeholder="Nombre o razón social" className="w-full px-3 py-2 border rounded-md" />
-                <input placeholder="Correo electrónico" className="w-full px-3 py-2 border rounded-md" />
-                <input placeholder="Teléfono" className="w-full px-3 py-2 border rounded-md" />
-                <input placeholder="Tipo de servicio" className="w-full px-3 py-2 border rounded-md" />
-                <input placeholder="Plan" className="w-full px-3 py-2 border rounded-md" />
-                <button className="w-full bg-purple-600 text-white py-2 rounded-md font-semibold">Crear</button>
-              </div>
             </div>
           </>
         )}

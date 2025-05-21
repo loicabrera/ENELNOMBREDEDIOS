@@ -1,6 +1,7 @@
 import React from 'react';
 import Chart from 'react-apexcharts';
 import { Bell, CalendarCheck } from 'lucide-react';
+import HistorialPagos from './HistorialPagos';
 
 export default function AdminHomeDashboard() {
   // Placeholder data; replace with fetched API data
