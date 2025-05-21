@@ -118,20 +118,18 @@ const DatosPersonas = () => {
     return true;
   };
 
-  const insertarPersona = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
       const response = await fetch('http://localhost:3000/crear_persona', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          nombre: formData.nombre.trim(),
-          apellido: formData.apellido.trim(),
-          cedula: formData.cedula,
-          telefono: formData.telefono,
-          email: formData.email.trim(),
-        }),
+        body: JSON.stringify(formData),
       });
 
       const data = await response.json();
@@ -140,41 +138,19 @@ const DatosPersonas = () => {
         throw new Error(data.error || 'Error al crear la persona');
       }
 
-      // Actualizar formData con el ID de la persona creada
-      const updatedFormData = {
-        ...formData,
-        id_persona: data.persona.id_persona
-      };
-      setFormData(updatedFormData);
-      
-      return { success: true, updatedFormData };
+      // Guardar el ID de la persona en localStorage
+      localStorage.setItem('id_persona', data.persona.id_persona);
+
+      // Redirigir al formulario de proveedor
+      navigate('/datosproveedor', {
+        state: {
+          id_persona: data.persona.id_persona,
+          plan: location.state?.plan
+        }
+      });
     } catch (error) {
-      console.error('Error al crear persona:', error);
+      console.error('Error:', error);
       setError(error.message);
-      return { success: false };
-    }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const result = await insertarPersona();
-      if (result.success) {
-        // Navegar a la página de proveedor con el ID de la persona y el plan
-        navigate('/datosproveedor', { 
-          state: { 
-            id_persona: result.updatedFormData.id_persona,
-            plan: formData.planSeleccionado,
-            amount: location.state?.amount
-          } 
-        });
-      }
-    } catch (error) {
-      console.error('Error en el envío:', error);
-      setError('Error al procesar el formulario');
     } finally {
       setLoading(false);
     }
