@@ -47,6 +47,29 @@ const PaymentForm = ({ amount, planName }) => {
       }
 
       if (paymentIntent.status === 'succeeded') {
+        // Obtener los IDs de proveedor y membresía desde localStorage
+        const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
+        const membresiaId = localStorage.getItem('MEMBRESIA_id_membresia');
+
+        if (!proveedorId || !membresiaId) {
+          setError('No se encontró el ID de proveedor o membresía.');
+          setLoading(false);
+          return;
+        }
+
+        // Llamar al backend para registrar el pago
+        await fetch('http://localhost:3000/registrar_pago', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            monto: amount,
+            fecha_pago: new Date().toISOString(),
+            monto_pago: amount,
+            MEMBRESIA_id_membresia: membresiaId,
+            provedor_negocio_id_provedor: proveedorId
+          })
+        });
+
         navigate('/confirmacion', { 
           state: { 
             success: true,

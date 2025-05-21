@@ -58,7 +58,7 @@ export const Proveedor = conexion.define('provedor_negocio', {
 // Definir la relación
 Proveedor.belongsTo(PERSONA, {
   foreignKey: 'PERSONA_id_persona',
-  targetKey: 'id_persona'
+  as: 'persona'
 });
 
 // Método para crear un proveedor con la persona asociada

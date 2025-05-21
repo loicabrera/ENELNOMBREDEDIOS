@@ -10,6 +10,7 @@ import Notifications from './dashboardProveedor/Notifications';
 import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
 import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
 import AdminProveedor from "./dashboardAdmin/AdminProveedor";
+import HistorialPagos from './dashboardAdmin/HistorialPagos';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -54,6 +55,7 @@ function AdminLayout() {
         <Routes>
           <Route path="/" element={<AdminHomeDashboard />} />
           <Route path="proveedores" element={<AdminProveedor />} />
+          <Route path="pagos" element={<HistorialPagos />} />
           {/* Aquí puedes agregar más rutas internas del admin */}
         </Routes>
       </div>

@@ -1,49 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Chart from 'react-apexcharts';
 import { Bell, CalendarCheck } from 'lucide-react';
 
 export default function AdminHomeDashboard() {
-  // Placeholder data; replace with fetched API data
-  const stats = {
-    totalProviders: 128,
-    activeProviders: 102,
-    inactiveProviders: 26,
-    approvedPosts: 340,
-    pendingPosts: 24,
-    rejectedPosts: 16,
-    activeMemberships: 110,
-    expiredMemberships: 18,
-    contactsToday: 12,
-    contactsWeek: 67,
-    contactsMonth: 212,
-  };
+  const [proveedores, setProveedores] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Chart configs
-  const visitsOptions = {
-    chart: { id: 'visits-chart', toolbar: { show: false } },
-    xaxis: { categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] },
-    stroke: { curve: 'smooth' },
-  };
-  const visitsSeries = [
-    { name: 'Visitas', data: [30, 45, 28, 50, 42, 60, 75] }
-  ];
+  useEffect(() => {
+    fetch('http://localhost:3000/proveedores')
+      .then(res => res.json())
+      .then(data => {
+        setProveedores(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
-  const activeProvidersOptions = {
-    chart: { id: 'active-providers' },
-    plotOptions: { pie: { donut: { size: '65%' } } },
-    labels: ['Proveedor A', 'Proveedor B', 'Proveedor C', 'Otros'],
-  };
-  const activeProvidersSeries = [40, 25, 20, 15];
+  // Calcular datos reales
+  const totalProviders = proveedores.length;
+  const activos = proveedores.filter(p => p.activo !== false).length; // Asume campo 'activo', si no existe, todos activos
+  const inactivos = totalProviders - activos;
+  // Proveedores por tipo de servicio
+  const servicios = {};
+  proveedores.forEach(p => {
+    if (p.tipo_servicio) {
+      servicios[p.tipo_servicio] = (servicios[p.tipo_servicio] || 0) + 1;
+    }
+  });
+  const categorias = Object.keys(servicios);
+  const categoriasSeries = [{ name: 'Proveedores', data: Object.values(servicios) }];
 
-  const categoriesOptions = {
-    chart: { id: 'categories-chart', toolbar: { show: false } },
-    xaxis: { categories: ['Floristería', 'Catering', 'Música', 'Decoración'] }
-  };
-  const categoriesSeries = [
-    { name: 'Publicaciones', data: [120, 95, 75, 60] }
-  ];
+  // Placeholder para proveedores más activos (puedes mejorar con pagos reales)
+  const topProveedores = proveedores.slice(0, 4);
+  const topLabels = topProveedores.map(p => p.nombre_empresa);
+  const topSeries = topProveedores.map(() => 1); // Simulado, puedes usar pagos reales
 
-  // Alerts
+  // Alerts (puedes mejorar con lógica real)
   const alerts = [
     { id: 1, icon: CalendarCheck, text: '5 membresías por vencer en los próximos 3 días.' },
     { id: 2, icon: Bell, text: '12 publicaciones pendientes de revisión.' },
@@ -57,19 +49,19 @@ export default function AdminHomeDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm text-gray-500">Total Proveedores</h3>
-          <p className="text-3xl font-semibold">{stats.totalProviders}</p>
+          <p className="text-3xl font-semibold">{loading ? '...' : totalProviders}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm text-gray-500">Activos / Inactivos</h3>
-          <p className="text-3xl font-semibold">{stats.activeProviders} / {stats.inactiveProviders}</p>
+          <p className="text-3xl font-semibold">{loading ? '...' : `${activos} / ${inactivos}`}</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm text-gray-500">Aprobadas / Pendientes / Rechazadas</h3>
-          <p className="text-3xl font-semibold">{stats.approvedPosts} / {stats.pendingPosts} / {stats.rejectedPosts}</p>
+          <p className="text-3xl font-semibold">340 / 24 / 16</p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm text-gray-500">Membresías Activas / Vencidas</h3>
-          <p className="text-3xl font-semibold">{stats.activeMemberships} / {stats.expiredMemberships}</p>
+          <p className="text-3xl font-semibold">110 / 18</p>
         </div>
       </div>
 
@@ -79,15 +71,15 @@ export default function AdminHomeDashboard() {
         <div className="flex space-x-8">
           <div>
             <p className="text-sm text-gray-500">Hoy</p>
-            <p className="text-xl font-semibold">{stats.contactsToday}</p>
+            <p className="text-xl font-semibold">12</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Semana</p>
-            <p className="text-xl font-semibold">{stats.contactsWeek}</p>
+            <p className="text-xl font-semibold">67</p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Mes</p>
-            <p className="text-xl font-semibold">{stats.contactsMonth}</p>
+            <p className="text-xl font-semibold">212</p>
           </div>
         </div>
       </div>
@@ -95,16 +87,28 @@ export default function AdminHomeDashboard() {
       {/* Gráficas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Visitas por Día</h3>
-          <Chart options={visitsOptions} series={visitsSeries} type="line" height={200} />
+          <h3 className="text-lg font-medium mb-2">Proveedores por Categoría</h3>
+          <Chart options={{
+            chart: { id: 'categories-chart', toolbar: { show: false } },
+            xaxis: { categories: categorias },
+          }} series={categoriasSeries} type="bar" height={200} />
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-lg font-medium mb-2">Proveedores Más Activos</h3>
-          <Chart options={activeProvidersOptions} series={activeProvidersSeries} type="donut" height={200} />
+          <Chart options={{
+            chart: { id: 'active-providers' },
+            labels: topLabels
+          }} series={topSeries} type="donut" height={200} />
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Categorías Más Populares</h3>
-          <Chart options={categoriesOptions} series={categoriesSeries} type="bar" height={200} />
+          <h3 className="text-lg font-medium mb-2">Visitas por Día</h3>
+          <Chart options={{
+            chart: { id: 'visits-chart', toolbar: { show: false } },
+            xaxis: { categories: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] },
+            stroke: { curve: 'smooth' },
+          }} series={[
+            { name: 'Visitas', data: [30, 45, 28, 50, 42, 60, 75] }
+          ]} type="line" height={200} />
         </div>
       </div>
 
