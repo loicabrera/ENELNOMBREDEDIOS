@@ -11,6 +11,11 @@ import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
 import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
 import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 import HistorialPagos from './dashboardAdmin/HistorialPagos';
+import Membresias from './dashboardAdmin/Membresias';
+import Reportes from './dashboardAdmin/Reportes';
+import Soporte from './dashboardAdmin/Soporte';
+import Moderacion from './dashboardAdmin/Moderacion';
+import Publicaciones from './dashboardAdmin/Publicaciones';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -55,8 +60,12 @@ function AdminLayout() {
         <Routes>
           <Route path="/" element={<AdminHomeDashboard />} />
           <Route path="proveedores" element={<AdminProveedor />} />
+          <Route path="publicaciones" element={<Publicaciones />} />
+          <Route path="membresias" element={<Membresias />} />
           <Route path="pagos" element={<HistorialPagos />} />
-          {/* Aquí puedes agregar más rutas internas del admin */}
+          <Route path="reportes" element={<Reportes />} />
+          <Route path="soporte" element={<Soporte />} />
+          <Route path="moderacion" element={<Moderacion />} />
         </Routes>
       </div>
     </div>
