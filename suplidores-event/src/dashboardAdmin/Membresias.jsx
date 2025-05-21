@@ -100,7 +100,7 @@ const Membresias = () => {
   );
 
   return (
-    <div className="p-6">
+    <div className="ml-64 p-6">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Gestión de Membresías</h1>
 
       {selectedProvider && (
@@ -150,4 +150,4 @@ const Membresias = () => {
   );
 };
 
-export default Membresias; 
+export default Membresias;
