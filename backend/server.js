@@ -6,7 +6,6 @@ import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 import stripe from './config/stripe.js';
 import { Pago } from './Models/Pago.js';
-import { INICIO_SECCION } from './Models/inicio_seccion.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -518,6 +517,31 @@ app.post('/api/productos', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al crear el producto.' });
+  }
+});
+
+// Ruta para login de proveedor
+app.post('/login_proveedor', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Buscar el usuario en la tabla inicio_seccion
+    const [result] = await conexion.query(
+      `SELECT * FROM inicio_seccion WHERE user_name = ? AND password = ?`,
+      { replacements: [username, password] }
+    );
+
+    if (result.length === 0) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+
+    // Puedes traer más datos si lo necesitas, por ejemplo el id_persona
+    const user = result[0];
+
+    res.json({ message: 'Login exitoso', user });
+  } catch (error) {
+    console.error('Error en login_proveedor:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 });
 

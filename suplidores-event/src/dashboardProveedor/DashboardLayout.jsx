@@ -10,13 +10,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 const navigation = [
-  { name: 'Inicio', href: '/dashboard', icon: HomeIcon },
-  { name: 'Perfil', href: '/dashboard/perfil', icon: UserIcon },
-  { name: 'Publicaciones', href: '/dashboard/publicaciones', icon: DocumentTextIcon },
-  { name: 'Solicitudes', href: '/dashboard/solicitudes', icon: EnvelopeIcon },
-  { name: 'Membresía', href: '/dashboard/membresia', icon: CreditCardIcon },
-  { name: 'Stats', href: '/dashboard/stats', icon: ChartBarIcon },
-  { name: 'Notificaciones', href: '/dashboard/notificaciones', icon: BellIcon },
+  { name: 'Inicio', href: '/dashboard-proveedor', icon: HomeIcon },
+  { name: 'Perfil', href: '/dashboard-proveedor/perfil', icon: UserIcon },
+  { name: 'Publicaciones', href: '/dashboard-proveedor/publicaciones', icon: DocumentTextIcon },
+  { name: 'Solicitudes', href: '/dashboard-proveedor/solicitudes', icon: EnvelopeIcon },
+  { name: 'Membresía', href: '/dashboard-proveedor/membresia', icon: CreditCardIcon },
+  { name: 'Stats', href: '/dashboard-proveedor/stats', icon: ChartBarIcon },
+  { name: 'Notificaciones', href: '/dashboard-proveedor/notificaciones', icon: BellIcon },
 ];
 
 function classNames(...classes) {
