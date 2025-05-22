@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { User, Lock } from 'lucide-react';
 
 function Login() {
   const [username, setUsername] = useState('');
@@ -32,122 +33,94 @@ function Login() {
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      width: '100%', 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center',
-      background: 'linear-gradient(to bottom right, #94c8d6, #012e33)'
-    }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '2rem' }}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center min-h-screen min-w-full p-4">
+      {/* Imagen de fondo */}
+      <img 
+        src="https://www.funtastyc.es/blog/wp-content/uploads/2020/08/organizar-eventos.jpg" 
+        alt="Fondo evento elegante" 
+        className="absolute inset-0 w-full h-full object-fill object-center z-0" 
+        style={{ filter: 'blur(1px) brightness(0.7)' }}
+      />
+      {/* Overlay oscuro */}
+      <div className="absolute inset-0 bg-black/40 z-10" />
+      <div className="w-full max-w-md animate-fade-in relative z-20">
         <form 
           onSubmit={handleLogin} 
-          style={{ 
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '0.75rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
-          }}
+          className="backdrop-blur-lg bg-white/80 border border-white/40 rounded-2xl shadow-2xl p-8 md:p-10 space-y-7 relative"
         >
-          <h2 style={{ 
-            fontSize: '1.875rem',
-            marginBottom: '1.5rem',
-            textAlign: 'center',
-            fontWeight: 'bold',
-            color: '#012e33'
-          }}>
+          {/* Logo o icono */}
+          <div className="flex justify-center mb-2">
+            <img src="/logo.png" alt="Logo" className="h-14 w-14 rounded-full shadow-lg border-2 border-[#94c8d6] bg-white object-contain" />
+          </div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-center text-[#012e33] mb-2 tracking-tight drop-shadow-sm">
             Iniciar Sesión
           </h2>
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label 
-              htmlFor="username" 
-              style={{ 
-                display: 'block',
-                marginBottom: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151'
-              }}
-            >
-              Usuario
-            </label>
-            <input
-              id="username"
-              type="text"
-              placeholder="Ingrese su usuario"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #D1D5DB',
-                borderRadius: '0.5rem',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
+          <p className="text-center text-gray-500 text-sm mb-4">Accede a tu cuenta de proveedor</p>
 
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label 
-              htmlFor="password" 
-              style={{ 
-                display: 'block',
-                marginBottom: '0.5rem',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                color: '#374151'
-              }}
-            >
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Ingrese su contraseña"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #D1D5DB',
-                borderRadius: '0.5rem',
-                fontSize: '1rem'
-              }}
-            />
+          <div className="space-y-5">
+            <div className="flex items-center bg-white/70 rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-[#94c8d6] focus-within:border-[#94c8d6] transition-all duration-200">
+              <span className="pl-3 text-gray-400 flex items-center">
+                <User size={20} />
+              </span>
+              <input
+                id="username"
+                type="text"
+                placeholder="Usuario"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="flex-1 bg-transparent border-none outline-none py-3 pl-3 pr-4 rounded-lg placeholder-gray-400 text-gray-900 text-base"
+              />
+            </div>
+
+            <div className="flex items-center bg-white/70 rounded-lg border border-gray-300 shadow-sm focus-within:ring-2 focus-within:ring-[#94c8d6] focus-within:border-[#94c8d6] transition-all duration-200">
+              <span className="pl-3 text-gray-400 flex items-center">
+                <Lock size={20} />
+              </span>
+              <input
+                id="password"
+                type="password"
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="flex-1 bg-transparent border-none outline-none py-3 pl-3 pr-4 rounded-lg placeholder-gray-400 text-gray-900 text-base"
+              />
+            </div>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              backgroundColor: '#012e33',
-              color: 'white',
-              borderRadius: '0.5rem',
-              fontWeight: '500',
-              opacity: isLoading ? 0.7 : 1,
-              cursor: isLoading ? 'not-allowed' : 'pointer'
-            }}
+            className="w-full py-3 px-4 bg-gradient-to-r from-[#012e33] to-[#94c8d6] text-white rounded-lg font-semibold text-lg shadow-md 
+                     hover:from-[#023c43] hover:to-[#7bb7c7] focus:outline-none focus:ring-2 focus:ring-[#012e33] focus:ring-offset-2 
+                     transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed
+                     transform hover:scale-[1.02] active:scale-[0.98]"
           >
             {isLoading ? 'Iniciando sesión...' : 'Entrar'}
           </button>
 
           {mensaje && (
-            <p style={{ 
-              marginTop: '1rem',
-              textAlign: 'center',
-              color: mensaje.includes('exitoso') ? '#059669' : '#DC2626'
-            }}>
+            <p className={`text-center text-sm font-medium ${
+              mensaje.includes('exitoso') ? 'text-green-600' : 'text-red-600'
+            }`}>
               {mensaje}
             </p>
           )}
+
+          <p className="text-xs text-center text-gray-400 mt-2">¿Olvidaste tu contraseña? <a href="#" className="text-[#012e33] underline hover:text-[#94c8d6]">Recupérala aquí</a></p>
         </form>
       </div>
+      {/* Animación fade-in */}
+      <style>{`
+        .animate-fade-in {
+          animation: fadeIn 0.8s cubic-bezier(.4,0,.2,1);
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(30px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }
