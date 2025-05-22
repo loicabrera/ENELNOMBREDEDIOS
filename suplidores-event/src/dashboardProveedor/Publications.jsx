@@ -117,64 +117,100 @@ const Publications = () => {
 
   // Formulario de Servicio
   const ServicioForm = () => (
-    <form onSubmit={handleServicioSubmit} className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Nuevo Servicio</h2>
+    <form onSubmit={handleServicioSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900">Nuevo Servicio</h2>
+        <button
+          onClick={() => setTipoVendedor('selector')}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+      </div>
       
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nombre del Servicio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Servicio</label>
           <input
             type="text"
             name="nombre"
             value={servicioForm.nombre}
             onChange={handleServicioChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Descripción</label>
-          <textarea
-            name="descripcion"
-            value={servicioForm.descripcion}
-            onChange={handleServicioChange}
-            rows="4"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Tipo de Servicio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
           <input
             type="text"
             name="tipo_servicio"
             value={servicioForm.tipo_servicio}
             onChange={handleServicioChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Precio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
           <input
             type="number"
             name="precio"
             value={servicioForm.precio}
             onChange={handleServicioChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <textarea
+              name="descripcion"
+              value={servicioForm.descripcion}
+              onChange={handleServicioChange}
+              rows="4"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Imágenes</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+              <div className="space-y-1 text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="flex text-sm text-gray-600">
+                  <label
+                    htmlFor="file-upload"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                  >
+                    <span>Subir imágenes</span>
           <input
+                      id="file-upload"
+                      name="file-upload"
             type="file"
             multiple
             accept="image/*"
+                      className="sr-only"
             onChange={(e) => {
               const files = Array.from(e.target.files);
               setServicioForm(prev => ({
@@ -182,13 +218,28 @@ const Publications = () => {
                 imagenes: files
               }));
             }}
-            className="mt-1 block w-full"
-          />
+                    />
+                  </label>
+                  <p className="pl-1">o arrastrar y soltar</p>
+                </div>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
 
+      <div className="mt-8 flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={() => setTipoVendedor('selector')}
+          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Cancelar
+        </button>
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Publicar Servicio
         </button>
@@ -198,64 +249,100 @@ const Publications = () => {
 
   // Formulario de Producto
   const ProductoForm = () => (
-    <form onSubmit={handleProductoSubmit} className="bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6">Nuevo Producto</h2>
+    <form onSubmit={handleProductoSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900">Nuevo Producto</h2>
+        <button
+          onClick={() => setTipoVendedor('selector')}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <XMarkIcon className="h-6 w-6" />
+        </button>
+      </div>
       
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Nombre del Producto</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
           <input
             type="text"
             name="nombre"
             value={productoForm.nombre}
             onChange={handleProductoChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Descripción</label>
-          <textarea
-            name="descripcion"
-            value={productoForm.descripcion}
-            onChange={handleProductoChange}
-            rows="4"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700">Tipo de Producto</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Producto</label>
           <input
             type="text"
             name="tipo_producto"
             value={productoForm.tipo_producto}
             onChange={handleProductoChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Precio</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
           <input
             type="number"
             name="precio"
             value={productoForm.precio}
             onChange={handleProductoChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+            <textarea
+              name="descripcion"
+              value={productoForm.descripcion}
+              onChange={handleProductoChange}
+              rows="4"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Imágenes</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+              <div className="space-y-1 text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  stroke="currentColor"
+                  fill="none"
+                  viewBox="0 0 48 48"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                    strokeWidth={2}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <div className="flex text-sm text-gray-600">
+                  <label
+                    htmlFor="file-upload"
+                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                  >
+                    <span>Subir imágenes</span>
           <input
+                      id="file-upload"
+                      name="file-upload"
             type="file"
             multiple
             accept="image/*"
+                      className="sr-only"
             onChange={(e) => {
               const files = Array.from(e.target.files);
               setProductoForm(prev => ({
@@ -263,13 +350,28 @@ const Publications = () => {
                 imagenes: files
               }));
             }}
-            className="mt-1 block w-full"
-          />
+                    />
+                  </label>
+                  <p className="pl-1">o arrastrar y soltar</p>
+                </div>
+                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
 
+      <div className="mt-8 flex justify-end space-x-4">
+        <button
+          type="button"
+          onClick={() => setTipoVendedor('selector')}
+          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
+          Cancelar
+        </button>
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           Publicar Producto
         </button>
@@ -278,8 +380,8 @@ const Publications = () => {
   );
 
   return (
-    <div className="p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Publicaciones</h1>
           <p className="mt-2 text-gray-600">Gestiona tus servicios y productos publicados</p>
@@ -382,12 +484,6 @@ const Publications = () => {
           <div className="mt-8">
             {tipoVendedor === 'servicios' && <ServicioForm />}
             {tipoVendedor === 'productos' && <ProductoForm />}
-            <button
-              onClick={() => setTipoVendedor('selector')}
-              className="mt-4 text-blue-600 hover:text-blue-800"
-            >
-              ← Volver a selección
-            </button>
           </div>
         )}
       </div>

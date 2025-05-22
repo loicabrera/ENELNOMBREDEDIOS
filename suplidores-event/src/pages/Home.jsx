@@ -16,6 +16,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
 // Colores definidos
 const colors = {
   sage: "#9CAF88",
@@ -23,6 +24,7 @@ const colors = {
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
   darkTeal: "#012e33",
+  crema: "#cba884",
 };
 
 // Datos actualizados de proveedores destacados con imágenes reales
@@ -69,7 +71,6 @@ const serviciosDestacados = [
     descripcion: "Transformamos espacios en momentos mágicos",
     icono: <Sparkles size={24} style={{ color: colors.pink }} />,
     bgColor: colors.lightPink,
-    proveedores: 45
   },
   {
     id: 2,
@@ -77,7 +78,6 @@ const serviciosDestacados = [
     descripcion: "Experiencias culinarias inolvidables",
     icono: <UtensilsCrossed size={24} style={{ color: colors.purple }} />,
     bgColor: `${colors.purple}40`,
-    proveedores: 32
   },
   {
     id: 3,
@@ -85,7 +85,6 @@ const serviciosDestacados = [
     descripcion: "Capturando momentos especiales",
     icono: <Camera size={24} style={{ color: colors.darkTeal }} />,
     bgColor: `${colors.sage}40`,
-    proveedores: 28
   },
   {
     id: 4,
@@ -93,7 +92,6 @@ const serviciosDestacados = [
     descripcion: "Ambiente perfecto para tu evento",
     icono: <Music size={24} style={{ color: colors.purple }} />,
     bgColor: `${colors.purple}30`,
-    proveedores: 36
   }
 ];
 
@@ -105,7 +103,6 @@ const productosDestacados = [
     descripcion: "Sillas, mesas y más para tu evento",
     icono: <Package size={24} style={{ color: colors.pink }} />,
     bgColor: colors.lightPink,
-    proveedores: 25
   },
   {
     id: 2,
@@ -113,7 +110,6 @@ const productosDestacados = [
     descripcion: "Sistemas profesionales de audio",
     icono: <Music size={24} style={{ color: colors.purple }} />,
     bgColor: `${colors.purple}40`,
-    proveedores: 18
   },
   {
     id: 3,
@@ -121,7 +117,6 @@ const productosDestacados = [
     descripcion: "Equipos de iluminación profesional",
     icono: <Sparkles size={24} style={{ color: colors.darkTeal }} />,
     bgColor: `${colors.sage}40`,
-    proveedores: 22
   },
   {
     id: 4,
@@ -129,7 +124,6 @@ const productosDestacados = [
     descripcion: "Todo lo necesario para tu evento",
     icono: <Wrench size={24} style={{ color: colors.purple }} />,
     bgColor: `${colors.purple}30`,
-    proveedores: 15
   }
 ];
 
@@ -219,7 +213,7 @@ export default function Home() {
     <div className="flex flex-col min-h-full">
       <main className="flex-1">
         {/* Hero Section - Cambiado a imagen simple sin gradiente */}
-        <section className="relative py-16 md:py-24">
+        <section className="relative py-16 md:py-24 w-full">
           <div className="absolute inset-0 overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1470&auto=format&fit=crop"
@@ -238,7 +232,7 @@ export default function Home() {
                 ÉVOCA
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-white opacity-90 mb-8">
-              Proveedores de calidad que ofrecen los
+                Proveedores de calidad que ofrecen los
                 productos y servicios que necesitas
               </p>
             </div>
@@ -281,13 +275,18 @@ export default function Home() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-500">
-                      {servicio.proveedores} proveedores
+                      {servicio.proveedores} 
                     </span>
                     <button
-                      className="text-sm font-medium flex items-center gap-1"
-                      style={{ color: colors.purple }}
+                      className="text-sm font-medium flex items-center gap-1 group relative overflow-hidden px-2 py-1 rounded-md transition-all duration-300 focus:outline-none"
+                      style={{ 
+                        backgroundColor: colors.white,
+                        color: '#000000'
+                      }}
                     >
-                      Explorar <ChevronRight size={16} />
+                      <span className="relative z-10">Explorar</span>
+                      <ChevronRight size={16} className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                     </button>
                   </div>
                 </div>
@@ -335,10 +334,15 @@ export default function Home() {
                       {producto.proveedores} proveedores
                     </span>
                     <button
-                      className="text-sm font-medium flex items-center gap-1"
-                      style={{ color: colors.purple }}
+                      className="text-sm font-medium flex items-center gap-1 group relative overflow-hidden px-2 py-1 rounded-md transition-all duration-300 focus:outline-none"
+                      style={{ 
+                        backgroundColor: colors.white,
+                        color: '#000000'
+                      }}
                     >
-                      Explorar <ChevronRight size={16} />
+                      <span className="relative z-10">Explorar</span>
+                      <ChevronRight size={16} className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
+                      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                     </button>
                   </div>
                 </div>
@@ -409,21 +413,8 @@ export default function Home() {
                   visibilidad y consigue nuevos clientes.
                 </p>
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button
-                    className="bg-white py-3 px-6 rounded-lg font-medium transition-colors"
-                    style={{ color: colors.darkTeal }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.purple;
-                      e.currentTarget.style.color = 'white';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = 'white';
-                      e.currentTarget.style.color = colors.darkTeal;
-                    }}
-                  >
-                    Comenzar ahora
-                  </button>
-                  <button 
+                  <Link 
+                    to="/Vende"
                     className="bg-transparent border py-3 px-6 rounded-lg font-medium transition-colors"
                     style={{ 
                       color: colors.darkTeal,
@@ -439,7 +430,7 @@ export default function Home() {
                     }}
                   >
                     Saber más
-                  </button>
+                  </Link>
                 </div>
               </div>
 
