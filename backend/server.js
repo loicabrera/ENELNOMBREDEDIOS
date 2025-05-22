@@ -473,6 +473,50 @@ app.post('/generar_credenciales', async (req, res) => {
   }
 });
 
+// Función para obtener el límite de productos según la membresía activa
+async function getLimiteProductos(proveedorId) {
+  const [rows] = await conexion.query(`
+    SELECT M.limite_productos
+    FROM PROVEDOR_MEMBRESIA PM
+    JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+    WHERE PM.id_provedor = ? AND PM.estado = 'activo'
+    ORDER BY PM.fecha_inicio DESC LIMIT 1
+  `, { replacements: [proveedorId] });
+  return rows.length > 0 ? rows[0].limite_productos : 0;
+}
+
+// Endpoint para crear producto
+app.post('/api/productos', async (req, res) => {
+  try {
+    const { nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria } = req.body;
+
+    // 1. Verifica cuántos productos tiene el proveedor
+    const [productos] = await conexion.query(
+      'SELECT COUNT(*) as total FROM productos WHERE provedor_negocio_id_provedor = ?',
+      { replacements: [provedor_negocio_id_provedor] }
+    );
+    const totalProductos = productos[0].total;
+
+    // 2. Obtén el límite según la membresía
+    const limite = await getLimiteProductos(provedor_negocio_id_provedor);
+
+    if (limite > 0 && totalProductos >= limite) {
+      return res.status(403).json({ error: 'Has alcanzado el límite de productos según tu membresía.' });
+    }
+
+    // 3. Inserta el producto
+    const [result] = await conexion.query(
+      'INSERT INTO productos (nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria) VALUES (?, ?, ?, ?, ?, ?)',
+      [nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria]
+    );
+    
+    res.json({ success: true, id_producto: result.insertId });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error al crear el producto.' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {
