@@ -5,14 +5,20 @@ import ProgressBar from '../ProgressBar';
 const Confirmacion = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { success, planName, amount } = location.state || {};
-  const [credentials, setCredentials] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { success, planName, amount, credenciales } = location.state || {};
+  const [credentials, setCredentials] = useState(credenciales || null);
+  const [loading, setLoading] = useState(!credenciales);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!success) {
       navigate('/');
+      return;
+    }
+
+    // Si ya tenemos credenciales en location.state, no hace falta generarlas
+    if (credenciales) {
+      setLoading(false);
       return;
     }
 
@@ -51,7 +57,7 @@ const Confirmacion = () => {
     };
 
     generarCredenciales();
-  }, [success, navigate]);
+  }, [success, navigate, credenciales]);
 
   if (!success) {
     return null;
@@ -84,7 +90,7 @@ const Confirmacion = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Monto pagado:</span>
-                  <span className="font-medium">${amount.toFixed(2)}</span>
+                  <span className="font-medium">${amount?.toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -103,15 +109,11 @@ const Confirmacion = () => {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Usuario:</span>
-                    <span className="font-medium">{credentials.username}</span>
+                    <span className="font-medium">{credentials.user_name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Contraseña:</span>
                     <span className="font-medium">{credentials.password}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Email:</span>
-                    <span className="font-medium">{credentials.email}</span>
                   </div>
                 </div>
                 <p className="mt-4 text-sm text-blue-600">

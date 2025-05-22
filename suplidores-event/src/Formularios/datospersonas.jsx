@@ -139,7 +139,7 @@ const DatosPersonas = () => {
       }
 
       // Guardar el ID de la persona en localStorage
-      localStorage.setItem('id_persona', data.persona.id_persona);
+      localStorage.setItem('PERSONA_id_persona', data.persona.id_persona);
 
       // Redirigir al formulario de proveedor
       navigate('/datosproveedor', {
