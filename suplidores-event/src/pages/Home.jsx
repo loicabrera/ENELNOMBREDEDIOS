@@ -281,7 +281,9 @@ export default function Home() {
                       className="text-sm font-medium flex items-center gap-1 group relative overflow-hidden px-2 py-1 rounded-md transition-all duration-300 focus:outline-none"
                       style={{ 
                         backgroundColor: colors.white,
-                        color: '#000000'
+                        color: '#000000',
+                        border: '1px solid black',
+                       
                       }}
                     >
                       <span className="relative z-10">Explorar</span>
@@ -330,19 +332,19 @@ export default function Home() {
                     {producto.descripcion}
                   </p>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
-                      {producto.proveedores} proveedores
-                    </span>
+                   
                     <button
                       className="text-sm font-medium flex items-center gap-1 group relative overflow-hidden px-2 py-1 rounded-md transition-all duration-300 focus:outline-none"
                       style={{ 
-                        backgroundColor: colors.white,
-                        color: '#000000'
+                        backgroundColor: 'white',
+                        color: '#000000',
+                        border: '1px solid rgb(0, 0, 0)',
+                         hover: 'bg-[#CDCDCD] transition-all duration-300'
                       }}
                     >
                       <span className="relative z-10">Explorar</span>
                       <ChevronRight size={16} className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" />
-                      <span className="absolute inset-0 bg-white opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
+                      <span className="absolute inset-0  opacity-0 "></span>
                     </button>
                   </div>
                 </div>

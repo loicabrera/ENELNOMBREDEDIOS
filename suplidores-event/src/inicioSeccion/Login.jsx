@@ -11,6 +11,14 @@ function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  const colors = {
+    sage: "#9CAF88",
+    purple: "#cbb4db",
+    pink: "#fbaccb",
+    lightPink: "#fbcbdb",
+    darkTeal: "#012e33",
+  };
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -46,11 +54,11 @@ function Login() {
       <div className="w-full max-w-md animate-fade-in relative z-20">
         <form 
           onSubmit={handleLogin} 
-          className="backdrop-blur-lg bg-white/80 border border-white/40 rounded-2xl shadow-2xl p-8 md:p-10 space-y-7 relative"
+          className="backdrop-blur-lg bg-white border border-white/40 rounded-2xl shadow-2xl p-8 md:p-10 space-y-7 relative"
         >
           {/* Logo o icono */}
           <div className="flex justify-center mb-2">
-            <img src="/logo.png" alt="Logo" className="h-14 w-14 rounded-full shadow-lg border-2 border-[#94c8d6] bg-white object-contain" />
+            <img src="/img/logo circulo.png" alt="Logo" className="h-14 w-14 rounded-full  bg-white object-contain" />
           </div>
           <h2 className="text-3xl md:text-4xl font-extrabold text-center text-[#012e33] mb-2 tracking-tight drop-shadow-sm">
             Iniciar Sesión
@@ -108,7 +116,6 @@ function Login() {
             </p>
           )}
 
-          <p className="text-xs text-center text-gray-400 mt-2">¿Olvidaste tu contraseña? <a href="#" className="text-[#012e33] underline hover:text-[#94c8d6]">Recupérala aquí</a></p>
         </form>
       </div>
       {/* Animación fade-in */}
