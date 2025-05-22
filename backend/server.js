@@ -6,6 +6,10 @@ import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 import stripe from './config/stripe.js';
 import { Pago } from './Models/Pago.js';
+import { INICIO_SECCION } from './Models/inicio_seccion.js';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;

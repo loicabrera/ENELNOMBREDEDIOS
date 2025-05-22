@@ -1,7 +1,21 @@
-import {} from "react";
+import { 
+  Facebook, 
+  Twitter, 
+  Instagram, 
+  Linkedin, 
+  Building2, 
+  Users, 
+  ShoppingBag, 
+  Store, 
+  Home, 
+  Mail, 
+  Phone, 
+  LogIn,
+  User
+} from 'lucide-react';
 
 const colors = {
-  lightBlue: "#bbe3fb",
+  sage: "#9CAF88",
   purple: "#cbb4db",
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
@@ -10,41 +24,91 @@ const colors = {
 
 function Footer() {
   return (
-    <footer
-      style={{ backgroundColor: colors.darkTeal }}
-      className="text-white py-8"
-    >
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="text-center md:text-left">
-            <h3 className="text-xl font-bold mb-4">ÉVOCA</h3>
-            <p className="text-gray-300">
-              Conectando empresas con los mejores proveedores de eventos.
+    <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div className="mx-auto w-full max-w-screen-xl p-4 py-12 lg:py-16">
+        <div className="md:flex md:justify-between">
+          <div className="mb-8 md:mb-0">
+            <a href="/" className="flex items-center">
+              <span className="self-center text-3xl font-bold whitespace-nowrap dark:text-white" style={{ color: colors.darkTeal }}>ÉVOCA</span>
+            </a>
+            <p className="mt-4 max-w-xs text-gray-500 dark:text-gray-400">
+              Conectando empresas con los mejores proveedores de eventos y servicios para hacer tus momentos especiales inolvidables.
             </p>
           </div>
-
-          <div className="text-center">
-            <h4 className="font-bold mb-4">Enlaces rápidos</h4>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Inicio</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Servicios</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Vende con nosotros</a></li>
-            </ul>
-          </div>
-
-          <div className="text-center md:text-right">
-            <h4 className="font-bold mb-4">Contáctanos</h4>
-            <ul className="space-y-2">
-              <li className="text-gray-300">info@evoca.com</li>
-              <li className="text-gray-300">+1 234 567 890</li>
-            </ul>
+          <div className="grid grid-cols-2 gap-12 sm:gap-16 sm:grid-cols-3">
+            <div>
+              <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider" style={{ color: colors.darkTeal }}>Navegación</h2>
+              <ul className="text-gray-500 dark:text-gray-400 font-medium space-y-4">
+                <li>
+                  <a href="/" className="hover:text-purple-300 transition-colors flex items-center gap-2">
+                    <Home size={16} />
+                    <span>Inicio</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="/servicios" className="hover:text-purple-300 transition-colors flex items-center gap-2">
+                    <Building2 size={16} />
+                    <span>Servicios</span>
+                  </a>
+                </li>
+                <li>
+                  <a href="/productos" className="hover:text-purple-300 transition-colors flex items-center gap-2">
+                    <ShoppingBag size={16} />
+                    <span>Productos</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider" style={{ color: colors.darkTeal }}>Proveedores</h2>
+              <ul className="text-gray-500 dark:text-gray-400 font-medium space-y-4">
+                <li>
+                  <a href="/vende" className="hover:text-purple-300 transition-colors flex items-center gap-2">
+                    <Store size={16} />
+                    <span>Vende con nosotros</span>
+                  </a>
+                </li>
+               
+                
+              </ul>
+            </div>
+            <div>
+              <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider" style={{ color: colors.darkTeal }}>Contacto</h2>
+              <ul className="text-gray-500 dark:text-gray-400 font-medium space-y-4">
+                <li>
+                  <a href="mailto:contacto@evoca.com" className="hover:text-purple-300 transition-colors flex items-center gap-2">
+                    <Mail size={16} />
+                    <span>contacto@evoca.com</span>
+                  </a>
+                </li>
+             
+              </ul>
+            </div>
           </div>
         </div>
-
-        <div className="border-t border-gray-800 mt-8 pt-6 text-center">
-          <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} ÉVOCA. Todos los derechos reservados.
-          </p>
+        <hr className="my-8 border-gray-200 sm:mx-auto dark:border-gray-700" />
+        <div className="sm:flex sm:items-center sm:justify-between">
+          <span className="text-sm text-gray-500 sm:text-center dark:text-gray-400">
+            © {new Date().getFullYear()} <a href="/" className="hover:underline font-medium" style={{ color: colors.darkTeal }}>ÉVOCA™</a>. Todos los derechos reservados.
+          </span>
+          <div className="flex mt-4 space-x-6 sm:justify-center sm:mt-0">
+            <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+              <Facebook className="w-5 h-5" />
+              <span className="sr-only">Facebook</span>
+            </a>
+            <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+              <Instagram className="w-5 h-5" />
+              <span className="sr-only">Instagram</span>
+            </a>
+            <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+              <Twitter className="w-5 h-5" />
+              <span className="sr-only">Twitter</span>
+            </a>
+            <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+              <Linkedin className="w-5 h-5" />
+              <span className="sr-only">LinkedIn</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>
