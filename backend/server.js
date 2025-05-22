@@ -281,6 +281,19 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
+// Función para formatear fechas a 'YYYY-MM-DD HH:MM:SS'
+function formatDateToMySQL(date) {
+  return date.toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function generarUsuarioAleatorio() {
+  return 'user' + Math.random().toString(36).substring(2, 8);
+}
+
+function generarPasswordAleatorio() {
+  return Math.random().toString(36).slice(-7);
+}
+
 // Ruta para registrar un pago
 app.post('/registrar_pago', async (req, res) => {
   try {
@@ -289,11 +302,12 @@ app.post('/registrar_pago', async (req, res) => {
       fecha_pago,
       monto_pago,
       MEMBRESIA_id_membresia,
-      provedor_negocio_id_provedor
+      provedor_negocio_id_provedor,
+      PERSONA_id_persona
     } = req.body;
 
     // Validar que los campos requeridos estén presentes
-    if (!monto || !fecha_pago || !monto_pago || !MEMBRESIA_id_membresia || !provedor_negocio_id_provedor) {
+    if (!monto || !fecha_pago || !monto_pago || !MEMBRESIA_id_membresia || !provedor_negocio_id_provedor || !PERSONA_id_persona) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
@@ -306,9 +320,54 @@ app.post('/registrar_pago', async (req, res) => {
       provedor_negocio_id_provedor
     });
 
+    // Crear la membresía en PROVEDOR_MEMBRESIA
+    const fechaInicio = new Date(fecha_pago);
+    const fechaFin = new Date(fechaInicio);
+    fechaFin.setDate(fechaFin.getDate() + 30); // Puedes ajustar según la duración real del plan
+
+    const fechaInicioSQL = formatDateToMySQL(fechaInicio);
+    const fechaFinSQL = formatDateToMySQL(fechaFin);
+    const fechaPagoSQL = formatDateToMySQL(new Date(fecha_pago));
+
+    await conexion.query(
+      `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor)
+       VALUES (?, ?, ?, ?, ?)`,
+      {
+        replacements: [
+          fechaInicioSQL,
+          fechaFinSQL,
+          fechaPagoSQL,
+          MEMBRESIA_id_membresia,
+          provedor_negocio_id_provedor
+        ]
+      }
+    );
+
+    // Generar usuario y contraseña aleatorios
+    const user_name = generarUsuarioAleatorio();
+    const password = generarPasswordAleatorio();
+
+    // Log antes del insert en inicio_seccion
+    console.log('Intentando insertar en inicio_seccion:', { user_name, password, PERSONA_id_persona });
+
+    // Insertar en la tabla inicio_seccion
+    await conexion.query(
+      `INSERT INTO inicio_seccion (password, user_name, PERSONA_id_persona)
+       VALUES (?, ?, ?)`,
+      {
+        replacements: [password, user_name, PERSONA_id_persona]
+      }
+    );
+
+    // Log después del insert
+    console.log('Insert en inicio_seccion exitoso para:', { user_name, PERSONA_id_persona });
+
     res.status(201).json({
-      message: 'Pago registrado exitosamente',
-      pago: nuevoPago
+      message: 'Pago, membresía y credenciales registrados exitosamente',
+      credenciales: {
+        user_name,
+        password
+      }
     });
   } catch (error) {
     console.error('Error al registrar el pago:', error);
@@ -337,6 +396,84 @@ app.get('/pagos', async (req, res) => {
   } catch (error) {
     console.error('Error al obtener los pagos:', error);
     res.status(500).json({ error: 'Error al obtener los pagos' });
+  }
+});
+
+// Ruta para obtener la membresía actual de un proveedor
+app.get('/membresia/:proveedorId', async (req, res) => {
+  try {
+    const { proveedorId } = req.params;
+    // Usa el campo correcto id_provedor
+    const [result] = await conexion.query(`
+      SELECT pm.*, m.nombre_pla, m.precio, m.beneficios, m.duracion_dias
+      FROM PROVEDOR_MEMBRESIA pm
+      JOIN MEMBRESIA m ON pm.MEMBRESIA_id_memebresia = m.id_memebresia
+      WHERE pm.id_provedor = ?
+      ORDER BY pm.fecha_fin DESC
+      LIMIT 1
+    `, { replacements: [proveedorId] });
+
+    if (!result.length) {
+      return res.status(404).json({ error: 'No se encontró membresía para este proveedor' });
+    }
+    // Calcula días restantes y estado dinámicamente
+    const membresia = result[0];
+    const hoy = new Date();
+    const fechaFin = new Date(membresia.fecha_fin);
+    const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
+
+    if (diasRestantes > 7) {
+      membresia.estado = 'activa';
+    } else if (diasRestantes > 0) {
+      membresia.estado = 'por vencer';
+    } else {
+      membresia.estado = 'vencida';
+    }
+
+    membresia.dias_restantes = Math.max(0, diasRestantes);
+
+    res.json(membresia);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener la membresía' });
+  }
+});
+
+// Ruta para obtener el historial de pagos de un proveedor
+app.get('/pagos/:proveedorId', async (req, res) => {
+  try {
+    const { proveedorId } = req.params;
+    // Busca los pagos de ese proveedor
+    const [result] = await conexion.query(`
+      SELECT p.*, m.nombre_pla
+      FROM pago p
+      JOIN MEMBRESIA m ON p.m_e_m_b_r_e_s_i_a_id_membresia = m.id_memebresia
+      WHERE p.provedor_negocio_id_provedor = ?
+      ORDER BY p.fecha_pago DESC
+    `, { replacements: [proveedorId] });
+
+    res.json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al obtener los pagos' });
+  }
+});
+
+// Ruta para generar credenciales de acceso para un proveedor
+app.post('/generar_credenciales', async (req, res) => {
+  try {
+    // Puedes obtener el id_persona si lo necesitas: const { id_persona } = req.body;
+    // Aquí deberías generar credenciales reales, pero para pruebas devolvemos datos de ejemplo
+    res.json({
+      credentials: {
+        username: 'usuario_ejemplo',
+        password: 'contraseña123',
+        email: 'ejemplo@email.com'
+      }
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al generar credenciales' });
   }
 });
 
