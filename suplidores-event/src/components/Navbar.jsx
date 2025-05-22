@@ -16,7 +16,7 @@ function Navbar() {
   const location = useLocation();
 
   return (
-    <div className="flex flex-col border-r border-gray-200">
+    <div className="fixed h-screen flex flex-col border-r border-gray-200 bg-white z-50">
       {/* Header del Navbar */}
       <header className="h-16 flex items-center justify-center px-4 border-b border-gray-200">
         <div className="flex items-center">

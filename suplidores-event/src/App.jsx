@@ -42,10 +42,12 @@ import Confirmacion from './components/Confirmacion';
 // Nuevo componente Layout más flexible
 function Layout({ children }) {
   return (
-    <div className="flex h-screen">
+    <div className="min-h-screen flex">
       <Navbar />
-      <div className="flex-1 overflow-auto">
-        {children}
+      <div className="flex-1 transition-all duration-300 ml-16 lg:ml-48">
+        <main className="flex-1">
+          {children}
+        </main>
         <Footer />
       </div>
     </div>

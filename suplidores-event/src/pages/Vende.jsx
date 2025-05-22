@@ -9,7 +9,7 @@ const colors = {
 const Vende = () => {
   return (
 <div className="flex flex-col min-h-full">       {/* Hero Section - Cambiado a imagen simple sin gradiente */}
-       <section className="relative py-16 md:py-24">
+       <section className="relative py-16 md:py-24 w-full">
           <div className="absolute inset-0 overflow-hidden">
             <img
               src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1470&auto=format&fit=crop"
