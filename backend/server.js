@@ -282,6 +282,14 @@ function formatDateToMySQL(date) {
   return date.toISOString().slice(0, 19).replace('T', ' ');
 }
 
+function generarUsuarioAleatorio() {
+  return 'user' + Math.random().toString(36).substring(2, 8);
+}
+
+function generarPasswordAleatorio() {
+  return Math.random().toString(36).slice(-7);
+}
+
 // Ruta para registrar un pago
 app.post('/registrar_pago', async (req, res) => {
   try {
@@ -290,11 +298,12 @@ app.post('/registrar_pago', async (req, res) => {
       fecha_pago,
       monto_pago,
       MEMBRESIA_id_membresia,
-      provedor_negocio_id_provedor
+      provedor_negocio_id_provedor,
+      PERSONA_id_persona
     } = req.body;
 
     // Validar que los campos requeridos estén presentes
-    if (!monto || !fecha_pago || !monto_pago || !MEMBRESIA_id_membresia || !provedor_negocio_id_provedor) {
+    if (!monto || !fecha_pago || !monto_pago || !MEMBRESIA_id_membresia || !provedor_negocio_id_provedor || !PERSONA_id_persona) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
     }
 
@@ -308,7 +317,6 @@ app.post('/registrar_pago', async (req, res) => {
     });
 
     // Crear la membresía en PROVEDOR_MEMBRESIA
-    // Calcula fecha de inicio y fin (ejemplo: 30 días)
     const fechaInicio = new Date(fecha_pago);
     const fechaFin = new Date(fechaInicio);
     fechaFin.setDate(fechaFin.getDate() + 30); // Puedes ajustar según la duración real del plan
@@ -331,9 +339,31 @@ app.post('/registrar_pago', async (req, res) => {
       }
     );
 
+    // Generar usuario y contraseña aleatorios
+    const user_name = generarUsuarioAleatorio();
+    const password = generarPasswordAleatorio();
+
+    // Log antes del insert en inicio_seccion
+    console.log('Intentando insertar en inicio_seccion:', { user_name, password, PERSONA_id_persona });
+
+    // Insertar en la tabla inicio_seccion
+    await conexion.query(
+      `INSERT INTO inicio_seccion (password, user_name, PERSONA_id_persona)
+       VALUES (?, ?, ?)`,
+      {
+        replacements: [password, user_name, PERSONA_id_persona]
+      }
+    );
+
+    // Log después del insert
+    console.log('Insert en inicio_seccion exitoso para:', { user_name, PERSONA_id_persona });
+
     res.status(201).json({
-      message: 'Pago y membresía registrados exitosamente',
-      pago: nuevoPago
+      message: 'Pago, membresía y credenciales registrados exitosamente',
+      credenciales: {
+        user_name,
+        password
+      }
     });
   } catch (error) {
     console.error('Error al registrar el pago:', error);

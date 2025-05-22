@@ -47,18 +47,19 @@ const PaymentForm = ({ amount, planName }) => {
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Obtener los IDs de proveedor y membresía desde localStorage
+        // Obtener los IDs de proveedor, membresía y persona desde localStorage
         const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
         const membresiaId = localStorage.getItem('MEMBRESIA_id_membresia');
+        const personaId = localStorage.getItem('PERSONA_id_persona');
 
-        if (!proveedorId || !membresiaId) {
-          setError('No se encontró el ID de proveedor o membresía.');
+        if (!proveedorId || !membresiaId || !personaId) {
+          setError('No se encontró el ID de proveedor, membresía o persona.');
           setLoading(false);
           return;
         }
 
-        // Llamar al backend para registrar el pago
-        await fetch('http://localhost:3000/registrar_pago', {
+        // Llamar al backend para registrar el pago y obtener credenciales
+        const pagoResponse = await fetch('http://localhost:3000/registrar_pago', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -66,15 +67,19 @@ const PaymentForm = ({ amount, planName }) => {
             fecha_pago: new Date().toISOString(),
             monto_pago: amount,
             MEMBRESIA_id_membresia: membresiaId,
-            provedor_negocio_id_provedor: proveedorId
+            provedor_negocio_id_provedor: proveedorId,
+            PERSONA_id_persona: personaId
           })
         });
+
+        const pagoData = await pagoResponse.json();
 
         navigate('/confirmacion', { 
           state: { 
             success: true,
             planName,
-            amount
+            amount,
+            credenciales: pagoData.credenciales
           }
         });
       }
