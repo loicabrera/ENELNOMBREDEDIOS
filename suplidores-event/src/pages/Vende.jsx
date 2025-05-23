@@ -1,4 +1,6 @@
 import { Link } from "react-router-dom";
+import { Target, Settings, BarChart3, HelpCircle } from "lucide-react";
+
 const colors = {
   sage: "#9CAF88",
   purple: "#cbb4db",
@@ -138,7 +140,9 @@ const Vende = () => {
         <h2>¿Por qué registrar tu servicio con nosotros?</h2>
         <div className="benefits-grid">
           <div className="benefit-item">
-            <div className="benefit-icon">🎯</div>
+            <div className="benefit-icon">
+              <Target size={32} className="text-purple" />
+            </div>
             <h3>Mayor visibilidad</h3>
             <p>
               Llega a clientes que están buscando específicamente tus servicios
@@ -146,7 +150,9 @@ const Vende = () => {
             </p>
           </div>
           <div className="benefit-item">
-            <div className="benefit-icon">💼</div>
+            <div className="benefit-icon">
+              <Settings size={32} className="text-purple" />
+            </div>
             <h3>Gestión sencilla</h3>
             <p>
               Panel de control fácil de usar para administrar tus publicaciones
@@ -154,7 +160,9 @@ const Vende = () => {
             </p>
           </div>
           <div className="benefit-item">
-            <div className="benefit-icon">📊</div>
+            <div className="benefit-icon">
+              <BarChart3 size={32} className="text-purple" />
+            </div>
             <h3>Estadísticas detalladas</h3>
             <p>
               Conoce el rendimiento de tus anuncios y optimiza tu estrategia
@@ -163,49 +171,26 @@ const Vende = () => {
         </div>
       </div>
 
-      {/* TESTIMONIOS */}
-      <div className="vende-testimonials">
-        <h2>Lo que dicen nuestros proveedores</h2>
-        <div className="testimonials-container">
-          <div className="testimonial-card">
-            <p className="testimonial-text">
-              "Desde que me registré en el directorio, mis servicios de catering
-              han aumentado un 40%. La plataforma es muy intuitiva y los
-              clientes me contactan directamente."
-            </p>
-            <div className="testimonial-author">
-              <p className="author-name">María González</p>
-              <p className="author-business">Delicias Catering</p>
-            </div>
-          </div>
-
-          <div className="testimonial-card">
-            <p className="testimonial-text">
-              "Como fotógrafo de eventos, necesitaba una forma de llegar a más
-              clientes. Con el plan destacado, mi agenda está completa por los
-              próximos 3 meses."
-            </p>
-            <div className="testimonial-author">
-              <p className="author-name">Carlos Mendoza</p>
-              <p className="author-business">CM Fotografía</p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* FAQ */}
       <div className="vende-faq">
         <h2>Preguntas frecuentes</h2>
         <div className="faq-item">
-          <h3>¿Cómo funciona el proceso de registro?</h3>
+          <div className="faq-header">
+            <h3>¿Cómo funciona el proceso de registro?</h3>
+            <HelpCircle size={24} className="text-purple" />
+          </div>
           <p>
             Nosotros creamos tu cuenta con un usuario y contraseña base. Una vez
-            que eliges y pagas tu plan, te enviamos tus credenciales para que
+            que eliges y pagas tu plan, te proporcionamos tus credenciales unicas que debes de guardar para que
             puedas acceder y comenzar a publicar tus servicios.
           </p>
         </div>
         <div className="faq-item">
-          <h3>¿Puedo cambiar de plan más adelante?</h3>
+          <div className="faq-header">
+            <h3>¿Puedo cambiar de plan más adelante?</h3>
+            <HelpCircle size={24} className="text-purple" />
+          </div>
           <p>
             Sí, puedes actualizar tu plan en cualquier momento. La diferencia de
             precio se calculará proporcionalmente al tiempo restante de tu
@@ -213,10 +198,13 @@ const Vende = () => {
           </p>
         </div>
         <div className="faq-item">
-          <h3>¿Qué pasa cuando mi membresía expire?</h3>
+          <div className="faq-header">
+            <h3>¿Qué pasa cuando mi membresía expire?</h3>
+            <HelpCircle size={24} className="text-purple" />
+          </div>
           <p>
             Te enviaremos recordatorios antes de que tu membresía expire. Si no
-            renuevas, tus publicaciones dejarán de ser visibles, pero tu cuenta
+            renuevas, tu cuenta estara inactiva y tus publicaciones dejarán de ser visibles, pero tu cuenta
             y datos permanecerán en el sistema para cuando decidas reactivarla.
           </p>
         </div>
