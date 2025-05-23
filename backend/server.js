@@ -6,9 +6,10 @@ import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 import stripe from './config/stripe.js';
 import { Pago } from './Models/Pago.js';
-import { INICIO_SECCION } from './Models/inicio_seccion.js';
+import { Producto, ImagenProducto, Servicio, ImagenServicio } from './Models/Publicacion.js';
+import multer from 'multer';
+import path from 'path';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const app = express();
@@ -18,6 +19,18 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const upload = multer({ storage: storage });
+
+app.use('/uploads', express.static('uploads'));
 
 // Rutas básicas
 app.get('/', (req, res) => {
@@ -518,6 +531,55 @@ app.post('/api/productos', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Error al crear el producto.' });
+  }
+});
+
+// Ruta para login de proveedor
+app.post('/login_proveedor', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Buscar el usuario en la tabla inicio_seccion
+    const [result] = await conexion.query(
+      `SELECT * FROM inicio_seccion WHERE user_name = ? AND password = ?`,
+      { replacements: [username, password] }
+    );
+
+    if (result.length === 0) {
+      return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+    }
+
+    // Puedes traer más datos si lo necesitas, por ejemplo el id_persona
+    const user = result[0];
+
+    res.json({ message: 'Login exitoso', user });
+  } catch (error) {
+    console.error('Error en login_proveedor:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
+// Endpoint para subir imagen de producto
+app.post('/api/imagenes_productos', upload.single('imagen'), async (req, res) => {
+  try {
+    const { productos_id_productos } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No se subió ninguna imagen.' });
+    }
+
+    const url_imagen = `/uploads/${file.filename}`;
+
+    await conexion.query(
+      'INSERT INTO IMAGENES_productos (url_imagen, cantidad, productos_id_productos) VALUES (?, ?, ?)',
+      [url_imagen, 1, productos_id_productos]
+    );
+
+    res.json({ success: true, url_imagen });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Error al subir la imagen.' });
   }
 });
 

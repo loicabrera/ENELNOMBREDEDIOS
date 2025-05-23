@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -29,40 +29,68 @@ const Publications = () => {
     imagenes: []
   });
 
-  const [publications] = useState([
-    {
-      id: 1,
-      title: 'Servicio de Catering para Eventos Corporativos',
-      status: 'published',
-      date: '2024-03-15',
-      views: 245,
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Buffet para Bodas y Eventos Sociales',
-      status: 'pending',
-      date: '2024-03-14',
-      views: 0,
-      featured: false
-    },
-    {
-      id: 3,
-      title: 'Servicio de Coctelería Profesional',
-      status: 'draft',
-      date: '2024-03-13',
-      views: 0,
-      featured: false
-    },
-    {
-      id: 4,
-      title: 'Menú Degustación para Eventos Especiales',
-      status: 'rejected',
-      date: '2024-03-12',
-      views: 0,
-      featured: false
+  
+  const [proveedor, setProveedor] = useState(null);
+  const [productos, setProductos] = useState([]);
+  const [imagenes, setImagenes] = useState([]);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = '/login';
+      return;
     }
-  ]);
+    // Obtener proveedor autenticado
+    fetch('http://localhost:3000/proveedores')
+      .then(res => res.json())
+      .then(data => {
+        const prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        setProveedor(prov);
+        if (prov) {
+          // Obtener productos del proveedor
+          fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
+            .then(res => res.json())
+            .then(setProductos);
+        }
+      });
+  }, []);
+
+  // Manejar cambio de imágenes
+  const handleImagenesChange = e => {
+    setImagenes([...e.target.files]);
+  };
+
+  // Ejemplo de función para crear producto (ajusta según tu formulario)
+  const handleCrearProducto = async (nuevoProducto) => {
+    if (!proveedor) return;
+    // Crear producto
+    const res = await fetch('http://localhost:3000/api/productos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...nuevoProducto,
+        provedor_negocio_id_provedor: proveedor.id_provedor
+      })
+    });
+    const data = await res.json();
+    if (data.id_producto) {
+      // Subir imágenes si hay
+      for (let img of imagenes) {
+        const formData = new FormData();
+        formData.append('imagen', img);
+        formData.append('productos_id_productos', data.id_producto);
+        await fetch('http://localhost:3000/api/imagenes_productos', {
+          method: 'POST',
+          body: formData
+        });
+      }
+      alert('Producto creado con éxito');
+      // Recargar productos
+      fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
+        .then(res => res.json())
+        .then(setProductos);
+    }
+  };
 
   const getStatusBadge = (status) => {
     const statusStyles = {
@@ -415,24 +443,24 @@ const Publications = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {publications.map((publication) => (
-                        <tr key={publication.id}>
+                      {productos.map((producto) => (
+                        <tr key={producto.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="text-sm font-medium text-gray-900">{publication.title}</div>
-                              {publication.featured && (
+                              <div className="text-sm font-medium text-gray-900">{producto.nombre}</div>
+                              {producto.featured && (
                                 <StarIcon className="ml-2 h-5 w-5 text-yellow-400" />
                               )}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(publication.status)}
+                            {getStatusBadge(producto.status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {publication.date}
+                            {producto.date}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {publication.views}
+                            {producto.views}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <button className="text-blue-600 hover:text-blue-900 mr-3">

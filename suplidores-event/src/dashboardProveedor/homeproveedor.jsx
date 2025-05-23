@@ -30,28 +30,28 @@ const HomeProveedor = () => {
       value: profileData.activePosts,
       icon: DocumentTextIcon,
       color: "bg-blue-500",
-      link: "/dashboard/publicaciones"
+      link: "/dashboard-proveedor/publicaciones"
     },
     {
       title: "Vencimiento Membresía",
       value: new Date(profileData.membershipExpiry).toLocaleDateString(),
       icon: CalendarIcon,
       color: "bg-green-500",
-      link: "/dashboard/membresia"
+      link: "/dashboard-proveedor/membresia"
     },
     {
       title: "Mensajes Nuevos",
       value: profileData.unreadMessages,
       icon: ChatBubbleLeftRightIcon,
       color: "bg-purple-500",
-      link: "/dashboard/solicitudes"
+      link: "/dashboard-proveedor/solicitudes"
     },
     {
       title: "Última Publicación",
       value: profileData.lastPostStatus,
       icon: CheckCircleIcon,
       color: "bg-yellow-500",
-      link: "/dashboard/publicaciones"
+      link: "/dashboard-proveedor/publicaciones"
     }
   ];
 
@@ -60,42 +60,42 @@ const HomeProveedor = () => {
       title: "Publicaciones",
       description: "Administra tus servicios y productos publicados",
       icon: DocumentTextIcon,
-      link: "/dashboard/publicaciones",
+      link: "/dashboard-proveedor/publicaciones",
       color: "bg-blue-100 text-blue-600"
     },
     {
       title: "Solicitudes",
       description: "Revisa las solicitudes de contacto de tus clientes",
       icon: ChatBubbleLeftRightIcon,
-      link: "/dashboard/solicitudes",
+      link: "/dashboard-proveedor/solicitudes",
       color: "bg-purple-100 text-purple-600"
     },
     {
       title: "Membresía",
       description: "Gestiona tu plan y estado de membresía",
       icon: CreditCardIcon,
-      link: "/dashboard/membresia",
+      link: "/dashboard-proveedor/membresia",
       color: "bg-green-100 text-green-600"
     },
     {
       title: "Estadísticas",
       description: "Visualiza el rendimiento de tus publicaciones",
       icon: ChartBarIcon,
-      link: "/dashboard/stats",
+      link: "/dashboard-proveedor/stats",
       color: "bg-yellow-100 text-yellow-600"
     },
     {
       title: "Perfil",
       description: "Actualiza la información de tu negocio",
       icon: UserIcon,
-      link: "/dashboard/perfil",
+      link: "/dashboard-proveedor/perfil",
       color: "bg-red-100 text-red-600"
     },
     {
       title: "Notificaciones",
       description: "Revisa tus notificaciones y alertas",
       icon: BellIcon,
-      link: "/dashboard/notificaciones",
+      link: "/dashboard-proveedor/notificaciones",
       color: "bg-indigo-100 text-indigo-600"
     }
   ];

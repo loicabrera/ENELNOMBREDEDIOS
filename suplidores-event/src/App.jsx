@@ -27,13 +27,13 @@ import "./vende.css";
 import DatosPersonas from "./Formularios/datospersonas";
 import DatosProveedor from "./Formularios/datosproveedor";
 
-import Login from "./inicioSeccion/Login";
 import Home from "./pages/Home";
 import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
 
+import Login from "./components/LoginProveedor";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import PaymentContainer from './components/PaymentContainer';
@@ -189,7 +189,7 @@ function App() {
         />
 
         {/* Rutas del Dashboard del Proveedor */}
-        <Route path="/dashboard" element={<DashboardLayout />}>
+        <Route path="/dashboard-proveedor/*" element={<DashboardLayout />}>
           <Route index element={<HomeProveedor />} />
           <Route path="perfil" element={<Profile />} />
           <Route path="publicaciones" element={<Publications />} />
@@ -201,9 +201,10 @@ function App() {
 
         {/* Ruta alternativa para el dashboard del proveedor */}
         <Route 
-          path="/dashboardproveedor"
+          path="/dashboard"
           element={<HomeProveedor />}
         />
+        
       </Routes>
     </Router>
   );
