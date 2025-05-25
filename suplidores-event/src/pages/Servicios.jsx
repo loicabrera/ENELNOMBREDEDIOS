@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const IMAGEN_DEFAULT = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; // Imagen predeterminada
 
@@ -7,6 +8,7 @@ const Servicios = () => {
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [imagenes] }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch('http://localhost:3000/api/servicios')
@@ -49,7 +51,11 @@ const Servicios = () => {
             const imagenes = imagenesServicios[servicio.id_servicio] || [];
             const imagenReal = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_servicio/${imagenes[0].id_imagenes}` : null;
             return (
-              <div key={servicio.id_servicio} className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-2xl transition-shadow duration-200">
+              <div
+                key={servicio.id_servicio}
+                className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-2xl transition-shadow duration-200 cursor-pointer"
+                onClick={() => navigate(`/servicios/${servicio.id_servicio}`)}
+              >
                 {imagenReal && (
                   <img
                     src={imagenReal}
@@ -59,8 +65,6 @@ const Servicios = () => {
                 )}
                 <div className="p-6 flex flex-col flex-1">
                   <h3 className="text-xl font-semibold text-blue-700 mb-2">{servicio.nombre}</h3>
-                  <p className="text-gray-700 mb-4 flex-1">{servicio.descripcion}</p>
-                  <div className="text-lg font-bold text-blue-900 mb-2">Precio: ${servicio.precio}</div>
                 </div>
               </div>
             );

@@ -32,6 +32,7 @@ import Perfil from "./pages/Perfil";
 import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
+import DetalleServicio from './pages/DetalleServicio';
 
 import Login from "./components/LoginProveedor";
 import Footer from "./components/Footer";
@@ -216,6 +217,14 @@ function App() {
           element={<HomeProveedor />}
         />
         
+        <Route
+          path="/servicios/:id"
+          element={
+            <Layout>
+              <DetalleServicio />
+            </Layout>
+          }
+        />
       </Routes>
     </Router>
   );
