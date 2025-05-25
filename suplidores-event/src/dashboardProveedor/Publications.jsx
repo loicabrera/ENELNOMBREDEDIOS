@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { 
   PlusIcon, 
   PencilIcon, 
@@ -33,6 +33,8 @@ const Publications = () => {
   const [proveedor, setProveedor] = useState(null);
   const [productos, setProductos] = useState([]);
   const [imagenes, setImagenes] = useState([]);
+  const [servicios, setServicios] = useState([]);
+  const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [id_imagenes, ...] }
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -51,14 +53,48 @@ const Publications = () => {
           fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
             .then(res => res.json())
             .then(setProductos);
+          // Obtener servicios del proveedor
+          fetch(`http://localhost:3000/api/servicios`)
+            .then(res => res.json())
+            .then(servs => {
+              const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === prov.id_provedor);
+              setServicios(misServicios);
+              // Por cada servicio, obtener sus imágenes
+              misServicios.forEach(servicio => {
+                fetch(`http://localhost:3000/api/imagenes_servicio/por-servicio/${servicio.id_servicio}`)
+                  .then(res => res.json())
+                  .then(imgs => {
+                    setImagenesServicios(prev => ({
+                      ...prev,
+                      [servicio.id_servicio]: imgs
+                    }));
+                  });
+              });
+            });
         }
       });
   }, []);
 
-  // Manejar cambio de imágenes
-  const handleImagenesChange = e => {
+  // Memoize handlers
+  const handleServicioChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setServicioForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  const handleProductoChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setProductoForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  const handleImagenesChange = useCallback(e => {
     setImagenes([...e.target.files]);
-  };
+  }, []);
 
   // Ejemplo de función para crear producto (ajusta según tu formulario)
   const handleCrearProducto = async (nuevoProducto) => {
@@ -115,26 +151,52 @@ const Publications = () => {
     );
   };
 
-  const handleServicioChange = (e) => {
-    const { name, value } = e.target;
-    setServicioForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleProductoChange = (e) => {
-    const { name, value } = e.target;
-    setProductoForm(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleServicioSubmit = (e) => {
+  const handleServicioSubmit = async (e) => {
     e.preventDefault();
-    console.log('Datos del servicio:', servicioForm);
-    // Aquí iría la lógica para guardar el servicio
+    if (!proveedor) {
+      console.error('No hay proveedor autenticado');
+      return;
+    }
+    if (!servicioForm.nombre || !servicioForm.descripcion || !servicioForm.tipo_servicio || !servicioForm.precio) {
+      alert('Por favor, completa todos los campos requeridos.');
+      return;
+    }
+    try {
+      // 1. Crear el servicio
+      const res = await fetch('http://localhost:3000/api/servicios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: servicioForm.nombre,
+          descripcion: servicioForm.descripcion,
+          tipo_servicio: servicioForm.tipo_servicio,
+          precio: servicioForm.precio,
+          provedor_negocio_id_provedor: proveedor.id_provedor
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert('Error al crear el servicio: ' + (data.error || 'Error desconocido'));
+        return;
+      }
+      if (data.id_servicio) {
+        // 2. Subir imágenes si hay
+        for (let img of servicioForm.imagenes) {
+          const formData = new FormData();
+          formData.append('imagen', img);
+          formData.append('SERVICIO_id_servicio', data.id_servicio);
+          await fetch('http://localhost:3000/api/imagenes_servicio', {
+            method: 'POST',
+            body: formData
+          });
+        }
+        alert('Servicio creado con éxito');
+        // Aquí puedes recargar la lista de servicios si lo deseas
+      }
+    } catch (error) {
+      console.error('Error en el submit del servicio:', error);
+      alert('Ocurrió un error al enviar el formulario. Revisa la consola para más detalles.');
+    }
   };
 
   const handleProductoSubmit = (e) => {
@@ -143,12 +205,13 @@ const Publications = () => {
     // Aquí iría la lógica para guardar el producto
   };
 
-  // Formulario de Servicio
-  const ServicioForm = () => (
+  // Memoize form components
+  const ServicioForm = memo(() => (
     <form onSubmit={handleServicioSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900">Nuevo Servicio</h2>
         <button
+          type="button"
           onClick={() => setTipoVendedor('selector')}
           className="text-gray-500 hover:text-gray-700"
         >
@@ -157,38 +220,38 @@ const Publications = () => {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-4">
-        <div>
+        <div className="space-y-4">
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Servicio</label>
-          <input
-            type="text"
-            name="nombre"
-            value={servicioForm.nombre}
-            onChange={handleServicioChange}
+            <input
+              type="text"
+              name="nombre"
+              value={servicioForm.nombre}
+              onChange={handleServicioChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            required
-          />
-        </div>
+              required
+            />
+          </div>
 
-        <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
-          <input
-            type="text"
-            name="tipo_servicio"
-            value={servicioForm.tipo_servicio}
-            onChange={handleServicioChange}
+            <input
+              type="text"
+              name="tipo_servicio"
+              value={servicioForm.tipo_servicio}
+              onChange={handleServicioChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            required
-          />
-        </div>
+              required
+            />
+          </div>
 
-        <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-          <input
-            type="number"
-            name="precio"
-            value={servicioForm.precio}
-            onChange={handleServicioChange}
+            <input
+              type="number"
+              name="precio"
+              value={servicioForm.precio}
+              onChange={handleServicioChange}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               required
             />
@@ -204,11 +267,11 @@ const Publications = () => {
               onChange={handleServicioChange}
               rows="4"
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            required
-          />
-        </div>
+              required
+            />
+          </div>
 
-        <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
               <div className="space-y-1 text-center">
@@ -232,30 +295,38 @@ const Publications = () => {
                     className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                   >
                     <span>Subir imágenes</span>
-          <input
+                    <input
                       id="file-upload"
                       name="file-upload"
-            type="file"
-            multiple
-            accept="image/*"
+                      type="file"
+                      multiple
+                      accept="image/*"
                       className="sr-only"
-            onChange={(e) => {
-              const files = Array.from(e.target.files);
-              setServicioForm(prev => ({
-                ...prev,
-                imagenes: files
-              }));
-            }}
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files);
+                        setServicioForm(prev => ({
+                          ...prev,
+                          imagenes: files
+                        }));
+                      }}
                     />
                   </label>
                   <p className="pl-1">o arrastrar y soltar</p>
                 </div>
                 <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                {/* Mostrar nombres de imágenes seleccionadas */}
+                {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
+                  <ul className="mt-2 text-xs text-gray-700 text-left">
+                    {servicioForm.imagenes.map((img, idx) => (
+                      <li key={idx}>{img.name}</li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
         </div>
-        </div>
+      </div>
 
       <div className="mt-8 flex justify-end space-x-4">
         <button
@@ -273,7 +344,7 @@ const Publications = () => {
         </button>
       </div>
     </form>
-  );
+  ));
 
   // Formulario de Producto
   const ProductoForm = () => (
@@ -454,6 +525,16 @@ const Publications = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
+                            {/* Mostrar imagen del producto */}
+                            {producto.url_imagen && (
+                              <img
+                                src={`http://localhost:3000${producto.url_imagen}`}
+                                alt="Producto"
+                                style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }}
+                              />
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
                             {getStatusBadge(producto.status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -510,7 +591,51 @@ const Publications = () => {
           </div>
         ) : (
           <div className="mt-8">
-            {tipoVendedor === 'servicios' && <ServicioForm />}
+            {tipoVendedor === 'servicios' && (
+              <>
+                {servicios.length > 0 && (
+                  <div className="bg-white shadow rounded-lg mb-8">
+                    <div className="px-4 py-5 sm:p-6">
+                      <h2 className="text-lg font-medium text-gray-900 mb-4">Servicios Activos</h2>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imágenes</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {servicios.map(servicio => (
+                              <tr key={servicio.id_servicio}>
+                                <td className="px-6 py-4 whitespace-nowrap">{servicio.nombre}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <div style={{ display: 'flex', gap: 8 }}>
+                                    {(imagenesServicios[servicio.id_servicio] || []).map(img => (
+                                      <img
+                                        key={img.id_imagenes}
+                                        src={`http://localhost:3000/api/imagenes_servicio/${img.id_imagenes}`}
+                                        alt="Servicio"
+                                        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }}
+                                      />
+                                    ))}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">{servicio.descripcion}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">${servicio.precio}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <ServicioForm />
+              </>
+            )}
             {tipoVendedor === 'productos' && <ProductoForm />}
           </div>
         )}

@@ -199,6 +199,17 @@ function App() {
           <Route path="notificaciones" element={<Notifications />} />
         </Route>
 
+        {/* Ruta alternativa sin guión */}
+        <Route path="/dashboardproveedor/*" element={<DashboardLayout />}>
+          <Route index element={<HomeProveedor />} />
+          <Route path="perfil" element={<Profile />} />
+          <Route path="publicaciones" element={<Publications />} />
+          <Route path="solicitudes" element={<ContactRequests />} />
+          <Route path="membresia" element={<Membership />} />
+          <Route path="stats" element={<Stats />} />
+          <Route path="notificaciones" element={<Notifications />} />
+        </Route>
+
         {/* Ruta alternativa para el dashboard del proveedor */}
         <Route 
           path="/dashboard"

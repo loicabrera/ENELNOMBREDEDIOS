@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   DocumentTextIcon, 
@@ -12,46 +12,69 @@ import {
 } from '@heroicons/react/24/outline';
 
 const HomeProveedor = () => {
-  // Mock data - replace with actual data from your backend
-  const profileData = {
-    name: "Servicios Profesionales XYZ",
-    serviceType: "Servicios de Consultoría",
-    plan: "Premium",
-    status: "Activo",
-    activePosts: 5,
-    membershipExpiry: "2024-12-31",
-    unreadMessages: 3,
-    lastPostStatus: "Aprobado"
-  };
+  const [proveedor, setProveedor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+
+    // Fetch proveedores
+    fetch('http://localhost:3000/proveedores')
+      .then(res => res.json())
+      .then(data => {
+        const proveedorLogueado = data.find(
+          p => p.PERSONA_id_persona === user.PERSONA_id_persona
+        );
+        if (proveedorLogueado) {
+          setProveedor(proveedorLogueado);
+        } else {
+          setError('No se encontró tu perfil de proveedor');
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        setError('Error al cargar los datos del proveedor');
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div className="p-8 text-center">Cargando...</div>;
+  if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+  if (!proveedor) return <div className="p-8 text-center">No se encontró tu perfil de proveedor</div>;
 
   const keyIndicators = [
     {
       title: "Publicaciones Activas",
-      value: profileData.activePosts,
+      value: proveedor.publicaciones_activas || 0,
       icon: DocumentTextIcon,
       color: "bg-blue-500",
       link: "/dashboard-proveedor/publicaciones"
     },
     {
       title: "Vencimiento Membresía",
-      value: new Date(profileData.membershipExpiry).toLocaleDateString(),
+      value: proveedor.fecha_vencimiento ? new Date(proveedor.fecha_vencimiento).toLocaleDateString() : 'No disponible',
       icon: CalendarIcon,
       color: "bg-green-500",
       link: "/dashboard-proveedor/membresia"
     },
     {
       title: "Mensajes Nuevos",
-      value: profileData.unreadMessages,
+      value: proveedor.mensajes_nuevos || 0,
       icon: ChatBubbleLeftRightIcon,
       color: "bg-purple-500",
       link: "/dashboard-proveedor/solicitudes"
     },
     {
-      title: "Última Publicación",
-      value: profileData.lastPostStatus,
+      title: "Estado",
+      value: proveedor.estado || 'Activo',
       icon: CheckCircleIcon,
       color: "bg-yellow-500",
-      link: "/dashboard-proveedor/publicaciones"
+      link: "/dashboard-proveedor/perfil"
     }
   ];
 
@@ -106,19 +129,19 @@ const HomeProveedor = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center space-x-4">
           <img
-            src="https://via.placeholder.com/100"
+            src={proveedor.logo_url || "https://via.placeholder.com/100"}
             alt="Logo"
             className="h-20 w-20 rounded-lg object-cover"
           />
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">{profileData.name}</h2>
-            <p className="text-gray-600">{profileData.serviceType}</p>
+            <h2 className="text-2xl font-bold text-gray-800">{proveedor.nombre_empresa}</h2>
+            <p className="text-gray-600">{proveedor.tipo_servicio}</p>
             <div className="mt-2 flex items-center space-x-4">
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                Plan {profileData.plan}
+                Plan {proveedor.plan || 'Básico'}
               </span>
               <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                {profileData.status}
+                {proveedor.estado || 'Activo'}
               </span>
             </div>
           </div>
@@ -154,48 +177,19 @@ const HomeProveedor = () => {
           <Link
             key={index}
             to={action.link}
-            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-all duration-200 hover:scale-105"
+            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200"
           >
-            <div className="flex items-start space-x-4">
-              <div className={`p-3 rounded-lg ${action.color}`}>
+            <div className="flex items-center space-x-4">
+              <div className={`p-3 rounded-full ${action.color}`}>
                 <action.icon className="h-6 w-6" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">{action.title}</h3>
-                <p className="text-gray-600 mt-1">{action.description}</p>
+                <h3 className="font-semibold text-gray-800">{action.title}</h3>
+                <p className="text-sm text-gray-600">{action.description}</p>
               </div>
             </div>
           </Link>
         ))}
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b">
-          <h3 className="text-lg font-semibold text-gray-800">Actividad Reciente</h3>
-        </div>
-        <div className="p-6">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="p-2 bg-green-100 rounded-full">
-                <CheckCircleIcon className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-800">Nueva publicación aprobada</p>
-                <p className="text-xs text-gray-500">Hace 2 horas</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="p-2 bg-blue-100 rounded-full">
-                <ChatBubbleLeftRightIcon className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-gray-800">Nueva solicitud de contacto</p>
-                <p className="text-xs text-gray-500">Hace 5 horas</p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

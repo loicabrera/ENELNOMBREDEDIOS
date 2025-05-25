@@ -1,7 +1,7 @@
 // backend/server.js
 import express from 'express';
 import cors from 'cors';
-import conexion, { testConnection } from './db.js';
+import conexion, { testConnection, dbConfig } from './db.js';
 import { Proveedor } from './Models/Proveedor.js';
 import { PERSONA } from './Models/Persona.js';
 import stripe from './config/stripe.js';
@@ -10,6 +10,7 @@ import { Producto, ImagenProducto, Servicio, ImagenServicio } from './Models/Pub
 import multer from 'multer';
 import path from 'path';
 import dotenv from 'dotenv';
+import mysql from 'mysql2/promise';
 dotenv.config();
 
 const app = express();
@@ -30,7 +31,19 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
+// Nuevo: memoryStorage para imágenes de servicios
+const memoryStorage = multer.memoryStorage();
+const uploadMemory = multer({ storage: memoryStorage });
+
 app.use('/uploads', express.static('uploads'));
+
+const db = mysql.createPool({
+  host: dbConfig.host,
+  user: dbConfig.user,
+  password: dbConfig.password,
+  database: dbConfig.database,
+  port: dbConfig.port
+});
 
 // Rutas básicas
 app.get('/', (req, res) => {
@@ -504,33 +517,17 @@ async function getLimiteProductos(proveedorId) {
 
 // Endpoint para crear producto
 app.post('/api/productos', async (req, res) => {
+  const { nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria } = req.body;
+  console.log('Datos recibidos para crear producto:', req.body);
   try {
-    const { nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria } = req.body;
-
-    // 1. Verifica cuántos productos tiene el proveedor
-    const [productos] = await conexion.query(
-      'SELECT COUNT(*) as total FROM productos WHERE provedor_negocio_id_provedor = ?',
-      { replacements: [provedor_negocio_id_provedor] }
-    );
-    const totalProductos = productos[0].total;
-
-    // 2. Obtén el límite según la membresía
-    const limite = await getLimiteProductos(provedor_negocio_id_provedor);
-
-    if (limite > 0 && totalProductos >= limite) {
-      return res.status(403).json({ error: 'Has alcanzado el límite de productos según tu membresía.' });
-    }
-
-    // 3. Inserta el producto
-    const [result] = await conexion.query(
+    const [result] = await db.query(
       'INSERT INTO productos (nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria) VALUES (?, ?, ?, ?, ?, ?)',
-      [nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria]
+      [nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria || null]
     );
-    
-    res.json({ success: true, id_producto: result.insertId });
+    res.json({ id_producto: result.insertId });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Error al crear el producto.' });
+    console.error('Error al crear producto:', err);
+    res.status(500).json({ error: 'Error al crear el producto', details: err });
   }
 });
 
@@ -581,6 +578,111 @@ app.post('/api/imagenes_productos', upload.single('imagen'), async (req, res) =>
     console.error(error);
     res.status(500).json({ error: 'Error al subir la imagen.' });
   }
+});
+
+// Endpoint para obtener productos de un proveedor
+app.get('/api/productos', async (req, res) => {
+  const { provedor_negocio_id_provedor } = req.query;
+  if (!provedor_negocio_id_provedor) {
+    return res.status(400).json({ error: 'Falta el id del proveedor' });
+  }
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM productos WHERE provedor_negocio_id_provedor = ?',
+      [provedor_negocio_id_provedor]
+    );
+    res.json(Array.isArray(rows) ? rows : []);
+  } catch (err) {
+    console.error('Error en /api/productos:', err);
+    res.json([]); // Devuelve array vacío en caso de error
+  }
+});
+
+// Endpoint para obtener todos los servicios publicados (MySQL directo)
+app.get('/api/servicios', async (req, res) => {
+  try {
+    const [rows] = await conexion.query('SELECT * FROM SERVICIO');
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los servicios' });
+  }
+});
+
+// Endpoint para obtener servicios con imágenes
+app.get('/api/servicios-con-imagenes', async (req, res) => {
+  try {
+    const servicios = await Servicio.findAll({
+      include: [{ model: ImagenServicio, required: false }]
+    });
+    res.json(servicios);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los servicios con imágenes' });
+  }
+});
+
+// Endpoint para crear un nuevo servicio
+app.post('/api/servicios', async (req, res) => {
+  const { nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor } = req.body;
+  console.log('Datos recibidos para crear servicio:', req.body);
+  try {
+    const [result] = await db.query(
+      'INSERT INTO SERVICIO (nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
+      [nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor]
+    );
+    res.json({ id_servicio: result.insertId });
+  } catch (err) {
+    console.error('Error al crear servicio:', err);
+    res.status(500).json({ error: 'Error al crear el servicio', details: err });
+  }
+});
+
+// Endpoint para subir imágenes de servicio
+app.post('/api/imagenes_servicio', uploadMemory.single('imagen'), async (req, res) => {
+  console.log('BODY:', req.body);
+  console.log('FILE:', req.file);
+  const { SERVICIO_id_servicio } = req.body;
+  const imagen_blob = req.file ? req.file.buffer : null;
+  // Usar el nombre del archivo como url_imagen, o un valor por defecto
+  const url_imagen = req.file ? req.file.originalname : 'sin_url';
+  const cantidad = 1; // Valor por defecto
+
+  if (!imagen_blob) {
+    return res.status(400).json({ error: 'No se subió ninguna imagen.' });
+  }
+
+  try {
+    await db.query(
+      'INSERT INTO IMAGENES_servicio (url_imagen, cantidad, SERVICIO_id_servicio, imagen_blob) VALUES (?, ?, ?, ?)',
+      [url_imagen, cantidad, SERVICIO_id_servicio, imagen_blob]
+    );
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Error al guardar la imagen:', err);
+    res.status(500).json({ error: 'Error al guardar la imagen', details: err });
+  }
+});
+
+// Endpoint para obtener todas las imágenes de un servicio
+app.get('/api/imagenes_servicio/por-servicio/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.query(
+      'SELECT id_imagenes FROM IMAGENES_servicio WHERE SERVICIO_id_servicio = ?',
+      [id]
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener las imágenes del servicio' });
+  }
+});
+
+// Endpoint para servir imágenes
+app.get('/api/imagenes_servicio/:id', async (req, res) => {
+  const { id } = req.params;
+  const [rows] = await db.query('SELECT imagen_blob FROM IMAGENES_servicio WHERE id_imagenes = ?', [id]);
+  if (rows.length === 0) return res.status(404).send('No encontrada');
+  res.set('Content-Type', 'image/jpeg');
+  res.send(rows[0].imagen_blob);
 });
 
 // Iniciar el servidor
