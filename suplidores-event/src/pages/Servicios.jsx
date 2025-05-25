@@ -8,6 +8,7 @@ const Servicios = () => {
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [imagenes] }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tipoFiltro, setTipoFiltro] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -37,17 +38,33 @@ const Servicios = () => {
       });
   }, []);
 
+  const tiposUnicos = Array.from(new Set(servicios.map(s => s.tipo_servicio).filter(Boolean)));
+  const serviciosFiltrados = tipoFiltro ? servicios.filter(s => s.tipo_servicio === tipoFiltro) : servicios;
+
   if (loading) return <div className="p-8 text-center">Cargando servicios...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto p-8">
       <h2 className="text-3xl font-bold mb-8 text-center text-blue-900">Servicios disponibles</h2>
-      {servicios.length === 0 ? (
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <label className="font-medium">Filtrar por tipo de servicio:</label>
+        <select
+          className="border px-3 py-2 rounded"
+          value={tipoFiltro}
+          onChange={e => setTipoFiltro(e.target.value)}
+        >
+          <option value="">Todos</option>
+          {tiposUnicos.map(tipo => (
+            <option key={tipo} value={tipo}>{tipo}</option>
+          ))}
+        </select>
+      </div>
+      {serviciosFiltrados.length === 0 ? (
         <div className="text-gray-600">No hay servicios publicados.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {servicios.map(servicio => {
+          {serviciosFiltrados.map(servicio => {
             const imagenes = imagenesServicios[servicio.id_servicio] || [];
             const imagenReal = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_servicio/${imagenes[0].id_imagenes}` : null;
             return (

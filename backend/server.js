@@ -519,10 +519,34 @@ async function getLimiteProductos(proveedorId) {
   return rows.length > 0 ? rows[0].limite_productos : 0;
 }
 
-// Endpoint para crear producto
+// Endpoint para crear producto (con validación de membresía)
 app.post('/api/productos', async (req, res) => {
   const { nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria } = req.body;
-  console.log('Datos recibidos para crear producto:', req.body);
+
+  // 1. Obtener membresía activa y su límite de productos
+  const [membresia] = await db.query(`
+    SELECT M.limite_productos
+    FROM PROVEDOR_MEMBRESIA PM
+    JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+    WHERE PM.id_provedor = ? AND PM.estado = 'activo'
+    ORDER BY PM.fecha_inicio DESC LIMIT 1
+  `, [provedor_negocio_id_provedor]);
+
+  if (!membresia.length) {
+    return res.status(403).json({ error: 'No tienes una membresía activa.' });
+  }
+
+  // 2. Contar productos actuales
+  const [productos] = await db.query(
+    'SELECT COUNT(*) as total FROM productos WHERE provedor_negocio_id_provedor = ?',
+    [provedor_negocio_id_provedor]
+  );
+
+  if (productos[0].total >= membresia[0].limite_productos) {
+    return res.status(403).json({ error: 'Has alcanzado el límite de productos de tu membresía.' });
+  }
+
+  // 3. Si no ha alcanzado el límite, crear el producto
   try {
     const [result] = await db.query(
       'INSERT INTO productos (nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria) VALUES (?, ?, ?, ?, ?, ?)',
@@ -560,11 +584,9 @@ app.post('/login_proveedor', async (req, res) => {
   }
 });
 
-// Endpoint para subir imagen de producto (ahora guarda blob)
+// Endpoint para subir imagen de producto (con validación de membresía)
 app.post('/api/imagenes_productos', uploadMemoryProductos.single('imagen'), async (req, res) => {
   try {
-    console.log('BODY:', req.body);
-    console.log('FILE:', req.file);
     const { productos_id_productos } = req.body;
     const file = req.file;
 
@@ -572,14 +594,42 @@ app.post('/api/imagenes_productos', uploadMemoryProductos.single('imagen'), asyn
       return res.status(400).json({ error: 'No se subió ninguna imagen.' });
     }
 
+    // 1. Obtener el proveedor dueño del producto
+    const [producto] = await db.query('SELECT provedor_negocio_id_provedor FROM productos WHERE id_productos = ?', [productos_id_productos]);
+    if (!producto.length) return res.status(404).json({ error: 'Producto no encontrado.' });
+
+    const provedorId = producto[0].provedor_negocio_id_provedor;
+
+    // 2. Obtener membresía activa y su límite de fotos
+    const [membresia] = await db.query(`
+      SELECT M.limite_fotos
+      FROM PROVEDOR_MEMBRESIA PM
+      JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+      WHERE PM.id_provedor = ? AND PM.estado = 'activo'
+      ORDER BY PM.fecha_inicio DESC LIMIT 1
+    `, [provedorId]);
+
+    if (!membresia.length) {
+      return res.status(403).json({ error: 'No tienes una membresía activa.' });
+    }
+
+    // 3. Contar imágenes actuales
+    const [imagenes] = await db.query(
+      'SELECT COUNT(*) as total FROM IMAGENES_productos WHERE productos_id_productos = ?',
+      [productos_id_productos]
+    );
+
+    if (imagenes[0].total >= membresia[0].limite_fotos) {
+      return res.status(403).json({ error: 'Has alcanzado el límite de imágenes para este producto.' });
+    }
+
+    // 4. Si no ha alcanzado el límite, subir la imagen
     const url_imagen = `/uploads/${file.originalname}`;
     const imagen_blob = file.buffer;
 
-    await conexion.query(
+    await db.query(
       'INSERT INTO IMAGENES_productos (url_imagen, cantidad, productos_id_productos, imagen_blob) VALUES (?, ?, ?, ?)',
-      {
-        replacements: [url_imagen, 1, productos_id_productos, imagen_blob]
-      }
+      [url_imagen, 1, productos_id_productos, imagen_blob]
     );
 
     res.json({ success: true, url_imagen });
@@ -600,10 +650,21 @@ app.get('/api/productos', async (req, res) => {
       'SELECT * FROM productos WHERE provedor_negocio_id_provedor = ?',
       [provedor_negocio_id_provedor]
     );
-    res.json(Array.isArray(rows) ? rows : []);
+    res.json(rows);
   } catch (err) {
-    console.error('Error en /api/productos:', err);
-    res.json([]); // Devuelve array vacío en caso de error
+    console.error('Error al obtener productos:', err);
+    res.status(500).json({ error: 'Error al obtener los productos' });
+  }
+});
+
+// Endpoint para obtener todos los productos
+app.get('/api/productos-todos', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM productos');
+    res.json(rows);
+  } catch (err) {
+    console.error('Error al obtener todos los productos:', err);
+    res.status(500).json({ error: 'Error al obtener los productos' });
   }
 });
 
@@ -629,10 +690,34 @@ app.get('/api/servicios-con-imagenes', async (req, res) => {
   }
 });
 
-// Endpoint para crear un nuevo servicio
+// Endpoint para crear servicio (con validación de membresía)
 app.post('/api/servicios', async (req, res) => {
   const { nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor } = req.body;
-  console.log('Datos recibidos para crear servicio:', req.body);
+
+  // 1. Obtener membresía activa y su límite de servicios
+  const [membresia] = await db.query(`
+    SELECT M.limite_servicios
+    FROM PROVEDOR_MEMBRESIA PM
+    JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+    WHERE PM.id_provedor = ? AND PM.estado = 'activo'
+    ORDER BY PM.fecha_inicio DESC LIMIT 1
+  `, [provedor_negocio_id_provedor]);
+
+  if (!membresia.length) {
+    return res.status(403).json({ error: 'No tienes una membresía activa.' });
+  }
+
+  // 2. Contar servicios actuales
+  const [servicios] = await db.query(
+    'SELECT COUNT(*) as total FROM SERVICIO WHERE provedor_negocio_id_provedor = ?',
+    [provedor_negocio_id_provedor]
+  );
+
+  if (servicios[0].total >= membresia[0].limite_servicios) {
+    return res.status(403).json({ error: 'Has alcanzado el límite de servicios de tu membresía.' });
+  }
+
+  // 3. Si no ha alcanzado el límite, crear el servicio
   try {
     const [result] = await db.query(
       'INSERT INTO SERVICIO (nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
@@ -645,24 +730,52 @@ app.post('/api/servicios', async (req, res) => {
   }
 });
 
-// Endpoint para subir imágenes de servicio
+// Endpoint para subir imagen de servicio (con validación de membresía)
 app.post('/api/imagenes_servicio', uploadMemory.single('imagen'), async (req, res) => {
-  console.log('BODY:', req.body);
-  console.log('FILE:', req.file);
-  const { SERVICIO_id_servicio } = req.body;
-  const imagen_blob = req.file ? req.file.buffer : null;
-  // Usar el nombre del archivo como url_imagen, o un valor por defecto
-  const url_imagen = req.file ? req.file.originalname : 'sin_url';
-  const cantidad = 1; // Valor por defecto
-
-  if (!imagen_blob) {
-    return res.status(400).json({ error: 'No se subió ninguna imagen.' });
-  }
-
   try {
+    const { SERVICIO_id_servicio } = req.body;
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({ error: 'No se subió ninguna imagen.' });
+    }
+
+    // 1. Obtener el proveedor dueño del servicio
+    const [servicio] = await db.query('SELECT provedor_negocio_id_provedor FROM SERVICIO WHERE id_servicio = ?', [SERVICIO_id_servicio]);
+    if (!servicio.length) return res.status(404).json({ error: 'Servicio no encontrado.' });
+
+    const provedorId = servicio[0].provedor_negocio_id_provedor;
+
+    // 2. Obtener membresía activa y su límite de fotos
+    const [membresia] = await db.query(`
+      SELECT M.limite_fotos
+      FROM PROVEDOR_MEMBRESIA PM
+      JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+      WHERE PM.id_provedor = ? AND PM.estado = 'activo'
+      ORDER BY PM.fecha_inicio DESC LIMIT 1
+    `, [provedorId]);
+
+    if (!membresia.length) {
+      return res.status(403).json({ error: 'No tienes una membresía activa.' });
+    }
+
+    // 3. Contar imágenes actuales
+    const [imagenes] = await db.query(
+      'SELECT COUNT(*) as total FROM IMAGENES_servicio WHERE SERVICIO_id_servicio = ?',
+      [SERVICIO_id_servicio]
+    );
+
+    if (imagenes[0].total >= membresia[0].limite_fotos) {
+      return res.status(403).json({ error: 'Has alcanzado el límite de imágenes para este servicio.' });
+    }
+
+    // 4. Si no ha alcanzado el límite, subir la imagen
+    const url_imagen = file.originalname;
+    const imagen_blob = file.buffer;
+
     await db.query(
       'INSERT INTO IMAGENES_servicio (url_imagen, cantidad, SERVICIO_id_servicio, imagen_blob) VALUES (?, ?, ?, ?)',
-      [url_imagen, cantidad, SERVICIO_id_servicio, imagen_blob]
+      [url_imagen, 1, SERVICIO_id_servicio, imagen_blob]
     );
     res.json({ ok: true });
   } catch (err) {
@@ -715,6 +828,29 @@ app.get('/api/imagenes_productos/:id', async (req, res) => {
   if (rows.length === 0) return res.status(404).send('No encontrada');
   res.set('Content-Type', 'image/jpeg');
   res.send(rows[0].imagen_blob);
+});
+
+// Cambiar contraseña de proveedor
+app.post('/api/cambiar-password', async (req, res) => {
+  const { user_name, oldPassword, newPassword } = req.body;
+  try {
+    // Verifica usuario y contraseña actual
+    const [result] = await conexion.query(
+      `SELECT * FROM inicio_seccion WHERE user_name = ? AND password = ?`,
+      { replacements: [user_name, oldPassword] }
+    );
+    if (result.length === 0) {
+      return res.status(401).json({ error: 'Contraseña actual incorrecta.' });
+    }
+    // Actualiza la contraseña
+    await conexion.query(
+      `UPDATE inicio_seccion SET password = ? WHERE user_name = ?`,
+      { replacements: [newPassword, user_name] }
+    );
+    res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al cambiar la contraseña.' });
+  }
 });
 
 // Iniciar el servidor

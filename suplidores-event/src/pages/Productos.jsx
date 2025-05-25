@@ -6,10 +6,11 @@ const Productos = () => {
   const [imagenesProductos, setImagenesProductos] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tipoFiltro, setTipoFiltro] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/productos')
+    fetch('http://localhost:3000/api/productos-todos')
       .then(res => res.json())
       .then(async data => {
         setProductos(data);
@@ -34,17 +35,33 @@ const Productos = () => {
       });
   }, []);
 
+  const tiposUnicos = Array.from(new Set(productos.map(p => p.tipo_producto).filter(Boolean)));
+  const productosFiltrados = tipoFiltro ? productos.filter(p => p.tipo_producto === tipoFiltro) : productos;
+
   if (loading) return <div className="p-8 text-center">Cargando productos...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
 
   return (
     <div className="max-w-6xl mx-auto p-8">
       <h2 className="text-3xl font-bold mb-8 text-center text-blue-900">Productos disponibles</h2>
-      {productos.length === 0 ? (
+      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
+        <label className="font-medium">Filtrar por tipo de producto:</label>
+        <select
+          className="border px-3 py-2 rounded"
+          value={tipoFiltro}
+          onChange={e => setTipoFiltro(e.target.value)}
+        >
+          <option value="">Todos</option>
+          {tiposUnicos.map(tipo => (
+            <option key={tipo} value={tipo}>{tipo}</option>
+          ))}
+        </select>
+      </div>
+      {productosFiltrados.length === 0 ? (
         <div className="text-gray-600">No hay productos publicados.</div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {productos.map(producto => {
+          {productosFiltrados.map(producto => {
             const imagenes = imagenesProductos[producto.id_productos] || [];
             const imagenReal = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
             return (

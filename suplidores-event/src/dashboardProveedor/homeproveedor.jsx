@@ -15,6 +15,8 @@ const HomeProveedor = () => {
   const [proveedor, setProveedor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [publicaciones, setPublicaciones] = useState({ productos: 0, servicios: 0, limite_productos: 0, limite_servicios: 0 });
+  const [membresia, setMembresia] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -23,7 +25,7 @@ const HomeProveedor = () => {
       return;
     }
 
-    // Fetch proveedores
+    // Fetch proveedor
     fetch('http://localhost:3000/proveedores')
       .then(res => res.json())
       .then(data => {
@@ -32,10 +34,26 @@ const HomeProveedor = () => {
         );
         if (proveedorLogueado) {
           setProveedor(proveedorLogueado);
+          // Fetch productos y servicios publicados
+          Promise.all([
+            fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedorLogueado.id_provedor}`).then(r => r.json()),
+            fetch('http://localhost:3000/api/servicios').then(r => r.json()),
+            fetch(`http://localhost:3000/membresia/${proveedorLogueado.id_provedor}`).then(r => r.json())
+          ]).then(([productos, servicios, membresiaData]) => {
+            const misServicios = servicios.filter(s => s.provedor_negocio_id_provedor === proveedorLogueado.id_provedor);
+            setPublicaciones({
+              productos: productos.length,
+              servicios: misServicios.length,
+              limite_productos: membresiaData.limite_productos,
+              limite_servicios: membresiaData.limite_servicios
+            });
+            setMembresia(membresiaData);
+            setLoading(false);
+          });
         } else {
           setError('No se encontró tu perfil de proveedor');
+          setLoading(false);
         }
-        setLoading(false);
       })
       .catch(err => {
         setError('Error al cargar los datos del proveedor');
@@ -49,32 +67,32 @@ const HomeProveedor = () => {
 
   const keyIndicators = [
     {
-      title: "Publicaciones Activas",
-      value: proveedor.publicaciones_activas || 0,
+      title: "Productos Publicados",
+      value: `${publicaciones.productos} / ${publicaciones.limite_productos}`,
       icon: DocumentTextIcon,
       color: "bg-blue-500",
       link: "/dashboard-proveedor/publicaciones"
     },
     {
+      title: "Servicios Publicados",
+      value: `${publicaciones.servicios} / ${publicaciones.limite_servicios}`,
+      icon: DocumentTextIcon,
+      color: "bg-purple-500",
+      link: "/dashboard-proveedor/publicaciones"
+    },
+    {
       title: "Vencimiento Membresía",
-      value: proveedor.fecha_vencimiento ? new Date(proveedor.fecha_vencimiento).toLocaleDateString() : 'No disponible',
+      value: membresia && membresia.fecha_fin ? new Date(membresia.fecha_fin).toLocaleDateString() : 'No disponible',
       icon: CalendarIcon,
       color: "bg-green-500",
       link: "/dashboard-proveedor/membresia"
     },
     {
-      title: "Mensajes Nuevos",
-      value: proveedor.mensajes_nuevos || 0,
-      icon: ChatBubbleLeftRightIcon,
-      color: "bg-purple-500",
-      link: "/dashboard-proveedor/solicitudes"
-    },
-    {
-      title: "Estado",
-      value: proveedor.estado || 'Activo',
+      title: "Estado Membresía",
+      value: membresia && membresia.estado ? membresia.estado : 'No disponible',
       icon: CheckCircleIcon,
       color: "bg-yellow-500",
-      link: "/dashboard-proveedor/perfil"
+      link: "/dashboard-proveedor/membresia"
     }
   ];
 
@@ -138,10 +156,10 @@ const HomeProveedor = () => {
             <p className="text-gray-600">{proveedor.tipo_servicio}</p>
             <div className="mt-2 flex items-center space-x-4">
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                Plan {proveedor.plan || 'Básico'}
+                Plan {membresia && membresia.nombre_pla ? membresia.nombre_pla : 'Básico'}
               </span>
               <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
-                {proveedor.estado || 'Activo'}
+                {membresia && membresia.estado ? membresia.estado : 'Activo'}
               </span>
             </div>
           </div>
