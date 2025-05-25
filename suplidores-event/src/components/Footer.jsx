@@ -31,16 +31,14 @@ function Footer() {
             <a href="/" className="flex items-center">
               <span className="self-center text-3xl font-bold whitespace-nowrap dark:text-white" style={{ color: colors.darkTeal }}>ÉVOCA</span>
             </a>
-            <p className="mt-4 max-w-xs text-gray-500 dark:text-gray-400">
-              Conectando empresas con los mejores proveedores de eventos y servicios para hacer tus momentos especiales inolvidables.
-            </p>
+           
           </div>
           <div className="grid grid-cols-2 gap-12 sm:gap-16 sm:grid-cols-3">
             <div>
               <h2 className="mb-6 text-sm font-semibold uppercase tracking-wider" style={{ color: colors.darkTeal }}>Navegación</h2>
-              <ul className="text-gray-500 dark:text-gray-400 font-medium space-y-4">
+              <ul className="text-darkTeal dark:text-gray-400 font-medium space-y-4">
                 <li>
-                  <a href="/" className="hover:text-purple-300 transition-colors flex items-center gap-2">
+                  <a href="/home" className="hover:text-purple-500 transition-colors flex items-center gap-2">
                     <Home size={16} />
                     <span>Inicio</span>
                   </a>

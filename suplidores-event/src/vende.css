@@ -53,8 +53,8 @@ h2 {
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 0.75rem;
+  flex-wrap: nowrap;
 }
 
 .stat-item:hover {
@@ -66,12 +66,18 @@ h2 {
 .stat-icon {
   font-size: 1.5rem;
   color: #012e33;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
 }
 
 .stat-text {
   color: #012e33;
   font-size: 1rem;
   font-weight: 500;
+  line-height: 1.2;
+  margin: 0;
 }
 
 /* Planes */
@@ -170,9 +176,20 @@ h2 {
 }
 
 .benefit-icon {
-  font-size: clamp(2rem, 4vw, 2.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: clamp(0.8rem, 2vw, 1rem);
   color: #012e33;
+  transition: transform 0.3s ease;
+}
+
+.benefit-item:hover .benefit-icon {
+  transform: scale(1.1);
+}
+
+.benefit-item:hover .benefit-icon svg {
+  color: #cbb4db;
 }
 
 .benefit-item h3 {
@@ -266,22 +283,37 @@ h2 {
   border: 1px solid rgba(203, 180, 219, 0.3);
 }
 
+.faq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: clamp(0.8rem, 1.5vw, 1rem);
+}
+
+.faq-header h3 {
+  color: #012e33;
+  font-size: clamp(1.1rem, 2vw, 1.2rem);
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+  padding-right: 1rem;
+}
+
 .faq-item:hover {
   transform: translateY(-3px);
   border-color: #cbb4db;
 }
 
-.faq-item h3 {
-  color: #012e33;
-  font-size: clamp(1.1rem, 2vw, 1.2rem);
-  font-weight: 600;
-  margin-bottom: clamp(0.8rem, 1.5vw, 1rem);
+.faq-item:hover .faq-header svg {
+  transform: scale(1.1);
+  color: #cbb4db;
 }
 
 .faq-item p {
   color: #012e33;
   font-size: clamp(0.9rem, 1.8vw, 1rem);
   line-height: 1.6;
+  margin: 0;
 }
 
 /* Botón del plan */
@@ -328,6 +360,7 @@ h2 {
   .stat-item {
     text-align: left;
     justify-content: flex-start;
+    padding: 1rem;
   }
 
   .plan-card.highlighted {
@@ -351,12 +384,17 @@ h2 {
     display: inline-block;
   }
 
+  .stat-item {
+    padding: 0.75rem;
+  }
+
   .stat-icon {
-    font-size: clamp(1.2rem, 3vw, 1.5rem);
+    font-size: 1.25rem;
+    min-width: 1.25rem;
   }
 
   .stat-text {
-    font-size: clamp(0.85rem, 2vw, 1rem);
+    font-size: 0.9rem;
   }
 
   .stat-item,
