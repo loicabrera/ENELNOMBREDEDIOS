@@ -35,6 +35,10 @@ const upload = multer({ storage: storage });
 const memoryStorage = multer.memoryStorage();
 const uploadMemory = multer({ storage: memoryStorage });
 
+// Nuevo: memoryStorage para imágenes de productos
+const memoryStorageProductos = multer.memoryStorage();
+const uploadMemoryProductos = multer({ storage: memoryStorageProductos });
+
 app.use('/uploads', express.static('uploads'));
 
 const db = mysql.createPool({
@@ -556,9 +560,11 @@ app.post('/login_proveedor', async (req, res) => {
   }
 });
 
-// Endpoint para subir imagen de producto
-app.post('/api/imagenes_productos', upload.single('imagen'), async (req, res) => {
+// Endpoint para subir imagen de producto (ahora guarda blob)
+app.post('/api/imagenes_productos', uploadMemoryProductos.single('imagen'), async (req, res) => {
   try {
+    console.log('BODY:', req.body);
+    console.log('FILE:', req.file);
     const { productos_id_productos } = req.body;
     const file = req.file;
 
@@ -566,11 +572,14 @@ app.post('/api/imagenes_productos', upload.single('imagen'), async (req, res) =>
       return res.status(400).json({ error: 'No se subió ninguna imagen.' });
     }
 
-    const url_imagen = `/uploads/${file.filename}`;
+    const url_imagen = `/uploads/${file.originalname}`;
+    const imagen_blob = file.buffer;
 
     await conexion.query(
-      'INSERT INTO IMAGENES_productos (url_imagen, cantidad, productos_id_productos) VALUES (?, ?, ?)',
-      [url_imagen, 1, productos_id_productos]
+      'INSERT INTO IMAGENES_productos (url_imagen, cantidad, productos_id_productos, imagen_blob) VALUES (?, ?, ?, ?)',
+      {
+        replacements: [url_imagen, 1, productos_id_productos, imagen_blob]
+      }
     );
 
     res.json({ success: true, url_imagen });
@@ -680,6 +689,29 @@ app.get('/api/imagenes_servicio/por-servicio/:id', async (req, res) => {
 app.get('/api/imagenes_servicio/:id', async (req, res) => {
   const { id } = req.params;
   const [rows] = await db.query('SELECT imagen_blob FROM IMAGENES_servicio WHERE id_imagenes = ?', [id]);
+  if (rows.length === 0) return res.status(404).send('No encontrada');
+  res.set('Content-Type', 'image/jpeg');
+  res.send(rows[0].imagen_blob);
+});
+
+// Endpoint para obtener todas las imágenes de un producto
+app.get('/api/imagenes_productos/por-producto/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.query(
+      'SELECT id_imagenes, url_imagen FROM IMAGENES_productos WHERE productos_id_productos = ?',
+      [id]
+    );
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener las imágenes del producto' });
+  }
+});
+
+// Endpoint para servir imagen blob de producto
+app.get('/api/imagenes_productos/:id', async (req, res) => {
+  const { id } = req.params;
+  const [rows] = await db.query('SELECT imagen_blob FROM IMAGENES_productos WHERE id_imagenes = ?', [id]);
   if (rows.length === 0) return res.status(404).send('No encontrada');
   res.set('Content-Type', 'image/jpeg');
   res.send(rows[0].imagen_blob);

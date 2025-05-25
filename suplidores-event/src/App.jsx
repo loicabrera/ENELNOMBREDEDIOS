@@ -33,6 +33,7 @@ import Productos from "./pages/Productos";
 import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
 import DetalleServicio from './pages/DetalleServicio';
+import DetalleProducto from './pages/DetalleProducto';
 
 import Login from "./components/LoginProveedor";
 import Footer from "./components/Footer";
@@ -222,6 +223,14 @@ function App() {
           element={
             <Layout>
               <DetalleServicio />
+            </Layout>
+          }
+        />
+        <Route
+          path="/productos/:id"
+          element={
+            <Layout>
+              <DetalleProducto />
             </Layout>
           }
         />

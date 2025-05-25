@@ -26,6 +26,7 @@ const Publications = () => {
     descripcion: '',
     precio: '',
     tipo_producto: '',
+    categoria: '',
     imagenes: []
   });
 
@@ -111,7 +112,7 @@ const Publications = () => {
     const data = await res.json();
     if (data.id_producto) {
       // Subir imágenes si hay
-      for (let img of imagenes) {
+      for (let img of nuevoProducto.imagenes) {
         const formData = new FormData();
         formData.append('imagen', img);
         formData.append('productos_id_productos', data.id_producto);
@@ -201,8 +202,7 @@ const Publications = () => {
 
   const handleProductoSubmit = (e) => {
     e.preventDefault();
-    console.log('Datos del producto:', productoForm);
-    // Aquí iría la lógica para guardar el producto
+    handleCrearProducto(productoForm);
   };
 
   // Memoize form components
@@ -398,6 +398,18 @@ const Publications = () => {
           </div>
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+          <input
+            type="text"
+            name="categoria"
+            value={productoForm.categoria}
+            onChange={handleProductoChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            placeholder="Opcional"
+          />
+        </div>
+
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
@@ -431,29 +443,44 @@ const Publications = () => {
                 </svg>
                 <div className="flex text-sm text-gray-600">
                   <label
-                    htmlFor="file-upload"
+                    htmlFor="file-upload-producto"
                     className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                   >
                     <span>Subir imágenes</span>
-          <input
-                      id="file-upload"
-                      name="file-upload"
-            type="file"
-            multiple
-            accept="image/*"
+                    <input
+                      id="file-upload-producto"
+                      name="file-upload-producto"
+                      type="file"
+                      multiple
+                      accept="image/*"
                       className="sr-only"
-            onChange={(e) => {
-              const files = Array.from(e.target.files);
-              setProductoForm(prev => ({
-                ...prev,
-                imagenes: files
-              }));
-            }}
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files);
+                        setProductoForm(prev => ({
+                          ...prev,
+                          imagenes: files
+                        }));
+                      }}
                     />
                   </label>
                   <p className="pl-1">o arrastrar y soltar</p>
                 </div>
                 <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                {/* Mostrar nombres y previews de imágenes seleccionadas */}
+                {productoForm.imagenes && productoForm.imagenes.length > 0 && (
+                  <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
+                    {productoForm.imagenes.map((img, idx) => (
+                      <li key={idx} className="flex flex-col items-center">
+                        <img
+                          src={URL.createObjectURL(img)}
+                          alt={img.name}
+                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
+                        />
+                        <span>{img.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </div>
           </div>
