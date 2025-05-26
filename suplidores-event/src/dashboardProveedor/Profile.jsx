@@ -97,19 +97,6 @@ const Profile = () => {
                 <p className="text-[#012e33]"><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
               </div>
             </div>
-            {membresia && (
-              <div className="mb-6 p-6 bg-[#cbb4db] rounded-xl shadow-lg">
-                <h3 className="text-xl font-semibold mb-4 text-[#012e33]">Membresía Actual</h3>
-                <div className="space-y-2">
-                  <p className="text-[#012e33]"><strong>Plan:</strong> {membresia.nombre_pla}</p>
-                  <p className="text-[#012e33]"><strong>Estado:</strong> {membresia.estado}</p>
-                  <p className="text-[#012e33]"><strong>Fecha de vencimiento:</strong> {membresia.fecha_fin ? new Date(membresia.fecha_fin).toLocaleDateString() : 'No disponible'}</p>
-                  <p className="text-[#012e33]"><strong>Límite de productos:</strong> {membresia.limite_productos}</p>
-                  <p className="text-[#012e33]"><strong>Límite de servicios:</strong> {membresia.limite_servicios}</p>
-                  <p className="text-[#012e33]"><strong>Límite de fotos por producto/servicio:</strong> {membresia.limite_fotos}</p>
-                </div>
-              </div>
-            )}
           </div>
           {/* Columna derecha: Datos personales y Cambio de contraseña */}
           <div className="flex-1">
