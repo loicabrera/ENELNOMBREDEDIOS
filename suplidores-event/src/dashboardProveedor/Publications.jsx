@@ -10,6 +10,7 @@ import {
   ClockIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 const Publications = () => {
   const [tipoVendedor, setTipoVendedor] = useState(null); // null, 'servicios', 'productos'
@@ -36,6 +37,7 @@ const Publications = () => {
   const [imagenes, setImagenes] = useState([]);
   const [servicios, setServicios] = useState([]);
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [id_imagenes, ...] }
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -122,6 +124,15 @@ const Publications = () => {
         });
       }
       alert('Producto creado con éxito');
+      // Limpiar el formulario después de crear exitosamente
+      setProductoForm({
+        nombre: '',
+        descripcion: '',
+        precio: '',
+        tipo_producto: '',
+        categoria: '',
+        imagenes: []
+      });
       // Recargar productos
       fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
         .then(res => res.json())
@@ -192,7 +203,18 @@ const Publications = () => {
           });
         }
         alert('Servicio creado con éxito');
-        // Aquí puedes recargar la lista de servicios si lo deseas
+        // Limpiar el formulario después de crear exitosamente
+        setServicioForm({
+          nombre: '',
+          descripcion: '',
+          tipo_servicio: '',
+          precio: '',
+          imagenes: []
+        });
+        // Recargar la lista de servicios
+        const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+        const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
+        setServicios(misServicios);
       }
     } catch (error) {
       console.error('Error en el submit del servicio:', error);
@@ -203,6 +225,74 @@ const Publications = () => {
   const handleProductoSubmit = (e) => {
     e.preventDefault();
     handleCrearProducto(productoForm);
+  };
+
+  const handleEliminarServicio = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:3000/api/servicios/${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        throw new Error('Error al eliminar el servicio');
+      }
+      // Actualizar la lista de servicios
+      const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+      const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
+      setServicios(misServicios);
+      alert('Servicio eliminado exitosamente');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al eliminar el servicio');
+    }
+  };
+
+  // Unificar productos y servicios en una sola lista de publicaciones
+  const publicaciones = [
+    ...productos.map(p => ({ ...p, tipo: 'Producto', id: p.id_productos })),
+    ...servicios.map(s => ({ ...s, tipo: 'Servicio', id: s.id_servicio }))
+  ];
+
+  // Acción: Ver publicación
+  const handleVer = (pub) => {
+    if (pub.tipo === 'Producto') {
+      navigate(`/productos/${pub.id_productos}`);
+    } else {
+      navigate(`/servicios/${pub.id_servicio}`);
+    }
+  };
+
+  // Acción: Editar publicación (puedes implementar el formulario de edición si lo deseas)
+  const handleEditar = (pub) => {
+    alert('Funcionalidad de edición aún no implementada.');
+    // Aquí podrías abrir un modal o navegar a una página de edición
+  };
+
+  // Acción: Eliminar publicación
+  const handleEliminar = async (pub) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta publicación?')) return;
+    try {
+      if (pub.tipo === 'Producto') {
+        const res = await fetch(`http://localhost:3000/api/productos/${pub.id_productos}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar el producto');
+        // Actualizar productos
+        fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
+          .then(res => res.json())
+          .then(setProductos);
+      } else {
+        const res = await fetch(`http://localhost:3000/api/servicios/${pub.id_servicio}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Error al eliminar el servicio');
+        // Actualizar servicios
+        const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+        const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
+        setServicios(misServicios);
+      }
+      alert('Publicación eliminada exitosamente');
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   // Memoize form components
@@ -291,13 +381,13 @@ const Publications = () => {
                 </svg>
                 <div className="flex text-sm text-gray-600">
                   <label
-                    htmlFor="file-upload"
+                    htmlFor="file-upload-servicio"
                     className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                   >
                     <span>Subir imágenes</span>
                     <input
-                      id="file-upload"
-                      name="file-upload"
+                      id="file-upload-servicio"
+                      name="file-upload-servicio"
                       type="file"
                       multiple
                       accept="image/*"
@@ -513,80 +603,65 @@ const Publications = () => {
           <p className="mt-2 text-gray-600">Gestiona tus servicios y productos publicados</p>
         </div>
 
-        {!tipoVendedor ? (
-          <>
-            {/* Lista de publicaciones existentes */}
-            <div className="bg-white shadow rounded-lg mb-8">
-              <div className="px-4 py-5 sm:p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-medium text-gray-900">Publicaciones Activas</h2>
-                  <button
-                    onClick={() => setTipoVendedor('selector')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    <PlusIcon className="h-5 w-5 mr-2" />
-                    Nueva Publicación
-                  </button>
-                </div>
-
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vistas</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {productos.map((producto) => (
-                        <tr key={producto.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="text-sm font-medium text-gray-900">{producto.nombre}</div>
-                              {producto.featured && (
-                                <StarIcon className="ml-2 h-5 w-5 text-yellow-400" />
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {/* Mostrar imagen del producto */}
-                            {producto.url_imagen && (
-                              <img
-                                src={`http://localhost:3000${producto.url_imagen}`}
-                                alt="Producto"
-                                style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }}
-                              />
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            {getStatusBadge(producto.status)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {producto.date}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {producto.views}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button className="text-blue-600 hover:text-blue-900 mr-3">
-                              <PencilIcon className="h-5 w-5" />
-                            </button>
-                            <button className="text-red-600 hover:text-red-900">
-                              <TrashIcon className="h-5 w-5" />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+        {/* Tabla unificada de publicaciones */}
+        <div className="bg-white shadow rounded-lg mb-8">
+          <div className="px-4 py-5 sm:p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-medium text-gray-900">Publicaciones Activas</h2>
+              <button
+                onClick={() => setTipoVendedor('selector')}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              >
+                <PlusIcon className="h-5 w-5 mr-2" />
+                Nueva Publicación
+              </button>
             </div>
-          </>
-        ) : tipoVendedor === 'selector' ? (
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {publicaciones.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="text-center py-8 text-gray-400">No hay publicaciones activas.</td>
+                    </tr>
+                  ) : (
+                    publicaciones.map(pub => (
+                      <tr key={pub.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">{pub.nombre}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{pub.tipo}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">{pub.descripcion}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">${pub.precio}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button onClick={() => handleVer(pub)} className="text-blue-600 hover:text-blue-900 mr-2">
+                            <EyeIcon className="h-5 w-5" />
+                          </button>
+                          <button onClick={() => handleEditar(pub)} className="text-green-600 hover:text-green-900 mr-2">
+                            <PencilIcon className="h-5 w-5" />
+                          </button>
+                          <button onClick={() => handleEliminar(pub)} className="text-red-600 hover:text-red-900">
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* El resto de la lógica para crear nuevas publicaciones */}
+        {tipoVendedor === 'selector' ? (
           <div className="bg-white p-6 rounded-lg shadow-md">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold">¿Qué deseas publicar?</h2>
@@ -616,56 +691,15 @@ const Publications = () => {
               </button>
             </div>
           </div>
-        ) : (
+        ) : tipoVendedor === 'servicios' ? (
           <div className="mt-8">
-            {tipoVendedor === 'servicios' && (
-              <>
-                {servicios.length > 0 && (
-                  <div className="bg-white shadow rounded-lg mb-8">
-                    <div className="px-4 py-5 sm:p-6">
-                      <h2 className="text-lg font-medium text-gray-900 mb-4">Servicios Activos</h2>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imágenes</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {servicios.map(servicio => (
-                              <tr key={servicio.id_servicio}>
-                                <td className="px-6 py-4 whitespace-nowrap">{servicio.nombre}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div style={{ display: 'flex', gap: 8 }}>
-                                    {(imagenesServicios[servicio.id_servicio] || []).map(img => (
-                                      <img
-                                        key={img.id_imagenes}
-                                        src={`http://localhost:3000/api/imagenes_servicio/${img.id_imagenes}`}
-                                        alt="Servicio"
-                                        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }}
-                                      />
-                                    ))}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">{servicio.descripcion}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">${servicio.precio}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <ServicioForm />
-              </>
-            )}
-            {tipoVendedor === 'productos' && <ProductoForm />}
+            <ServicioForm />
           </div>
-        )}
+        ) : tipoVendedor === 'productos' ? (
+          <div className="mt-8">
+            <ProductoForm />
+          </div>
+        ) : null}
       </div>
     </div>
   );
