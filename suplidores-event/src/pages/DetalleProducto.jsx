@@ -51,13 +51,13 @@ const DetalleProducto = () => {
           />
         )}
         <div className="flex-1 flex flex-col gap-4">
-          <h2 className="text-2xl font-bold text-blue-900 mb-2">{producto.nombre}</h2>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: '#cbb4db' }}>{producto.nombre}</h2>
           <div className="text-gray-700 mb-2">{producto.descripcion}</div>
-          <div className="text-lg font-bold text-blue-900 mb-2">Precio: ${producto.precio}</div>
+          <div className="text-lg font-bold mb-2" style={{ color: '#fbaccb' }}>Precio: ${producto.precio}</div>
           <div className="mt-6">
-            <h3 className="text-lg font-semibold text-blue-700 mb-2">Vendedor</h3>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: '#cbb4db' }}>Vendedor</h3>
             {proveedor ? (
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="rounded-lg p-4" style={{ background: '#f3e8ff', color: '#012e33' }}>
                 <div><span className="font-semibold">Empresa:</span> {proveedor.nombre_empresa}</div>
                 <div><span className="font-semibold">Email:</span> {proveedor.email_empresa}</div>
                 <div><span className="font-semibold">Teléfono:</span> {proveedor.telefono_empresa}</div>
