@@ -88,20 +88,6 @@ function Navbar() {
             <DollarSign size={18} />
             {asideOpen && <span className="ml-3 text-sm">Vende</span>}
           </a>
-
-          <a
-            href="/perfil"
-            className={`flex items-center rounded-md transition-all duration-200 text-gray-700 ${
-              asideOpen ? 'px-3 py-2' : 'justify-center p-2'
-            } ${
-              location.pathname === "/perfil" 
-                ? 'bg-purple/30' 
-                : 'hover:bg-purple/20'
-            }`}
-          >
-            <User size={18} />
-            {asideOpen && <span className="ml-3 text-sm">Perfil</span>}
-          </a>
         </div>
       </nav>
 

@@ -7,6 +7,7 @@ import ContactRequests from './dashboardProveedor/Requests';
 import Membership from './dashboardProveedor/Membership';
 import Stats from './dashboardProveedor/Stats';
 import Notifications from './dashboardProveedor/Notifications';
+import Negocios from './dashboardProveedor/Negocios';
 import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
 import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
 import AdminProveedor from "./dashboardAdmin/AdminProveedor";
@@ -194,6 +195,7 @@ function App() {
         <Route path="/dashboard-proveedor/*" element={<DashboardLayout />}>
           <Route index element={<HomeProveedor />} />
           <Route path="perfil" element={<Profile />} />
+          <Route path="negocios" element={<Negocios />} />
           <Route path="publicaciones" element={<Publications />} />
           <Route path="solicitudes" element={<ContactRequests />} />
           <Route path="membresia" element={<Membership />} />
@@ -205,6 +207,7 @@ function App() {
         <Route path="/dashboardproveedor/*" element={<DashboardLayout />}>
           <Route index element={<HomeProveedor />} />
           <Route path="perfil" element={<Profile />} />
+          <Route path="negocios" element={<Negocios />} />
           <Route path="publicaciones" element={<Publications />} />
           <Route path="solicitudes" element={<ContactRequests />} />
           <Route path="membresia" element={<Membership />} />

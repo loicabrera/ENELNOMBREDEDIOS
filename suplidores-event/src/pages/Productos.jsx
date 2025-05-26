@@ -43,11 +43,12 @@ const Productos = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-8">
-      <h2 className="text-3xl font-bold mb-8 text-center text-blue-900">Productos disponibles</h2>
+      <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: '#cbb4db' }}>Productos disponibles</h2>
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
-        <label className="font-medium">Filtrar por tipo de producto:</label>
+        <label className="font-medium" style={{ color: '#cbb4db' }}>Filtrar por tipo de producto:</label>
         <select
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded bg-[#fbcbdb] border-[#cbb4db] focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db] transition"
+          style={{ color: '#cbb4db', fontWeight: 600 }}
           value={tipoFiltro}
           onChange={e => setTipoFiltro(e.target.value)}
         >
@@ -78,7 +79,7 @@ const Productos = () => {
                   />
                 )}
                 <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-semibold text-blue-700 mb-2">{producto.nombre}</h3>
+                  <h3 className="text-xl font-semibold mb-2" style={{ color: '#cbb4db' }}>{producto.nombre}</h3>
                 </div>
               </div>
             );

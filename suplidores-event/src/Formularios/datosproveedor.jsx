@@ -216,10 +216,8 @@ const DatosProveedor = () => {
                   </div>
                 )}
 
-                <div className="mb-6 p-3 bg-blue-50 rounded-md border border-blue-200">
-                  <p className="text-blue-700">
-                    <span className="font-semibold">Información de empresa:</span> Complete los datos de su negocio
-                  </p>
+                <div className="mb-6 p-3 rounded-md text-center font-medium" style={{ background: colors.purple, color: colors.darkTeal }}>
+                  Información de empresa: <span className="font-normal">Complete los datos de su negocio</span>
                 </div>
                 
                 <form onSubmit={handleSubmit} className="space-y-6">
@@ -282,7 +280,7 @@ const DatosProveedor = () => {
                         onChange={handleChange} 
                         required 
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Ej: Consultoría, Retail, Servicios"
+                        placeholder="Ej: Banquete, Decoración, Fotografía, Música, Coordinación..."
                       />
                     </div>
                   </div>
@@ -352,7 +350,10 @@ const DatosProveedor = () => {
                     <button
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50"
+                      className="w-full font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50 text-[#012e33]"
+                      style={{ background: colors.lightPink }}
+                      onMouseOver={e => e.currentTarget.style.background = colors.pink}
+                      onMouseOut={e => e.currentTarget.style.background = colors.lightPink}
                     >
                       {loading ? 'Procesando...' : 'Siguiente'}
                     </button>
@@ -362,25 +363,23 @@ const DatosProveedor = () => {
             </div>
             
             {/* Panel informativo - 1/3 del ancho en desktop */}
-            <div className="bg-gradient-to-br from-blue-500 to-blue-700 text-white rounded-lg shadow-md overflow-hidden">
+            <div className="bg-gradient-to-br from-[#cbb4db] to-[#fbaccb] text-[#012e33] rounded-lg shadow-md overflow-hidden border border-[#cbb4db]">
               <div className="px-6 py-6">
-                <h3 className="text-xl font-bold mb-4">{proveedorInfo.titulo}</h3>
-                <p className="mb-6 text-blue-100">{proveedorInfo.descripcion}</p>
-                
-                <h4 className="font-semibold text-white mb-2">Beneficios:</h4>
-                <ul className="space-y-2 text-blue-100">
+                <h3 className="text-xl font-bold mb-4" style={{ color: colors.darkTeal }}>{proveedorInfo.titulo}</h3>
+                <p className="mb-6 text-gray-800">{proveedorInfo.descripcion}</p>
+                <h4 className="font-semibold mb-2 text-gray-800">Beneficios:</h4>
+                <ul className="space-y-2 text-gray-800">
                   {proveedorInfo.beneficios.map((beneficio, index) => (
                     <li key={index} className="flex items-start">
-                      <svg className="h-5 w-5 text-blue-200 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg className="h-5 w-5 text-pink-300 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                       {beneficio}
                     </li>
                   ))}
                 </ul>
-                
-                <div className="mt-6 p-3 bg-blue-600 rounded-md">
-                  <p className="text-sm text-blue-100">
+                <div className="mt-6 p-3 rounded-md" style={{ background: colors.purple }}>
+                  <p className="text-sm text-gray-800">
                     Los datos de su empresa serán utilizados para crear su perfil de proveedor y mostrar sus servicios a clientes potenciales.
                   </p>
                 </div>
