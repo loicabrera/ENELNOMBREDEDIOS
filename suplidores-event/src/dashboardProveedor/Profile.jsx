@@ -10,7 +10,6 @@ const Profile = () => {
   const [proveedor, setProveedor] = useState(null);
   const [persona, setPersona] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [membresia, setMembresia] = useState(null);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -40,13 +39,7 @@ const Profile = () => {
                 per => per.id_persona === proveedorLogueado.PERSONA_id_persona
               );
               setPersona(personaLogueada);
-              // Fetch membresía activa
-              fetch(`http://localhost:3000/membresia/${proveedorLogueado.id_provedor}`)
-                .then(res => res.json())
-                .then(membresiaData => {
-                  setMembresia(membresiaData);
-                  setLoading(false);
-                });
+              setLoading(false);
             });
         } else {
           setLoading(false);
@@ -105,17 +98,6 @@ const Profile = () => {
               <p><strong>Descripción:</strong> {proveedor.descripcion}</p>
               <p><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
             </div>
-            {membresia && (
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-blue-900">Membresía Actual</h3>
-                <p><strong>Plan:</strong> {membresia.nombre_pla}</p>
-                <p><strong>Estado:</strong> {membresia.estado}</p>
-                <p><strong>Fecha de vencimiento:</strong> {membresia.fecha_fin ? new Date(membresia.fecha_fin).toLocaleDateString() : 'No disponible'}</p>
-                <p><strong>Límite de productos:</strong> {membresia.limite_productos}</p>
-                <p><strong>Límite de servicios:</strong> {membresia.limite_servicios}</p>
-                <p><strong>Límite de fotos por producto/servicio:</strong> {membresia.limite_fotos}</p>
-              </div>
-            )}
             <button
               className="mt-4 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-700 transition-colors"
               onClick={() => setShowPasswordForm(!showPasswordForm)}
