@@ -350,18 +350,25 @@ app.post('/registrar_pago', async (req, res) => {
       provedor_negocio_id_provedor
     });
 
+    // Obtener la duración real del plan desde la tabla MEMBRESIA
+    const [[membresia]] = await conexion.query(
+      'SELECT duracion_dias FROM MEMBRESIA WHERE id_memebresia = ?',
+      { replacements: [MEMBRESIA_id_membresia] }
+    );
+    const duracionDias = Number(membresia.duracion_dias) || 30;
+
     // Crear la membresía en PROVEDOR_MEMBRESIA
     const fechaInicio = new Date(fecha_pago);
     const fechaFin = new Date(fechaInicio);
-    fechaFin.setDate(fechaFin.getDate() + 30); // Puedes ajustar según la duración real del plan
+    fechaFin.setDate(fechaFin.getDate() + duracionDias); // Suma los días reales del plan
 
     const fechaInicioSQL = formatDateToMySQL(fechaInicio);
     const fechaFinSQL = formatDateToMySQL(fechaFin);
     const fechaPagoSQL = formatDateToMySQL(new Date(fecha_pago));
 
     await conexion.query(
-      `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor)
-       VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor, estado)
+       VALUES (?, ?, ?, ?, ?, 'activo')`,
       {
         replacements: [
           fechaInicioSQL,
@@ -459,6 +466,12 @@ app.get('/membresia/:proveedorId', async (req, res) => {
     } else {
       membresia.estado = 'vencida';
     }
+
+    // Actualiza el estado en la base de datos si es necesario
+    await conexion.query(
+      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+      { replacements: [membresia.estado, membresia.id_prov_membresia] }
+    );
 
     membresia.dias_restantes = Math.max(0, diasRestantes);
 
@@ -850,6 +863,69 @@ app.post('/api/cambiar-password', async (req, res) => {
     res.json({ success: true, message: 'Contraseña actualizada correctamente.' });
   } catch (error) {
     res.status(500).json({ error: 'Error al cambiar la contraseña.' });
+  }
+});
+
+// Endpoint para eliminar servicio
+app.delete('/api/servicios/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log('Intentando eliminar servicio con ID:', id);
+  
+  try {
+    // Verificar si el servicio existe
+    console.log('Verificando si el servicio existe...');
+    const [servicio] = await db.query('SELECT * FROM SERVICIO WHERE id_servicio = ?', [id]);
+    console.log('Resultado de búsqueda del servicio:', servicio);
+    
+    if (!servicio.length) {
+      console.log('Servicio no encontrado');
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+
+    console.log('Servicio encontrado, iniciando transacción...');
+    // Iniciar una transacción
+    await db.query('START TRANSACTION');
+
+    try {
+      // Primero eliminar las imágenes asociadas
+      console.log('Eliminando imágenes asociadas...');
+      const [resultImagenes] = await db.query('DELETE FROM IMAGENES_servicio WHERE SERVICIO_id_servicio = ?', [id]);
+      console.log('Resultado de eliminación de imágenes:', resultImagenes);
+      
+      // Luego eliminar el servicio
+      console.log('Eliminando el servicio...');
+      const [resultServicio] = await db.query('DELETE FROM SERVICIO WHERE id_servicio = ?', [id]);
+      console.log('Resultado de eliminación del servicio:', resultServicio);
+      
+      // Si todo salió bien, confirmar la transacción
+      console.log('Confirmando transacción...');
+      await db.query('COMMIT');
+      
+      console.log('Servicio eliminado exitosamente');
+      res.json({ message: 'Servicio eliminado exitosamente' });
+    } catch (error) {
+      // Si algo salió mal, revertir la transacción
+      console.error('Error durante la eliminación, haciendo rollback:', error);
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error detallado al eliminar servicio:', {
+      message: error.message,
+      code: error.code,
+      errno: error.errno,
+      sqlMessage: error.sqlMessage,
+      sqlState: error.sqlState
+    });
+    
+    res.status(500).json({ 
+      error: 'Error al eliminar el servicio',
+      details: process.env.NODE_ENV === 'development' ? {
+        message: error.message,
+        code: error.code,
+        sqlMessage: error.sqlMessage
+      } : undefined
+    });
   }
 });
 

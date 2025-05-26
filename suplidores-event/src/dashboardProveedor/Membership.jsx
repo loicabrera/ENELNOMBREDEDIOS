@@ -89,27 +89,27 @@ const Membership = () => {
     }
   ];
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'active':
+  const getStatusBadge = (estado) => {
+    switch (estado) {
+      case 'activa':
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
             <CheckCircleIcon className="w-4 h-4 mr-1" />
-            Activo
+            Activa
           </span>
         );
-      case 'expired':
-        return (
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-            <XCircleIcon className="w-4 h-4 mr-1" />
-            Expirado
-          </span>
-        );
-      case 'pending':
+      case 'por vencer':
         return (
           <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
             <ExclamationCircleIcon className="w-4 h-4 mr-1" />
-            Pendiente
+            Por vencer
+          </span>
+        );
+      case 'vencida':
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+            <XCircleIcon className="w-4 h-4 mr-1" />
+            Vencida
           </span>
         );
       default:
@@ -179,7 +179,7 @@ const Membership = () => {
             <h2 className="text-2xl font-bold">Plan Actual</h2>
             <p className="text-gray-600">Gestiona tu membresía y pagos</p>
           </div>
-          {getStatusBadge(currentPlan?.status)}
+          {getStatusBadge(currentPlan?.estado)}
         </div>
 
         <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
