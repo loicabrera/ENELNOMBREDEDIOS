@@ -7,6 +7,7 @@ import {
   LockClosedIcon
 } from '@heroicons/react/24/outline';
 
+
 const Profile = () => {
   const [proveedor, setProveedor] = useState(null);
   const [persona, setPersona] = useState(null);
@@ -81,7 +82,7 @@ const Profile = () => {
   if (!proveedor) return <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">No se encontró tu perfil de proveedor.</div>;
 
   return (
-    <div className="w-full min-h-screen bg-[#fbcbdb] py-8">
+    <div className="w-full min-h-screen bg-[#fbcbdb] py-8 pb-24">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-4xl font-bold mb-8 text-center text-[#012e33]">Perfil del Negocio</h2>
         <div className="flex flex-col lg:flex-row gap-8">
@@ -176,6 +177,7 @@ const Profile = () => {
           </div>
         </div>
       </div>
+    
     </div>
   );
 };
