@@ -12,14 +12,14 @@ const ProgressBar = ({ currentStep }) => {
   const steps = ['Datos', 'Proveedor', 'Pago'];
 
   return (
-    <div className="flex justify-center items-center my-10 px-4 max-w-3xl mx-auto">
+    <div className="flex justify-center items-center my-4 px-2 max-w-xl mx-auto">
       <div className="w-full">
         {/* Pasos con líneas conectoras */}
         <div className="relative flex justify-between">
           {/* Líneas de conexión que van detrás de los círculos */}
-          <div className="absolute top-5 left-0 right-0 h-1 bg-gray-200">
+          <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200">
             <div
-              className="h-full transition-all duration-300 ease-in-out"
+              className="h-full transition-all duration-300 ease-in-out rounded"
               style={{ width: `${(currentStep / (steps.length - 1)) * 100}%`, background: colors.purple }}
             ></div>
           </div>
@@ -29,15 +29,15 @@ const ProgressBar = ({ currentStep }) => {
             <div key={index} className="relative flex flex-col items-center z-10">
               {/* Círculo */}
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-lg font-bold shadow-md transition-all duration-300 ${index <= currentStep ? '' : 'bg-gray-300'}`}
-                style={index <= currentStep ? { background: colors.purple, transform: 'scale(1.1)' } : {}}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-base font-bold shadow transition-all duration-300 ${index <= currentStep ? '' : 'bg-gray-300'}`}
+                style={index <= currentStep ? { background: colors.purple, transform: 'scale(1.08)' } : {}}
               >
                 {index + 1}
               </div>
               {/* Texto del paso */}
               <div
-                className={`mt-2 text-sm font-medium text-center transition-all duration-300 ${index <= currentStep ? 'font-semibold' : 'text-gray-600'}`}
-                style={index <= currentStep ? { color: colors.purple } : {}}
+                className={`mt-1 text-xs font-medium text-center transition-all duration-300 ${index <= currentStep ? 'font-semibold' : 'text-gray-400'}`}
+                style={index <= currentStep ? { color: colors.purple } : { color: '#bdbdbd' }}
               >
                 {step}
               </div>
