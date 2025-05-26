@@ -146,17 +146,13 @@ const HomeProveedor = () => {
       {/* Profile Summary Card */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center space-x-4">
-          <img
-            src={proveedor.logo_url || "https://via.placeholder.com/100"}
-            alt="Logo"
-            className="h-20 w-20 rounded-lg object-cover"
-          />
+         
           <div>
             <h2 className="text-2xl font-bold text-gray-800">{proveedor.nombre_empresa}</h2>
             <p className="text-gray-600">{proveedor.tipo_servicio}</p>
             <div className="mt-2 flex items-center space-x-4">
               <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
-                Plan {membresia && membresia.nombre_pla ? membresia.nombre_pla : 'Básico'}
+                 {membresia && membresia.nombre_pla ? membresia.nombre_pla : 'Básico'}
               </span>
               <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
                 {membresia && membresia.estado ? membresia.estado : 'Activo'}
