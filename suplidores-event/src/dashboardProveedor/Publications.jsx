@@ -11,6 +11,318 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline';
 
+// ServicioForm fuera del componente Publications
+const ServicioForm = ({
+  servicioForm,
+  setServicioForm,
+  handleServicioChange,
+  handleServicioSubmit,
+  setTipoVendedor
+}) => (
+  <form onSubmit={handleServicioSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="flex justify-between items-center mb-8">
+      <h2 className="text-2xl font-bold text-gray-900">Nuevo Servicio</h2>
+      <button
+        type="button"
+        onClick={() => setTipoVendedor('selector')}
+        className="text-gray-500 hover:text-gray-700"
+      >
+        <XMarkIcon className="h-6 w-6" />
+      </button>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Servicio</label>
+          <input
+            type="text"
+            name="nombre"
+            value={servicioForm.nombre}
+            onChange={handleServicioChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
+          <input
+            type="text"
+            name="tipo_servicio"
+            value={servicioForm.tipo_servicio}
+            onChange={handleServicioChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+          <input
+            type="number"
+            name="precio"
+            value={servicioForm.precio}
+            onChange={handleServicioChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <textarea
+            name="descripcion"
+            value={servicioForm.descripcion}
+            onChange={handleServicioChange}
+            rows="4"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+            <div className="space-y-1 text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                >
+                  <span>Subir imágenes</span>
+                  <input
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      setServicioForm(prev => ({
+                        ...prev,
+                        imagenes: files
+                      }));
+                    }}
+                  />
+                </label>
+                <p className="pl-1">o arrastrar y soltar</p>
+              </div>
+              <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+              {/* Mostrar nombres de imágenes seleccionadas */}
+              {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
+                <ul className="mt-2 text-xs text-gray-700 text-left">
+                  {servicioForm.imagenes.map((img, idx) => (
+                    <li key={idx}>{img.name}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="mt-8 flex justify-end space-x-4">
+      <button
+        type="button"
+        onClick={() => setTipoVendedor('selector')}
+        className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Publicar Servicio
+      </button>
+    </div>
+  </form>
+);
+
+// ProductoForm fuera del componente Publications
+const ProductoForm = ({
+  productoForm,
+  setProductoForm,
+  handleProductoChange,
+  handleProductoSubmit,
+  setTipoVendedor
+}) => (
+  <form onSubmit={handleProductoSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="flex justify-between items-center mb-8">
+      <h2 className="text-2xl font-bold text-gray-900">Nuevo Producto</h2>
+      <button
+        onClick={() => setTipoVendedor('selector')}
+        className="text-gray-500 hover:text-gray-700"
+      >
+        <XMarkIcon className="h-6 w-6" />
+      </button>
+    </div>
+    
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
+          <input
+            type="text"
+            name="nombre"
+            value={productoForm.nombre}
+            onChange={handleProductoChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Producto</label>
+          <input
+            type="text"
+            name="tipo_producto"
+            value={productoForm.tipo_producto}
+            onChange={handleProductoChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+          <input
+            type="number"
+            name="precio"
+            value={productoForm.precio}
+            onChange={handleProductoChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+        <input
+          type="text"
+          name="categoria"
+          value={productoForm.categoria}
+          onChange={handleProductoChange}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          placeholder="Opcional"
+        />
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <textarea
+            name="descripcion"
+            value={productoForm.descripcion}
+            onChange={handleProductoChange}
+            rows="4"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+            <div className="space-y-1 text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-gray-400"
+                stroke="currentColor"
+                fill="none"
+                viewBox="0 0 48 48"
+                aria-hidden="true"
+              >
+                <path
+                  d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload-producto"
+                  className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                >
+                  <span>Subir imágenes</span>
+                  <input
+                    id="file-upload-producto"
+                    name="file-upload-producto"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="sr-only"
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files);
+                      setProductoForm(prev => ({
+                        ...prev,
+                        imagenes: files
+                      }));
+                    }}
+                  />
+                </label>
+                <p className="pl-1">o arrastrar y soltar</p>
+              </div>
+              <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+              {/* Mostrar nombres y previews de imágenes seleccionadas */}
+              {productoForm.imagenes && productoForm.imagenes.length > 0 && (
+                <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
+                  {productoForm.imagenes.map((img, idx) => (
+                    <li key={idx} className="flex flex-col items-center">
+                      <img
+                        src={URL.createObjectURL(img)}
+                        alt={img.name}
+                        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
+                      />
+                      <span>{img.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="mt-8 flex justify-end space-x-4">
+      <button
+        type="button"
+        onClick={() => setTipoVendedor('selector')}
+        className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+      >
+        Publicar Producto
+      </button>
+    </div>
+  </form>
+);
+
 const Publications = () => {
   const [tipoVendedor, setTipoVendedor] = useState(null); // null, 'servicios', 'productos'
   const [servicioForm, setServicioForm] = useState({
@@ -205,306 +517,6 @@ const Publications = () => {
     handleCrearProducto(productoForm);
   };
 
-  // Memoize form components
-  const ServicioForm = memo(() => (
-    <form onSubmit={handleServicioSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Nuevo Servicio</h2>
-        <button
-          type="button"
-          onClick={() => setTipoVendedor('selector')}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Servicio</label>
-            <input
-              type="text"
-              name="nombre"
-              value={servicioForm.nombre}
-              onChange={handleServicioChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
-            <input
-              type="text"
-              name="tipo_servicio"
-              value={servicioForm.tipo_servicio}
-              onChange={handleServicioChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-            <input
-              type="number"
-              name="precio"
-              value={servicioForm.precio}
-              onChange={handleServicioChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={servicioForm.descripcion}
-              onChange={handleServicioChange}
-              rows="4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                  >
-                    <span>Subir imágenes</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files);
-                        setServicioForm(prev => ({
-                          ...prev,
-                          imagenes: files
-                        }));
-                      }}
-                    />
-                  </label>
-                  <p className="pl-1">o arrastrar y soltar</p>
-                </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                {/* Mostrar nombres de imágenes seleccionadas */}
-                {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
-                  <ul className="mt-2 text-xs text-gray-700 text-left">
-                    {servicioForm.imagenes.map((img, idx) => (
-                      <li key={idx}>{img.name}</li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8 flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => setTipoVendedor('selector')}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Publicar Servicio
-        </button>
-      </div>
-    </form>
-  ));
-
-  // Formulario de Producto
-  const ProductoForm = () => (
-    <form onSubmit={handleProductoSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Nuevo Producto</h2>
-        <button
-          onClick={() => setTipoVendedor('selector')}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="space-y-4">
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
-          <input
-            type="text"
-            name="nombre"
-            value={productoForm.nombre}
-            onChange={handleProductoChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            required
-          />
-        </div>
-
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Producto</label>
-          <input
-            type="text"
-            name="tipo_producto"
-            value={productoForm.tipo_producto}
-            onChange={handleProductoChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            required
-          />
-        </div>
-
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-          <input
-            type="number"
-            name="precio"
-            value={productoForm.precio}
-            onChange={handleProductoChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-          <input
-            type="text"
-            name="categoria"
-            value={productoForm.categoria}
-            onChange={handleProductoChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            placeholder="Opcional"
-          />
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={productoForm.descripcion}
-              onChange={handleProductoChange}
-              rows="4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            required
-          />
-        </div>
-
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload-producto"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                  >
-                    <span>Subir imágenes</span>
-                    <input
-                      id="file-upload-producto"
-                      name="file-upload-producto"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files);
-                        setProductoForm(prev => ({
-                          ...prev,
-                          imagenes: files
-                        }));
-                      }}
-                    />
-                  </label>
-                  <p className="pl-1">o arrastrar y soltar</p>
-                </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                {/* Mostrar nombres y previews de imágenes seleccionadas */}
-                {productoForm.imagenes && productoForm.imagenes.length > 0 && (
-                  <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
-                    {productoForm.imagenes.map((img, idx) => (
-                      <li key={idx} className="flex flex-col items-center">
-                        <img
-                          src={URL.createObjectURL(img)}
-                          alt={img.name}
-                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
-                        />
-                        <span>{img.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-
-      <div className="mt-8 flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => setTipoVendedor('selector')}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Publicar Producto
-        </button>
-      </div>
-    </form>
-  );
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -660,10 +672,10 @@ const Publications = () => {
                     </div>
                   </div>
                 )}
-                <ServicioForm />
+                <ServicioForm servicioForm={servicioForm} setServicioForm={setServicioForm} handleServicioChange={handleServicioChange} handleServicioSubmit={handleServicioSubmit} setTipoVendedor={setTipoVendedor} />
               </>
             )}
-            {tipoVendedor === 'productos' && <ProductoForm />}
+            {tipoVendedor === 'productos' && <ProductoForm productoForm={productoForm} setProductoForm={setProductoForm} handleProductoChange={handleProductoChange} handleProductoSubmit={handleProductoSubmit} setTipoVendedor={setTipoVendedor} />}
           </div>
         )}
       </div>
