@@ -3,7 +3,8 @@ import {
   PhotoIcon, 
   MapPinIcon, 
   ClockIcon, 
-  LinkIcon 
+  LinkIcon,
+  LockClosedIcon
 } from '@heroicons/react/24/outline';
 
 const Profile = () => {
@@ -69,25 +70,30 @@ const Profile = () => {
     }
   };
 
-  if (loading) return <div className="w-full min-h-screen flex justify-center items-center bg-gray-50">Cargando...</div>;
-  if (!proveedor) return <div className="w-full min-h-screen flex justify-center items-center bg-gray-50">No se encontró tu perfil de proveedor.</div>;
+  if (loading) return <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">Cargando...</div>;
+  if (!proveedor) return <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">No se encontró tu perfil de proveedor.</div>;
 
   return (
-    <div className="w-full min-h-screen flex justify-center items-start bg-gray-50">
-      <div className="w-full max-w-5xl mx-auto p-8 bg-white rounded-lg shadow-lg mt-8">
-        <h2 className="text-3xl font-bold mb-6 text-center text-blue-900">Perfil del Negocio</h2>
-        <div className="flex flex-col md:flex-row gap-8">
+    <div className="w-full min-h-screen bg-[#fbcbdb] py-8">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-4xl font-bold mb-8 text-center text-[#012e33]">Perfil del Negocio</h2>
+        <div className="flex flex-col lg:flex-row gap-8">
           {/* Columna izquierda: Negocio y Membresía */}
           <div className="flex-1">
-            <div className="flex items-center mb-6">
-              <img
-                src={proveedor.logo_url || "https://via.placeholder.com/100"}
-                alt="Logo"
-                className="h-20 w-20 rounded-lg object-cover mr-4"
-              />
-              <div>
-                <p className="text-xl font-semibold">{proveedor.nombre_empresa}</p>
-                <p className="text-gray-600">{proveedor.tipo_servicio}</p>
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+              <div className="flex items-center mb-6">
+                <div>
+                  <p className="text-2xl font-semibold text-[#012e33]">{proveedor.nombre_empresa}</p>
+                  <p className="text-[#9CAF88] text-lg">{proveedor.tipo_servicio}</p>
+                </div>
+              </div>
+              <div className="space-y-3 mb-6">
+                <p className="text-[#012e33]"><strong>Email de la empresa:</strong> {proveedor.email_empresa}</p>
+                <p className="text-[#012e33]"><strong>Teléfono de la empresa:</strong> {proveedor.telefono_empresa}</p>
+                <p className="text-[#012e33]"><strong>Fecha de creación:</strong> {proveedor.fecha_creacion ? new Date(proveedor.fecha_creacion).toLocaleDateString() : ''}</p>
+                <p className="text-[#012e33]"><strong>Dirección:</strong> {proveedor.direccion}</p>
+                <p className="text-[#012e33]"><strong>Descripción:</strong> {proveedor.descripcion}</p>
+                <p className="text-[#012e33]"><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
               </div>
             </div>
             <div className="space-y-2 mb-6">
@@ -98,6 +104,17 @@ const Profile = () => {
               <p><strong>Descripción:</strong> {proveedor.descripcion}</p>
               <p><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
             </div>
+            {membresia && (
+              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-2 text-blue-900">Membresía Actual</h3>
+                <p><strong>Plan:</strong> {membresia.nombre_pla}</p>
+                <p><strong>Estado:</strong> {membresia.estado}</p>
+                <p><strong>Fecha de vencimiento:</strong> {membresia.fecha_fin ? new Date(membresia.fecha_fin).toLocaleDateString() : 'No disponible'}</p>
+                <p><strong>Límite de productos:</strong> {membresia.limite_productos}</p>
+                <p><strong>Límite de servicios:</strong> {membresia.limite_servicios}</p>
+                <p><strong>Límite de fotos por producto/servicio:</strong> {membresia.limite_fotos}</p>
+              </div>
+            )}
             <button
               className="mt-4 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-700 transition-colors"
               onClick={() => setShowPasswordForm(!showPasswordForm)}
