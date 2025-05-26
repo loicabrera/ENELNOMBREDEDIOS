@@ -97,23 +97,32 @@ const Profile = () => {
                 <p className="text-[#012e33]"><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
               </div>
             </div>
-            <div className="space-y-2 mb-6">
-              <p><strong>Email de la empresa:</strong> {proveedor.email_empresa}</p>
-              <p><strong>Teléfono de la empresa:</strong> {proveedor.telefono_empresa}</p>
-              <p><strong>Fecha de creación:</strong> {proveedor.fecha_creacion ? new Date(proveedor.fecha_creacion).toLocaleDateString() : ''}</p>
-              <p><strong>Dirección:</strong> {proveedor.direccion}</p>
-              <p><strong>Descripción:</strong> {proveedor.descripcion}</p>
-              <p><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
-            </div>
             {membresia && (
-              <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-blue-900">Membresía Actual</h3>
-                <p><strong>Plan:</strong> {membresia.nombre_pla}</p>
-                <p><strong>Estado:</strong> {membresia.estado}</p>
-                <p><strong>Fecha de vencimiento:</strong> {membresia.fecha_fin ? new Date(membresia.fecha_fin).toLocaleDateString() : 'No disponible'}</p>
-                <p><strong>Límite de productos:</strong> {membresia.limite_productos}</p>
-                <p><strong>Límite de servicios:</strong> {membresia.limite_servicios}</p>
-                <p><strong>Límite de fotos por producto/servicio:</strong> {membresia.limite_fotos}</p>
+              <div className="mb-6 p-6 bg-[#cbb4db] rounded-xl shadow-lg">
+                <h3 className="text-xl font-semibold mb-4 text-[#012e33]">Membresía Actual</h3>
+                <div className="space-y-2">
+                  <p className="text-[#012e33]"><strong>Plan:</strong> {membresia.nombre_pla}</p>
+                  <p className="text-[#012e33]"><strong>Estado:</strong> {membresia.estado}</p>
+                  <p className="text-[#012e33]"><strong>Fecha de vencimiento:</strong> {membresia.fecha_fin ? new Date(membresia.fecha_fin).toLocaleDateString() : 'No disponible'}</p>
+                  <p className="text-[#012e33]"><strong>Límite de productos:</strong> {membresia.limite_productos}</p>
+                  <p className="text-[#012e33]"><strong>Límite de servicios:</strong> {membresia.limite_servicios}</p>
+                  <p className="text-[#012e33]"><strong>Límite de fotos por producto/servicio:</strong> {membresia.limite_fotos}</p>
+                </div>
+              </div>
+            )}
+          </div>
+          {/* Columna derecha: Datos personales y Cambio de contraseña */}
+          <div className="flex-1">
+            {persona && (
+              <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <h3 className="text-2xl font-semibold mb-6 text-[#012e33]">Datos Personales</h3>
+                <div className="space-y-3">
+                  <p className="text-[#012e33]"><strong>Nombre:</strong> {persona.nombre}</p>
+                  <p className="text-[#012e33]"><strong>Apellido:</strong> {persona.apellido}</p>
+                  <p className="text-[#012e33]"><strong>Teléfono:</strong> {persona.telefono}</p>
+                  <p className="text-[#012e33]"><strong>Email:</strong> {persona.email}</p>
+                  <p className="text-[#012e33]"><strong>Cédula:</strong> {persona.cedula}</p>
+                </div>
               </div>
             )}
             <button
