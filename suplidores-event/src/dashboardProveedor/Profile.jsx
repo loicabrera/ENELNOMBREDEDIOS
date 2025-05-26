@@ -4,7 +4,10 @@ import {
   MapPinIcon, 
   ClockIcon, 
   LinkIcon,
-  LockClosedIcon
+  LockClosedIcon,
+  XMarkIcon,
+  BuildingOfficeIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline';
 
 
@@ -12,11 +15,12 @@ const Profile = () => {
   const [proveedor, setProveedor] = useState(null);
   const [persona, setPersona] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [membresia, setMembresia] = useState(null);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordMsg, setPasswordMsg] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [modalContent, setModalContent] = useState({ title: '', content: '' });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -42,17 +46,19 @@ const Profile = () => {
                 per => per.id_persona === proveedorLogueado.PERSONA_id_persona
               );
               setPersona(personaLogueada);
-              // Fetch membresía activa
-              fetch(`http://localhost:3000/membresia/${proveedorLogueado.id_provedor}`)
-                .then(res => res.json())
-                .then(membresiaData => {
-                  setMembresia(membresiaData);
-                  setLoading(false);
-                });
+              setLoading(false);
+            })
+            .catch(error => {
+              console.error('Error fetching persona:', error);
+              setLoading(false);
             });
         } else {
           setLoading(false);
         }
+      })
+      .catch(error => {
+        console.error('Error fetching proveedores:', error);
+        setLoading(false);
       });
   }, []);
 
@@ -78,95 +84,269 @@ const Profile = () => {
     }
   };
 
+  const handleTextClick = (title, content) => {
+    setModalContent({ title, content });
+    setShowModal(true);
+  };
+
   if (loading) return <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">Cargando...</div>;
   if (!proveedor) return <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">No se encontró tu perfil de proveedor.</div>;
 
   return (
-    <div className="w-full min-h-screen bg-[#fbcbdb] py-8 pb-24">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-4xl font-bold mb-8 text-center text-[#012e33]">Perfil del Negocio</h2>
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Columna izquierda: Negocio y Membresía */}
-          <div className="flex-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-              <div className="flex items-center mb-6">
-                <div>
-                  <p className="text-2xl font-semibold text-[#012e33]">{proveedor.nombre_empresa}</p>
-                  <p className="text-[#9CAF88] text-lg">{proveedor.tipo_servicio}</p>
+    <div className="min-h-screen bg-gradient-to-br from-[#FFE5E5] via-[#fbcbdb] to-[#FFD1D1] py-12 px-4 sm:px-6 lg:px-8">
+      {/* Modal para texto completo */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+            <h3 className="text-xl font-bold text-[#2C3E50] mb-4">{modalContent.title}</h3>
+            <p className="text-gray-700 whitespace-pre-wrap break-words">{modalContent.content}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="max-w-7xl mx-auto">
+        <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-[#2C3E50] drop-shadow-sm">Perfil del Negocio</h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Tarjeta del Negocio */}
+          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-[1.02]">
+            <div className="p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#2C3E50] to-[#3498DB] rounded-full flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
+                  <BuildingOfficeIcon className="h-12 w-12 text-black" />
+                </div>
+                <div className="text-center sm:text-left">
+                  <h3 className="text-xl md:text-2xl font-bold text-[#2C3E50] break-words">{proveedor.nombre_empresa}</h3>
+                  <p className="text-[#7F8C8D] text-base md:text-lg mt-1">{proveedor.tipo_servicio}</p>
                 </div>
               </div>
-              <div className="space-y-3 mb-6">
-                <p className="text-[#012e33]"><strong>Email de la empresa:</strong> {proveedor.email_empresa}</p>
-                <p className="text-[#012e33]"><strong>Teléfono de la empresa:</strong> {proveedor.telefono_empresa}</p>
-                <p className="text-[#012e33]"><strong>Fecha de creación:</strong> {proveedor.fecha_creacion ? new Date(proveedor.fecha_creacion).toLocaleDateString() : ''}</p>
-                <p className="text-[#012e33]"><strong>Dirección:</strong> {proveedor.direccion}</p>
-                <p className="text-[#012e33]"><strong>Descripción:</strong> {proveedor.descripcion}</p>
-                <p className="text-[#012e33]"><strong>Redes sociales:</strong> {proveedor.redes_sociales}</p>
+
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                  <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                        <MapPinIcon className="h-5 w-5 text-[#2C3E50]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-500">Dirección</p>
+                        <p 
+                          className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                          onClick={() => handleTextClick('Dirección', proveedor.direccion)}
+                        >
+                          {proveedor.direccion}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                        <LinkIcon className="h-5 w-5 text-[#2C3E50]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-500">Email</p>
+                        <p 
+                          className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                          onClick={() => handleTextClick('Email', proveedor.email_empresa)}
+                        >
+                          {proveedor.email_empresa}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                        <ClockIcon className="h-5 w-5 text-[#2C3E50]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-500">Teléfono</p>
+                        <p 
+                          className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                          onClick={() => handleTextClick('Teléfono', proveedor.telefono_empresa)}
+                        >
+                          {proveedor.telefono_empresa}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                        <ClockIcon className="h-5 w-5 text-[#2C3E50]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm text-gray-500">Fecha de creación</p>
+                        <p className="font-medium text-[#2C3E50] truncate">
+                          {proveedor.fecha_creacion ? new Date(proveedor.fecha_creacion).toLocaleDateString() : ''}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-6 rounded-xl shadow-sm">
+                  <h4 className="text-lg font-semibold text-[#2C3E50] mb-3">Descripción</h4>
+                  <p 
+                    className="text-gray-700 leading-relaxed break-words cursor-pointer hover:text-[#3498DB] transition-colors"
+                    onClick={() => handleTextClick('Descripción', proveedor.descripcion)}
+                  >
+                    {proveedor.descripcion}
+                  </p>
+                </div>
+
+                <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                      <LinkIcon className="h-5 w-5 text-[#2C3E50]" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-gray-500">Redes sociales</p>
+                      <p 
+                        className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                        onClick={() => handleTextClick('Redes sociales', proveedor.redes_sociales)}
+                      >
+                        {proveedor.redes_sociales}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-           
           </div>
-          {/* Columna derecha: Datos personales y Cambio de contraseña */}
-          <div className="flex-1">
+
+          {/* Tarjeta de Datos Personales */}
+          <div className="space-y-8">
             {persona && (
-              <div className="bg-white p-6 rounded-xl shadow-lg mb-6">
-                <h3 className="text-2xl font-semibold mb-6 text-[#012e33]">Datos Personales</h3>
-                <div className="space-y-3">
-                  <p className="text-[#012e33]"><strong>Nombre:</strong> {persona.nombre}</p>
-                  <p className="text-[#012e33]"><strong>Apellido:</strong> {persona.apellido}</p>
-                  <p className="text-[#012e33]"><strong>Teléfono:</strong> {persona.telefono}</p>
-                  <p className="text-[#012e33]"><strong>Email:</strong> {persona.email}</p>
-                  <p className="text-[#012e33]"><strong>Cédula:</strong> {persona.cedula}</p>
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-[1.02]">
+                <div className="p-6 md:p-8">
+                  <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#2C3E50] to-[#3498DB] rounded-full flex items-center justify-center text-white text-2xl md:text-3xl font-bold shadow-lg">
+                      <UserCircleIcon className="h-12 w-12 text-black" />
+                    </div>
+                    <div className="text-center sm:text-left">
+                      <h3 className="text-xl md:text-2xl font-bold text-[#2C3E50]">Datos Personales</h3>
+                      <p className="text-[#7F8C8D] text-base md:text-lg mt-1 break-words">{persona.nombre} {persona.apellido}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                    <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                          <MapPinIcon className="h-5 w-5 text-[#2C3E50]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-500">Cédula</p>
+                          <p 
+                            className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                            onClick={() => handleTextClick('Cédula', persona.cedula)}
+                          >
+                            {persona.cedula}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                          <LinkIcon className="h-5 w-5 text-[#2C3E50]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-500">Email</p>
+                          <p 
+                            className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                            onClick={() => handleTextClick('Email', persona.email)}
+                          >
+                            {persona.email}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-[#2C3E50]/10 rounded-lg">
+                          <ClockIcon className="h-5 w-5 text-[#2C3E50]" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm text-gray-500">Teléfono</p>
+                          <p 
+                            className="font-medium text-[#2C3E50] truncate cursor-pointer hover:text-[#3498DB] transition-colors"
+                            onClick={() => handleTextClick('Teléfono', persona.telefono)}
+                          >
+                            {persona.telefono}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
-            <div className="bg-white p-6 rounded-xl shadow-lg">
+
+            {/* Formulario de Cambio de Contraseña */}
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-[1.02]">
+              <div className="p-6 md:p-8">
               <button
-                className="w-full px-6 py-3 bg-[#012e33] text-black rounded-xl hover:bg-[#fbaccb] transition-colors duration-300 font-semibold mb-4 flex items-center justify-center gap-2"
+                  className="w-full px-6 py-4 bg-gradient-to-r from-[#2C3E50] to-[#3498DB] text-black rounded-xl hover:from-[#3498DB] hover:to-[#2C3E50] transition-all duration-300 font-semibold mb-6 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
                 onClick={() => setShowPasswordForm(!showPasswordForm)}
               >
                 <LockClosedIcon className="h-5 w-5" />
                 {showPasswordForm ? 'Cancelar' : 'Cambiar Contraseña'}
               </button>
+
               {showPasswordForm && (
-                <form onSubmit={handlePasswordChange} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-[#012e33] mb-2">Contraseña actual</label>
+                  <form onSubmit={handlePasswordChange} className="space-y-6">
+                    <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm">
+                      <label className="block text-sm font-medium text-[#2C3E50] mb-2">Contraseña actual</label>
                     <input
                       type="password"
                       value={oldPassword}
                       onChange={e => setOldPassword(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-[#fbcbdb] rounded-lg focus:border-[#012e33] focus:outline-none"
+                        className="w-full px-4 py-3 bg-white/50 border-2 border-[#E0E0E0] rounded-lg focus:border-[#3498DB] focus:outline-none transition-colors"
                       required
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-[#012e33] mb-2">Nueva contraseña</label>
+                    <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm">
+                      <label className="block text-sm font-medium text-[#2C3E50] mb-2">Nueva contraseña</label>
                     <input
                       type="password"
                       value={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-[#fbcbdb] rounded-lg focus:border-[#012e33] focus:outline-none"
+                        className="w-full px-4 py-3 bg-white/50 border-2 border-[#E0E0E0] rounded-lg focus:border-[#3498DB] focus:outline-none transition-colors"
                       required
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full px-6 py-3 bg-[#012e33] text-white rounded-xl hover:bg-[#fbaccb] transition-colors duration-300 font-semibold"
+                      className="w-full px-6 py-4 bg-gradient-to-r from-[#2C3E50] to-[#3498DB] text-white rounded-xl hover:from-[#3498DB] hover:to-[#2C3E50] transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
                   >
                     Guardar nueva contraseña
                   </button>
                   {passwordMsg && (
-                    <div className="mt-4 text-sm text-center text-[#012e33] font-medium">{passwordMsg}</div>
+                      <div className="mt-4 p-4 bg-[#2C3E50]/10 rounded-xl text-center text-[#2C3E50] font-medium">
+                        {passwordMsg}
+                      </div>
                   )}
                 </form>
               )}
-              <p>kjhkjhkjh</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    
     </div>
   );
 };

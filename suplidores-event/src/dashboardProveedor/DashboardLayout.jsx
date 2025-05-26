@@ -8,8 +8,10 @@ import {
   ChartBarIcon,
   BellIcon,
   ArrowRightOnRectangleIcon,
-  BuildingStorefrontIcon
+  BuildingStorefrontIcon,
+  Bars3Icon
 } from '@heroicons/react/24/outline';
+import { useState } from 'react';
 
 const navigation = [
   { name: 'Inicio', href: '/dashboard-proveedor', icon: HomeIcon },
@@ -28,6 +30,7 @@ function classNames(...classes) {
 
 export default function DashboardLayout() {
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -38,15 +41,16 @@ export default function DashboardLayout() {
     <div className="min-h-screen bg-[#fbcbdb]">
       <div className="flex">
         {/* Sidebar */}
-        <div className="fixed inset-y-0 left-0 w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div className={`fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-16'}`}>
           <div className="flex flex-col h-full">
-            {/* Logo section */}
-            <div className="flex items-center justify-center h-16 border-b border-gray-200">
-              <img
-                className="h-8 w-auto"
-                src="/logo.png"
-                alt="Your Company"
-              />
+            {/* Menu button */}
+            <div className="p-4 border-b border-gray-200">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="p-2 rounded-lg hover:bg-[#fbcbdb] hover:text-[#012e33] transition-colors"
+              >
+                <Bars3Icon className="h-6 w-6" />
+              </button>
             </div>
 
             {/* Navigation */}
@@ -67,12 +71,13 @@ export default function DashboardLayout() {
                     >
                       <item.icon
                         className={classNames(
-                          'h-6 w-6 mr-3',
+                          'h-6 w-6',
+                          isSidebarOpen ? 'mr-3' : '',
                           isActive ? 'text-[#012e33]' : 'text-gray-400 group-hover:text-[#012e33]'
                         )}
                         aria-hidden="true"
                       />
-                      {item.name}
+                      {isSidebarOpen && <span>{item.name}</span>}
                     </Link>
                   );
                 })}
@@ -85,15 +90,15 @@ export default function DashboardLayout() {
                 onClick={handleLogout}
                 className="w-full flex items-center px-4 py-3 text-sm font-medium text-gray-600 hover:bg-[#fbcbdb] hover:text-[#012e33] rounded-lg transition-colors"
               >
-                <ArrowRightOnRectangleIcon className="h-6 w-6 mr-3" />
-                Cerrar Sesión
+                <ArrowRightOnRectangleIcon className={`h-6 w-6 ${isSidebarOpen ? 'mr-3' : ''}`} />
+                {isSidebarOpen && <span>Cerrar Sesión</span>}
               </button>
             </div>
           </div>
         </div>
 
         {/* Main content */}
-        <div className="flex-1 ml-64">
+        <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}>
           <main className="flex-1">
             <div className="py-6">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">

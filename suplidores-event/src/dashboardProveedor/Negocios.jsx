@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
+import { useNavigate } from 'react-router-dom';
 
 const Negocios = () => {
   const [negocios, setNegocios] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -41,6 +43,22 @@ const Negocios = () => {
       });
   }, []);
 
+  const handleAgregarNegocio = () => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    
+    // Redirigir al formulario de datos proveedor
+    navigate('/datosproveedor', {
+      state: {
+        id_persona: user.PERSONA_id_persona,
+        plan: 'basico'
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">
@@ -54,7 +72,10 @@ const Negocios = () => {
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-4xl font-bold text-[#012e33]">Mis Negocios</h2>
-          <button className="px-6 py-3 bg-[#012e33] text-white rounded-xl hover:bg-[#fbaccb] transition-colors duration-300 font-semibold flex items-center gap-2">
+          <button 
+            onClick={handleAgregarNegocio}
+            className="px-6 py-3 bg-[#012e33] text-white rounded-xl hover:bg-[#fbaccb] transition-colors duration-300 font-semibold flex items-center gap-2"
+          >
             <BuildingStorefrontIcon className="h-5 w-5" />
             Agregar Negocio
           </button>
