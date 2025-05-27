@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import Chart from 'react-apexcharts';
-import { Bell, CalendarCheck } from 'lucide-react';
+import { Users, CheckCircle, XCircle, Clock, CalendarCheck } from 'lucide-react';
 
 export default function AdminHomeDashboard() {
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [focusedCard, setFocusedCard] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:3000/proveedores')
@@ -18,112 +18,155 @@ export default function AdminHomeDashboard() {
 
   // Calcular datos reales
   const totalProviders = proveedores.length;
-  const activos = proveedores.filter(p => p.activo !== false).length; // Asume campo 'activo', si no existe, todos activos
+  const activos = proveedores.filter(p => p.activo !== false).length;
   const inactivos = totalProviders - activos;
-  // Proveedores por tipo de servicio
-  const servicios = {};
-  proveedores.forEach(p => {
-    if (p.tipo_servicio) {
-      servicios[p.tipo_servicio] = (servicios[p.tipo_servicio] || 0) + 1;
+
+  const handleKeyPress = (e, cardId) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setFocusedCard(cardId);
     }
-  });
-  const categorias = Object.keys(servicios);
-  const categoriasSeries = [{ name: 'Proveedores', data: Object.values(servicios) }];
-
-  // Placeholder para proveedores más activos (puedes mejorar con pagos reales)
-  const topProveedores = proveedores.slice(0, 4);
-  const topLabels = topProveedores.map(p => p.nombre_empresa);
-  const topSeries = topProveedores.map(() => 1); // Simulado, puedes usar pagos reales
-
-  // Alerts (puedes mejorar con lógica real)
-  const alerts = [
-    { id: 1, icon: CalendarCheck, text: '5 membresías por vencer en los próximos 3 días.' },
-    { id: 2, icon: Bell, text: '12 publicaciones pendientes de revisión.' },
-  ];
+  };
 
   return (
-    <div className="p-6 ml-64 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Resumen General</h1>
+    <div className="min-h-screen w-full bg-gray-50 p-4 ml-0 sm:ml-16 md:ml-64">
+      <main className="w-full h-full mx-auto">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-800 text-center">
+          Resumen General
+        </h1>
 
-      {/* Tarjetas de resumen */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Total Proveedores</h3>
-          <p className="text-3xl font-semibold">{loading ? '...' : totalProviders}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Activos / Inactivos</h3>
-          <p className="text-3xl font-semibold">{loading ? '...' : `${activos} / ${inactivos}`}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Aprobadas / Pendientes / Rechazadas</h3>
-          <p className="text-3xl font-semibold">340 / 24 / 16</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm text-gray-500">Membresías Activas / Vencidas</h3>
-          <p className="text-3xl font-semibold">110 / 18</p>
-        </div>
-      </div>
-
-      {/* Solicitudes */}
-      <div className="bg-white p-4 rounded-lg shadow mb-8">
-        <h3 className="text-lg font-medium mb-2">Solicitudes de Contacto</h3>
-        <div className="flex space-x-8">
-          <div>
-            <p className="text-sm text-gray-500">Hoy</p>
-            <p className="text-xl font-semibold">12</p>
+        {/* Tarjetas de resumen principales */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
+          <div 
+            role="article"
+            tabIndex="0"
+            aria-label="Total de Proveedores"
+            onKeyPress={(e) => handleKeyPress(e, 'total')}
+            onFocus={() => setFocusedCard('total')}
+            onBlur={() => setFocusedCard(null)}
+            className={`
+              bg-white p-6 rounded-lg shadow-md
+              transition-all duration-300 ease-in-out
+              hover:shadow-lg hover:scale-[1.01]
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
+              ${focusedCard === 'total' ? 'ring-2 ring-blue-500 ring-opacity-50' : ''}
+            `}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-700">Total Proveedores</h2>
+              <Users className="w-8 h-8 text-blue-500" aria-hidden="true" />
+            </div>
+            <p className="text-4xl md:text-5xl font-bold text-gray-800" aria-live="polite">
+              {loading ? '...' : totalProviders}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">Proveedores registrados en total</p>
           </div>
-          <div>
-            <p className="text-sm text-gray-500">Semana</p>
-            <p className="text-xl font-semibold">67</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-500">Mes</p>
-            <p className="text-xl font-semibold">212</p>
-          </div>
-        </div>
-      </div>
 
-      {/* Gráficas */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Proveedores por Categoría</h3>
-          <Chart options={{
-            chart: { id: 'categories-chart', toolbar: { show: false } },
-            xaxis: { categories: categorias },
-          }} series={categoriasSeries} type="bar" height={200} />
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Proveedores Más Activos</h3>
-          <Chart options={{
-            chart: { id: 'active-providers' },
-            labels: topLabels
-          }} series={topSeries} type="donut" height={200} />
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-lg font-medium mb-2">Visitas por Día</h3>
-          <Chart options={{
-            chart: { id: 'visits-chart', toolbar: { show: false } },
-            xaxis: { categories: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'] },
-            stroke: { curve: 'smooth' },
-          }} series={[
-            { name: 'Visitas', data: [30, 45, 28, 50, 42, 60, 75] }
-          ]} type="line" height={200} />
-        </div>
-      </div>
+          <div 
+            role="article"
+            tabIndex="0"
+            aria-label="Estado de Proveedores"
+            onKeyPress={(e) => handleKeyPress(e, 'estado')}
+            onFocus={() => setFocusedCard('estado')}
+            onBlur={() => setFocusedCard(null)}
+            className={`
+              bg-white p-6 rounded-lg shadow-md
+              transition-all duration-300 ease-in-out
+              hover:shadow-lg hover:scale-[1.01]
+              focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
+              ${focusedCard === 'estado' ? 'ring-2 ring-green-500 ring-opacity-50' : ''}
+            `}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-700">Estado de Proveedores</h2>
+              <div className="flex gap-2" aria-hidden="true">
+                <CheckCircle className="w-8 h-8 text-green-500" />
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+            </div>
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-4xl md:text-5xl font-bold text-gray-800" aria-live="polite">
+                  {loading ? '...' : activos}
+                </p>
+                <p className="text-sm text-gray-500">Activos</p>
+              </div>
+              <div>
+                <p className="text-4xl md:text-5xl font-bold text-gray-800" aria-live="polite">
+                  {loading ? '...' : inactivos}
+                </p>
+                <p className="text-sm text-gray-500">Inactivos</p>
+              </div>
+            </div>
+          </div>
 
-      {/* Alertas recientes */}
-      <div className="bg-white p-4 rounded-lg shadow">
-        <h3 className="text-lg font-medium mb-4">Alertas Recientes</h3>
-        <ul className="space-y-3">
-          {alerts.map(a => (
-            <li key={a.id} className="flex items-center gap-3">
-              <a.icon className="w-5 h-5 text-red-500" />
-              <span className="text-gray-700">{a.text}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+          <div 
+            role="article"
+            tabIndex="0"
+            aria-label="Estado de Aprobaciones"
+            onKeyPress={(e) => handleKeyPress(e, 'aprobaciones')}
+            onFocus={() => setFocusedCard('aprobaciones')}
+            onBlur={() => setFocusedCard(null)}
+            className={`
+              bg-white p-6 rounded-lg shadow-md
+              transition-all duration-300 ease-in-out
+              hover:shadow-lg hover:scale-[1.01]
+              focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
+              ${focusedCard === 'aprobaciones' ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}
+            `}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-700">Estado de Aprobaciones</h2>
+              <Clock className="w-8 h-8 text-yellow-500" aria-hidden="true" />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <p className="text-3xl md:text-4xl font-bold text-green-600" aria-live="polite">340</p>
+                <p className="text-sm text-gray-500">Aprobadas</p>
+              </div>
+              <div>
+                <p className="text-3xl md:text-4xl font-bold text-yellow-600" aria-live="polite">24</p>
+                <p className="text-sm text-gray-500">Pendientes</p>
+              </div>
+              <div>
+                <p className="text-3xl md:text-4xl font-bold text-red-600" aria-live="polite">16</p>
+                <p className="text-sm text-gray-500">Rechazadas</p>
+              </div>
+            </div>
+          </div>
+
+          <div 
+            role="article"
+            tabIndex="0"
+            aria-label="Estado de Membresías"
+            onKeyPress={(e) => handleKeyPress(e, 'membresias')}
+            onFocus={() => setFocusedCard('membresias')}
+            onBlur={() => setFocusedCard(null)}
+            className={`
+              bg-white p-6 rounded-lg shadow-md
+              transition-all duration-300 ease-in-out
+              hover:shadow-lg hover:scale-[1.01]
+              focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50
+              ${focusedCard === 'membresias' ? 'ring-2 ring-purple-500 ring-opacity-50' : ''}
+            `}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-700">Membresías</h2>
+              <CalendarCheck className="w-8 h-8 text-purple-500" aria-hidden="true" />
+            </div>
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-4xl md:text-5xl font-bold text-green-600" aria-live="polite">110</p>
+                <p className="text-sm text-gray-500">Activas</p>
+              </div>
+              <div>
+                <p className="text-4xl md:text-5xl font-bold text-red-600" aria-live="polite">18</p>
+                <p className="text-sm text-gray-500">Vencidas</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
