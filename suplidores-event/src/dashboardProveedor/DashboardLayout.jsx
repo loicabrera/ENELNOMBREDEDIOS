@@ -11,7 +11,7 @@ import {
   BuildingStorefrontIcon,
   Bars3Icon
 } from '@heroicons/react/24/outline';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Footer from './Footer';
 
 const navigation = [
@@ -31,8 +31,68 @@ function classNames(...classes) {
 export default function DashboardLayout() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
 
-  
+  useEffect(() => {
+    const checkNotificaciones = async () => {
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+          console.log('No hay usuario en localStorage');
+          return;
+        }
+
+        // Obtener el negocio activo
+        const negocioActivoId = localStorage.getItem('negocio_activo');
+        console.log('Negocio activo ID:', negocioActivoId);
+        
+        const resProveedor = await fetch('http://localhost:3000/proveedores');
+        if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
+        const proveedores = await resProveedor.json();
+        
+        let proveedor;
+        if (negocioActivoId) {
+          proveedor = proveedores.find(p => p.id_provedor === Number(negocioActivoId));
+        }
+        if (!proveedor) {
+          proveedor = proveedores.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        }
+        if (!proveedor) {
+          console.log('No se encontró proveedor');
+          return;
+        }
+
+        console.log('Verificando notificaciones para proveedor:', proveedor.id_provedor);
+        // Verificar notificaciones no leídas
+        const res = await fetch(`http://localhost:3000/api/notificaciones/nuevas?proveedor_id=${proveedor.id_provedor}`);
+        if (!res.ok) throw new Error('Error al verificar notificaciones');
+        const data = await res.json();
+        console.log('Respuesta de notificaciones:', data);
+        setTieneNotificaciones(data.nuevas);
+
+        // Si estamos en la página de notificaciones, marcar como leídas
+        if (location.pathname === '/dashboard-proveedor/notificaciones') {
+          console.log('Marcando notificaciones como leídas');
+          await fetch('http://localhost:3000/api/notificaciones/leer', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ proveedor_id: proveedor.id_provedor })
+          });
+          setTieneNotificaciones(false);
+        }
+      } catch (error) {
+        console.error('Error al verificar notificaciones:', error);
+        setTieneNotificaciones(false);
+      }
+    };
+
+    // Ejecutar inmediatamente
+    checkNotificaciones();
+    // Verificar cada 10 segundos (reducido de 30 para mejor respuesta)
+    const interval = setInterval(checkNotificaciones, 10000);
+    return () => clearInterval(interval);
+  }, [location.pathname]);
+
   const handleLogout = () => {
     localStorage.removeItem('user');
     window.location.href = '/login';
@@ -59,6 +119,7 @@ export default function DashboardLayout() {
               <div className="px-4 space-y-1">
                 {navigation.map((item) => {
                   const isActive = location.pathname === item.href;
+                  const isNotificaciones = item.name === 'Notificaciones';
                   return (
                     <Link
                       key={item.name}
@@ -70,14 +131,19 @@ export default function DashboardLayout() {
                           : 'text-gray-600 hover:bg-[#fbcbdb] hover:text-[#012e33]'
                       )}
                     >
-                      <item.icon
-                        className={classNames(
-                          'h-6 w-6',
-                          isSidebarOpen ? 'mr-3' : '',
-                          isActive ? 'text-[#012e33]' : 'text-gray-400 group-hover:text-[#012e33]'
+                      <span className="relative">
+                        <item.icon
+                          className={classNames(
+                            'h-6 w-6',
+                            isSidebarOpen ? 'mr-3' : '',
+                            isActive ? 'text-[#012e33]' : 'text-gray-400 group-hover:text-[#012e33]'
+                          )}
+                          aria-hidden="true"
+                        />
+                        {isNotificaciones && tieneNotificaciones && (
+                          <span className="absolute -top-1 -right-1 block h-3 w-3 rounded-full bg-red-500 ring-2 ring-white animate-pulse"></span>
                         )}
-                        aria-hidden="true"
-                      />
+                      </span>
                       {isSidebarOpen && <span>{item.name}</span>}
                     </Link>
                   );

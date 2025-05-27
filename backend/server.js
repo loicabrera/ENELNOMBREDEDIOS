@@ -952,14 +952,35 @@ app.post('/usuarios', async (req, res) => {
     if (!nombre || !telefono || !comentario || !provedor_negocio_id_provedor) {
       return res.status(400).json({ error: 'Faltan campos obligatorios.' });
     }
-    const [result] = await db.query(
-      'INSERT INTO Usuario (nombre, email, telefono, comentario, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
-      [nombre, email, telefono, comentario, provedor_negocio_id_provedor]
-    );
-    res.status(201).json({ message: 'Contacto guardado correctamente', id_user: result.insertId });
+
+    // Primero intentamos insertar sin la columna leido
+    try {
+      const [result] = await db.query(
+        'INSERT INTO Usuario (nombre, email, telefono, comentario, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
+        [nombre, email, telefono, comentario, provedor_negocio_id_provedor]
+      );
+      res.status(201).json({ message: 'Contacto guardado correctamente', id_user: result.insertId });
+    } catch (error) {
+      // Si falla, intentamos agregar la columna leido y volver a insertar
+      if (error.code === 'ER_BAD_FIELD_ERROR') {
+        console.log('Agregando columna leido a la tabla Usuario...');
+        await db.query('ALTER TABLE Usuario ADD COLUMN IF NOT EXISTS leido TINYINT(1) DEFAULT 0');
+        
+        const [result] = await db.query(
+          'INSERT INTO Usuario (nombre, email, telefono, comentario, provedor_negocio_id_provedor, leido) VALUES (?, ?, ?, ?, ?, 0)',
+          [nombre, email, telefono, comentario, provedor_negocio_id_provedor]
+        );
+        res.status(201).json({ message: 'Contacto guardado correctamente', id_user: result.insertId });
+      } else {
+        throw error;
+      }
+    }
   } catch (error) {
-    console.error('Error al guardar contacto:', error);
-    res.status(500).json({ error: 'Error al guardar el contacto' });
+    console.error('Error detallado al guardar contacto:', error);
+    res.status(500).json({ 
+      error: 'Error al guardar el contacto',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -1061,6 +1082,43 @@ app.put('/api/servicios/:id', async (req, res) => {
   }
 });
 
+// Endpoint para verificar notificaciones no leídas
+app.get('/api/notificaciones/nuevas', async (req, res) => {
+  const { proveedor_id } = req.query;
+  if (!proveedor_id) {
+    return res.status(400).json({ error: 'Falta el ID del proveedor' });
+  }
+  try {
+    // Contar mensajes no leídos del proveedor
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM Usuario WHERE provedor_negocio_id_provedor = ? AND leido = 0',
+      [proveedor_id]
+    );
+    res.json({ nuevas: result[0].total > 0 });
+  } catch (error) {
+    console.error('Error al verificar notificaciones:', error);
+    res.status(500).json({ error: 'Error al verificar notificaciones' });
+  }
+});
+
+// Endpoint para marcar mensajes como leídos
+app.put('/api/notificaciones/leer', async (req, res) => {
+  const { proveedor_id } = req.body;
+  if (!proveedor_id) {
+    return res.status(400).json({ error: 'Falta el ID del proveedor' });
+  }
+  try {
+    await db.query(
+      'UPDATE Usuario SET leido = 1 WHERE provedor_negocio_id_provedor = ?',
+      [proveedor_id]
+    );
+    res.json({ message: 'Mensajes marcados como leídos' });
+  } catch (error) {
+    console.error('Error al marcar mensajes como leídos:', error);
+    res.status(500).json({ error: 'Error al marcar mensajes como leídos' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {
@@ -1070,6 +1128,19 @@ async function startServer() {
     if (!connected) {
       console.error('❌ No se pudo establecer conexión con la base de datos. El servidor no se iniciará.');
       process.exit(1);
+    }
+
+    // Verificar y agregar columna leido si no existe (compatible con MySQL)
+    try {
+      const [columns] = await db.query(`SHOW COLUMNS FROM Usuario LIKE 'leido'`);
+      if (columns.length === 0) {
+        await db.query(`ALTER TABLE Usuario ADD COLUMN leido TINYINT(1) DEFAULT 0`);
+        console.log('✅ Columna leido agregada correctamente');
+      } else {
+        console.log('✅ Columna leido ya existe');
+      }
+    } catch (error) {
+      console.error('❌ Error al verificar/agregar columna leido:', error);
     }
 
     // Iniciar el servidor HTTP
