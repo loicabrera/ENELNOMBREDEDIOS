@@ -603,7 +603,16 @@ app.post('/login_proveedor', async (req, res) => {
     // Puedes traer más datos si lo necesitas, por ejemplo el id_persona
     const user = result[0];
 
-    res.json({ message: 'Login exitoso', user });
+    // Agregar el rol al objeto de usuario
+    const userWithRole = {
+      ...user,
+      rol: 'proveedor'  // Agregamos el rol explícitamente
+    };
+
+    res.json({ 
+      message: 'Login exitoso', 
+      user: userWithRole 
+    });
   } catch (error) {
     console.error('Error en login_proveedor:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
