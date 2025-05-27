@@ -8,7 +8,10 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon,
-  XMarkIcon
+  XMarkIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
@@ -31,11 +34,13 @@ const Publications = () => {
     imagenes: []
   });
 
+  
   const [proveedor, setProveedor] = useState(null);
   const [productos, setProductos] = useState([]);
   const [imagenes, setImagenes] = useState([]);
   const [servicios, setServicios] = useState([]);
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [id_imagenes, ...] }
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -294,322 +299,341 @@ const Publications = () => {
     }
   };
 
-  // Memoize form components
-  const ServicioForm = memo(() => (
-    <form onSubmit={handleServicioSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Nuevo Servicio</h2>
-        <button
-          type="button"
-          onClick={() => setTipoVendedor('selector')}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Servicio</label>
-            <input
-              type="text"
-              name="nombre"
-              value={servicioForm.nombre}
-              onChange={handleServicioChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
+  const toggleDescription = (id) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
-            <input
-              type="text"
-              name="tipo_servicio"
-              value={servicioForm.tipo_servicio}
-              onChange={handleServicioChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
+  // Memoize form components with their handlers
+  const ServicioForm = memo(() => {
+    const handleSubmit = useCallback((e) => {
+      e.preventDefault();
+      handleServicioSubmit(e);
+    }, [handleServicioSubmit]);
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-            <input
-              type="number"
-              name="precio"
-              value={servicioForm.precio}
-              onChange={handleServicioChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
+    return (
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Nuevo Servicio</h2>
+          <button
+            type="button"
+            onClick={() => setTipoVendedor('selector')}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Servicio</label>
+              <input
+                type="text"
+                name="nombre"
+                value={servicioForm.nombre}
+                onChange={handleServicioChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={servicioForm.descripcion}
-              onChange={handleServicioChange}
-              rows="4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
+              <input
+                type="text"
+                name="tipo_servicio"
+                value={servicioForm.tipo_servicio}
+                onChange={handleServicioChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+              <input
+                type="number"
+                name="precio"
+                value={servicioForm.precio}
+                onChange={handleServicioChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload-servicio"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea
+                name="descripcion"
+                value={servicioForm.descripcion}
+                onChange={handleServicioChange}
+                rows="4"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+                <div className="space-y-1 text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
                   >
-                    <span>Subir imágenes</span>
-                    <input
-                      id="file-upload-servicio"
-                      name="file-upload-servicio"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files);
-                        setServicioForm(prev => ({
-                          ...prev,
-                          imagenes: files
-                        }));
-                      }}
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
-                  </label>
-                  <p className="pl-1">o arrastrar y soltar</p>
+                  </svg>
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload-servicio"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                    >
+                      <span>Subir imágenes</span>
+                      <input
+                        id="file-upload-servicio"
+                        name="file-upload-servicio"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          setServicioForm(prev => ({
+                            ...prev,
+                            imagenes: files
+                          }));
+                        }}
+                      />
+                    </label>
+                    <p className="pl-1">o arrastrar y soltar</p>
+                  </div>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                  {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
+                    <ul className="mt-2 text-xs text-gray-700 text-left">
+                      {servicioForm.imagenes.map((img, idx) => (
+                        <li key={idx}>{img.name}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                {/* Mostrar nombres de imágenes seleccionadas */}
-                {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
-                  <ul className="mt-2 text-xs text-gray-700 text-left">
-                    {servicioForm.imagenes.map((img, idx) => (
-                      <li key={idx}>{img.name}</li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-8 flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => setTipoVendedor('selector')}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Publicar Servicio
-        </button>
-      </div>
-    </form>
-  ));
+        <div className="mt-8 flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setTipoVendedor('selector')}
+            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Publicar Servicio
+          </button>
+        </div>
+      </form>
+    );
+  });
 
   // Formulario de Producto
-  const ProductoForm = memo(() => (
-    <form onSubmit={handleProductoSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
-      <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Nuevo Producto</h2>
-        <button
-          onClick={() => setTipoVendedor('selector')}
-          className="text-gray-500 hover:text-gray-700"
-        >
-          <XMarkIcon className="h-6 w-6" />
-        </button>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
-            <input
-              type="text"
-              name="nombre"
-              value={productoForm.nombre}
-              onChange={handleProductoChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
+  const ProductoForm = memo(() => {
+    const handleSubmit = useCallback((e) => {
+      e.preventDefault();
+      handleProductoSubmit(e);
+    }, [handleProductoSubmit]);
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Producto</label>
-            <input
-              type="text"
-              name="tipo_producto"
-              value={productoForm.tipo_producto}
-              onChange={handleProductoChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
-            <input
-              type="number"
-              name="precio"
-              value={productoForm.precio}
-              onChange={handleProductoChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
-          </div>
+    return (
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Nuevo Producto</h2>
+          <button
+            onClick={() => setTipoVendedor('selector')}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </button>
         </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
+              <input
+                type="text"
+                name="nombre"
+                value={productoForm.nombre}
+                onChange={handleProductoChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-          <input
-            type="text"
-            name="categoria"
-            value={productoForm.categoria}
-            onChange={handleProductoChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-            placeholder="Opcional"
-          />
-        </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Producto</label>
+              <input
+                type="text"
+                name="tipo_producto"
+                value={productoForm.tipo_producto}
+                onChange={handleProductoChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-            <textarea
-              name="descripcion"
-              value={productoForm.descripcion}
-              onChange={handleProductoChange}
-              rows="4"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-              required
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Precio</label>
+              <input
+                type="number"
+                name="precio"
+                value={productoForm.precio}
+                onChange={handleProductoChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
-              <div className="space-y-1 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-gray-400"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 48 48"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                    strokeWidth={2}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload-producto"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+              <input
+                type="text"
+                name="categoria"
+                value={productoForm.categoria}
+                onChange={handleProductoChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Opcional"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea
+                name="descripcion"
+                value={productoForm.descripcion}
+                onChange={handleProductoChange}
+                rows="4"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+                <div className="space-y-1 text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
                   >
-                    <span>Subir imágenes</span>
-                    <input
-                      id="file-upload-producto"
-                      name="file-upload-producto"
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      className="sr-only"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files);
-                        setProductoForm(prev => ({
-                          ...prev,
-                          imagenes: files
-                        }));
-                      }}
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
-                  </label>
-                  <p className="pl-1">o arrastrar y soltar</p>
+                  </svg>
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload-producto"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                    >
+                      <span>Subir imágenes</span>
+                      <input
+                        id="file-upload-producto"
+                        name="file-upload-producto"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files);
+                          setProductoForm(prev => ({
+                            ...prev,
+                            imagenes: files
+                          }));
+                        }}
+                      />
+                    </label>
+                    <p className="pl-1">o arrastrar y soltar</p>
+                  </div>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                  {productoForm.imagenes && productoForm.imagenes.length > 0 && (
+                    <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
+                      {productoForm.imagenes.map((img, idx) => (
+                        <li key={idx} className="flex flex-col items-center">
+                          <img
+                            src={URL.createObjectURL(img)}
+                            alt={img.name}
+                            style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
+                          />
+                          <span>{img.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                {/* Mostrar nombres y previews de imágenes seleccionadas */}
-                {productoForm.imagenes && productoForm.imagenes.length > 0 && (
-                  <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
-                    {productoForm.imagenes.map((img, idx) => (
-                      <li key={idx} className="flex flex-col items-center">
-                        <img
-                          src={URL.createObjectURL(img)}
-                          alt={img.name}
-                          style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
-                        />
-                        <span>{img.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div className="mt-8 flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => setTipoVendedor('selector')}
-          className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Publicar Producto
-        </button>
-      </div>
-    </form>
-  ));
+        <div className="mt-8 flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setTipoVendedor('selector')}
+            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Publicar Producto
+          </button>
+        </div>
+      </form>
+    );
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white w-full">
+      <div className="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 h-full">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Publicaciones</h1>
-          <p className="mt-2 text-gray-600">Gestiona tus servicios y productos publicados</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Publicaciones</h1>
+          <p className="text-lg text-gray-600">Gestiona tus servicios y productos publicados</p>
         </div>
 
         {/* Tabla unificada de publicaciones */}
-        <div className="bg-white shadow rounded-lg mb-8">
+        <div className="bg-white shadow-lg rounded-xl overflow-hidden mb-8">
           <div className="px-4 py-5 sm:p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-medium text-gray-900">Publicaciones Activas</h2>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+              <h2 className="text-xl font-semibold text-gray-900">Publicaciones Activas</h2>
               <button
                 onClick={() => setTipoVendedor('selector')}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm"
               >
                 <PlusIcon className="h-5 w-5 mr-2" />
                 Nueva Publicación
@@ -620,35 +644,87 @@ const Publications = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Título</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {publicaciones.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="text-center py-8 text-gray-400">No hay publicaciones activas.</td>
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                        <div className="flex flex-col items-center justify-center">
+                          <DocumentTextIcon className="h-12 w-12 text-gray-400 mb-4" />
+                          <p className="text-lg">No hay publicaciones activas</p>
+                          <button
+                            onClick={() => setTipoVendedor('selector')}
+                            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            <PlusIcon className="h-5 w-5 mr-2" />
+                            Crear primera publicación
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ) : (
                     publicaciones.map(pub => (
-                      <tr key={pub.id}>
-                        <td className="px-6 py-4 whitespace-nowrap">{pub.nombre}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{pub.tipo}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">{pub.descripcion}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">${pub.precio}</td>
+                      <tr key={pub.id} className="hover:bg-gray-50 transition-colors duration-150">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <button onClick={() => handleVer(pub)} className="text-blue-600 hover:text-blue-900 mr-2">
-                            <EyeIcon className="h-5 w-5" />
-                          </button>
-                          <button onClick={() => handleEditar(pub)} className="text-green-600 hover:text-green-900 mr-2">
-                            <PencilIcon className="h-5 w-5" />
-                          </button>
-                          <button onClick={() => handleEliminar(pub)} className="text-red-600 hover:text-red-900">
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
+                          <div className="text-sm font-medium text-gray-900 truncate max-w-[120px] break-words">{pub.nombre}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            pub.tipo === 'Producto' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'
+                          }`}>
+                            {pub.tipo}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div 
+                            className="text-sm text-gray-900 cursor-pointer hover:text-blue-600 transition-colors group"
+                            onClick={() => toggleDescription(pub.id)}
+                          >
+                            <div className={`${expandedDescriptions[pub.id] ? 'whitespace-normal' : 'line-clamp-2'} break-words max-w-[250px] transition-all duration-200`}>
+                              {pub.descripcion.split(' ').length > 6 && !expandedDescriptions[pub.id] 
+                                ? `${pub.descripcion.split(' ').slice(0, 6).join(' ')}...` 
+                                : pub.descripcion}
+                              {pub.descripcion.split(' ').length > 6 && (
+                                <span className="text-blue-600 ml-1 group-hover:underline">
+                                  {expandedDescriptions[pub.id] ? 'Leer menos' : 'Leer más'}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">${pub.precio}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex space-x-3">
+                            <button 
+                              onClick={() => handleVer(pub)} 
+                              className="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                              title="Ver detalles"
+                            >
+                              <EyeIcon className="h-5 w-5" />
+                            </button>
+                            <button 
+                              onClick={() => handleEditar(pub)} 
+                              className="text-green-600 hover:text-green-900 transition-colors duration-150"
+                              title="Editar publicación"
+                            >
+                              <PencilIcon className="h-5 w-5" />
+                            </button>
+                            <button 
+                              onClick={() => handleEliminar(pub)} 
+                              className="text-red-600 hover:text-red-900 transition-colors duration-150"
+                              title="Eliminar publicación"
+                            >
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -659,46 +735,57 @@ const Publications = () => {
           </div>
         </div>
 
-        {/* El resto de la lógica para crear nuevas publicaciones */}
-        {tipoVendedor === 'selector' ? (
-          <div className="bg-white p-6 rounded-lg shadow-md">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">¿Qué deseas publicar?</h2>
-              <button
-                onClick={() => setTipoVendedor(null)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
+        {/* Selector de tipo de publicación */}
+        {tipoVendedor === 'selector' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full p-6 transform transition-all">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">¿Qué deseas publicar?</h2>
+                <button
+                  onClick={() => setTipoVendedor(null)}
+                  className="text-gray-500 hover:text-gray-700 transition-colors duration-150"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button
+                  onClick={() => setTipoVendedor('servicios')}
+                  className="p-6 border rounded-xl hover:bg-gray-50 text-center transition-all duration-200 hover:shadow-md"
+                >
+                  <span className="block text-4xl mb-4">🎯</span>
+                  <span className="text-xl font-medium text-gray-900">Servicios</span>
+                  <p className="mt-2 text-gray-600">Publica tus servicios para eventos</p>
+                </button>
+                <button
+                  onClick={() => setTipoVendedor('productos')}
+                  className="p-6 border rounded-xl hover:bg-gray-50 text-center transition-all duration-200 hover:shadow-md"
+                >
+                  <span className="block text-4xl mb-4">📦</span>
+                  <span className="text-xl font-medium text-gray-900">Productos</span>
+                  <p className="mt-2 text-gray-600">Publica tus productos para eventos</p>
+                </button>
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => setTipoVendedor('servicios')}
-                className="p-6 border rounded-lg hover:bg-gray-50 text-center transition-colors duration-200"
-              >
-                <span className="block text-3xl mb-3">🎯</span>
-                <span className="text-lg font-medium">Servicios</span>
-                <p className="mt-2 text-sm text-gray-500">Publica tus servicios para eventos</p>
-              </button>
-              <button
-                onClick={() => setTipoVendedor('productos')}
-                className="p-6 border rounded-lg hover:bg-gray-50 text-center transition-colors duration-200"
-              >
-                <span className="block text-3xl mb-3">📦</span>
-                <span className="text-lg font-medium">Productos</span>
-                <p className="mt-2 text-sm text-gray-500">Publica tus productos para eventos</p>
-              </button>
+          </div>
+        )}
+
+        {/* Formularios */}
+        {tipoVendedor === 'servicios' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full my-8">
+              <ServicioForm />
             </div>
           </div>
-        ) : tipoVendedor === 'servicios' ? (
-          <div className="mt-8">
-            <ServicioForm />
+        )}
+
+        {tipoVendedor === 'productos' && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full my-8">
+              <ProductoForm />
+            </div>
           </div>
-        ) : tipoVendedor === 'productos' ? (
-          <div className="mt-8">
-            <ProductoForm />
-          </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

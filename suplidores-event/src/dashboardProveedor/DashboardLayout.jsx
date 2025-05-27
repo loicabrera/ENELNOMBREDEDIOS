@@ -18,9 +18,7 @@ const navigation = [
   { name: 'Perfil', href: '/dashboard-proveedor/perfil', icon: UserIcon },
   { name: 'Negocios', href: '/dashboard-proveedor/negocios', icon: BuildingStorefrontIcon },
   { name: 'Publicaciones', href: '/dashboard-proveedor/publicaciones', icon: DocumentTextIcon },
-  { name: 'Solicitudes', href: '/dashboard-proveedor/solicitudes', icon: EnvelopeIcon },
   { name: 'Membresía', href: '/dashboard-proveedor/membresia', icon: CreditCardIcon },
-  { name: 'Stats', href: '/dashboard-proveedor/stats', icon: ChartBarIcon },
   { name: 'Notificaciones', href: '/dashboard-proveedor/notificaciones', icon: BellIcon },
 ];
 
