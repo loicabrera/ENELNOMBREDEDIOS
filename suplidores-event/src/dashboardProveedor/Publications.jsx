@@ -348,7 +348,7 @@ const Publications = () => {
     const handleSubmit = async (e) => {
       e.preventDefault();
       handleServicioSubmit(e);
-    }, [handleServicioSubmit]);
+    };
 
     const handleImagenesChange = (e) => {
       setErrorImagenesServicio('');

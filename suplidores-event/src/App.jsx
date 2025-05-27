@@ -1,9 +1,10 @@
-import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
 import DashboardLayout from './dashboardProveedor/DashboardLayout';
 import Profile from './dashboardProveedor/Profile';
 import Publications from './dashboardProveedor/Publications';
 import Membership from './dashboardProveedor/Membership';
+import Stats from './dashboardProveedor/Stats';
 import Notifications from './dashboardProveedor/Notifications';
 import Negocios from './dashboardProveedor/Negocios';
 import SidebarAdmin from "./dashboardAdmin/sidebarAdmin";
@@ -15,6 +16,7 @@ import Reportes from './dashboardAdmin/Reportes';
 import Soporte from './dashboardAdmin/Soporte';
 import Moderacion from './dashboardAdmin/Moderacion';
 import Publicaciones from './dashboardAdmin/Publicaciones';
+import ProtectedRoute from './components/ProtectedRoute';
 import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
 import DetalleNegocio from './dashboardProveedor/DetalleNegocio';
 
@@ -81,99 +83,80 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rutas sin Navbar - Login debe estar antes de las rutas con Layout */}
+        {/* Rutas públicas */}
         <Route path="/login" element={<Login />} />
-        
-        {/* Rutas con Navbar */}
+        <Route path="/" element={<Layout><Home /></Layout>} />
+        <Route path="/home" element={<Layout><Home /></Layout>} />
+        <Route path="/servicios" element={<Layout><Servicios /></Layout>} />
+        <Route path="/productos" element={<Layout><Productos /></Layout>} />
+        <Route path="/vende" element={<Layout><Vende /></Layout>} />
+        <Route path="/servicios/:id" element={<Layout><DetalleServicio /></Layout>} />
+        <Route path="/productos/:id" element={<Layout><DetalleProducto /></Layout>} />
+
+        {/* Rutas protegidas para proveedores */}
         <Route
-          path="/"
+          path="/dashboard-proveedor/*"
           element={
-            <Layout>
-              <Home />
-            </Layout>
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <DashboardLayout />
+            </ProtectedRoute>
           }
-        />
-        <Route
-          path="/home"
-          element={
-            <Layout>
-              <Home />
-            </Layout>
-          }
-        />
+        >
+          <Route index element={<HomeProveedor />} />
+          <Route path="perfil" element={<Profile />} />
+          <Route path="negocios" element={<Negocios />} />
+          <Route path="publicaciones" element={<Publications />} />
+          <Route path="membresia" element={<Membership />} />
+          <Route path="stats" element={<Stats />} />
+          <Route path="notificaciones" element={<Notifications />} />
+        </Route>
+
+        {/* Rutas protegidas para administradores */}
         <Route
           path="/dashboardadmin/*"
-          element={<AdminLayout />}
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
         />
 
-        <Route
-          path="/servicios"
-          element={
-            <Layout>
-              <Servicios />
-            </Layout>
-          }
-        />
-        <Route
-          path="/productos"
-          element={
-            <Layout>
-              <Productos />
-            </Layout>
-          }
-        />
-        <Route
-          path="/vende"
-          element={
-            <Layout>
-              <Vende />
-            </Layout>
-          }
-        />
+        {/* Rutas protegidas para clientes */}
         <Route
           path="/perfil"
           element={
-            <Layout>
-              <Perfil />
-            </Layout>
-          }
-        />
-        <Route
-          path="/datospersonas"
-          element={
-            <Layout>
-              <DatosPersonas />
-            </Layout>
-          }
-        />
-        <Route
-          path="/datosproveedor"
-          element={
-            <Layout>
-              <DatosProveedor />
-            </Layout>
+            <ProtectedRoute allowedRoles={['cliente']}>
+              <Layout>
+                <Perfil />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
-        {/* Rutas de pago y confirmación */}
+        {/* Rutas protegidas para pagos */}
         <Route
           path="/pago"
           element={
-            <Layout>
-              <PaymentContainer />
-            </Layout>
-          }
-        />
-        <Route
-          path="/confirmacion"
-          element={
-            <Layout>
-              <Confirmacion />
-            </Layout>
+            <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
+              <Layout>
+                <PaymentContainer />
+              </Layout>
+            </ProtectedRoute>
           }
         />
 
-        {/* Rutas sin Navbar */}
+        <Route
+          path="/confirmacion"
+          element={
+            <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
+              <Layout>
+                <Confirmacion />
+              </Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas de registro */}
         <Route
           path="/registro/:plan"
           element={
@@ -191,59 +174,8 @@ function App() {
           }
         />
 
-        {/* Rutas del Dashboard del Proveedor */}
-        <Route path="/dashboard-proveedor/*" element={<DashboardLayout />}>
-          <Route index element={<HomeProveedor />} />
-          <Route path="perfil" element={<Profile />} />
-          <Route path="negocios" element={<Negocios />} />
-          <Route path="publicaciones" element={<Publications />} />
-          <Route path="membresia" element={<Membership />} />
-          <Route path="notificaciones" element={<Notifications />} />
-          <Route path="negocios/:id" element={<DetalleNegocio />} />
-        </Route>
-
-        {/* Ruta para el formulario de datos del proveedor */}
-        <Route
-          path="/datosproveedor2"
-          element={
-            <Layout>
-              <DatosProveedor2 />
-            </Layout>
-          }
-        />
-
-        {/* Ruta alternativa sin guión */}
-        <Route path="/dashboardproveedor/*" element={<DashboardLayout />}>
-          <Route index element={<HomeProveedor />} />
-          <Route path="perfil" element={<Profile />} />
-          <Route path="negocios" element={<Negocios />} />
-          <Route path="publicaciones" element={<Publications />} />
-          <Route path="membresia" element={<Membership />} />
-          <Route path="notificaciones" element={<Notifications />} />
-        </Route>
-
-        {/* Ruta alternativa para el dashboard del proveedor */}
-        <Route 
-          path="/dashboard"
-          element={<HomeProveedor />}
-        />
-        
-        <Route
-          path="/servicios/:id"
-          element={
-            <Layout>
-              <DetalleServicio />
-            </Layout>
-          }
-        />
-        <Route
-          path="/productos/:id"
-          element={
-            <Layout>
-              <DetalleProducto />
-            </Layout>
-          }
-        />
+        {/* Ruta por defecto */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
