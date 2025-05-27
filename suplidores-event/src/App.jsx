@@ -11,9 +11,6 @@ import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
 import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 import HistorialPagos from './dashboardAdmin/HistorialPagos';
 import Membresias from './dashboardAdmin/Membresias';
-import Reportes from './dashboardAdmin/Reportes';
-import Soporte from './dashboardAdmin/Soporte';
-import Moderacion from './dashboardAdmin/Moderacion';
 import Publicaciones from './dashboardAdmin/Publicaciones';
 import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
 import DetalleNegocio from './dashboardProveedor/DetalleNegocio';
@@ -68,9 +65,7 @@ function AdminLayout() {
           <Route path="publicaciones" element={<Publicaciones />} />
           <Route path="membresias" element={<Membresias />} />
           <Route path="pagos" element={<HistorialPagos />} />
-          <Route path="reportes" element={<Reportes />} />
-          <Route path="soporte" element={<Soporte />} />
-          <Route path="moderacion" element={<Moderacion />} />
+
         </Routes>
       </div>
     </div>
