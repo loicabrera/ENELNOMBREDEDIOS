@@ -27,6 +27,9 @@ const Publications = () => {
   const [errorImagenesProducto, setErrorImagenesProducto] = useState('');
   const [limiteFotosServicio, setLimiteFotosServicio] = useState(8); // valor por defecto
   const [errorImagenesServicio, setErrorImagenesServicio] = useState('');
+  const [selectedPublication, setSelectedPublication] = useState(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -278,18 +281,32 @@ const Publications = () => {
   ];
 
   // Acción: Ver publicación
-  const handleVer = (pub) => {
+  const handleVer = async (pub) => {
+    setSelectedPublication(pub);
+    setShowPreviewModal(true);
+    setCurrentImageIdx(0);
+    
     if (pub.tipo === 'Producto') {
-      navigate(`/productos/${pub.id_productos}`);
-    } else {
-      navigate(`/servicios/${pub.id_servicio}`);
+      try {
+        const res = await fetch(`http://localhost:3000/api/imagenes_productos/por-producto/${pub.id_productos}`);
+        const imgs = await res.json();
+        setImagenes(prev => ({
+          ...prev,
+          [pub.id_productos]: imgs
+        }));
+      } catch (error) {
+        console.error('Error al cargar imágenes del producto:', error);
+      }
     }
   };
 
-  // Acción: Editar publicación (puedes implementar el formulario de edición si lo deseas)
+  // Acción: Editar publicación
   const handleEditar = (pub) => {
-    alert('Funcionalidad de edición aún no implementada.');
-    // Aquí podrías abrir un modal o navegar a una página de edición
+    if (pub.tipo === 'Producto') {
+      navigate(`/productos/editar/${pub.id_productos}`);
+    } else {
+      navigate(`/servicios/editar/${pub.id_servicio}`);
+    }
   };
 
   // Acción: Eliminar publicación
@@ -813,6 +830,129 @@ const Publications = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
             <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full my-8">
               <ProductoForm />
+            </div>
+          </div>
+        )}
+
+        {/* Preview Modal */}
+        {showPreviewModal && selectedPublication && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto relative">
+              <button
+                onClick={() => setShowPreviewModal(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition-colors duration-150"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Carrusel de imágenes para servicios */}
+                {selectedPublication.tipo === 'Servicio' && imagenesServicios[selectedPublication.id]?.length > 0 && (
+                  <div className="flex flex-col items-center md:w-80 w-full">
+                    <div className="relative w-full flex justify-center items-center">
+                      <button
+                        onClick={() => setCurrentImageIdx(prev => prev === 0 ? imagenesServicios[selectedPublication.id].length - 1 : prev - 1)}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 shadow hover:bg-gray-200 z-10"
+                        style={{ display: imagenesServicios[selectedPublication.id].length > 1 ? 'block' : 'none' }}
+                        aria-label="Anterior"
+                      >
+                        &#8592;
+                      </button>
+                      <img
+                        src={`http://localhost:3000/api/imagenes_servicio/${imagenesServicios[selectedPublication.id][currentImageIdx].id_imagenes}`}
+                        alt={selectedPublication.nombre}
+                        className="w-full h-64 object-cover bg-gray-100 rounded-lg"
+                        style={{ maxWidth: 320 }}
+                      />
+                      <button
+                        onClick={() => setCurrentImageIdx(prev => prev === imagenesServicios[selectedPublication.id].length - 1 ? 0 : prev + 1)}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 shadow hover:bg-gray-200 z-10"
+                        style={{ display: imagenesServicios[selectedPublication.id].length > 1 ? 'block' : 'none' }}
+                        aria-label="Siguiente"
+                      >
+                        &#8594;
+                      </button>
+                    </div>
+                    {/* Miniaturas */}
+                    {imagenesServicios[selectedPublication.id].length > 1 && (
+                      <div className="flex gap-2 mt-2 justify-center">
+                        {imagenesServicios[selectedPublication.id].map((img, idx) => (
+                          <img
+                            key={img.id_imagenes}
+                            src={`http://localhost:3000/api/imagenes_servicio/${img.id_imagenes}`}
+                            alt={`Miniatura ${idx + 1}`}
+                            className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
+                            onClick={() => setCurrentImageIdx(idx)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Carrusel de imágenes para productos */}
+                {selectedPublication.tipo === 'Producto' && imagenes[selectedPublication.id]?.length > 0 && (
+                  <div className="flex flex-col items-center md:w-80 w-full">
+                    <div className="relative w-full flex justify-center items-center">
+                      <button
+                        onClick={() => setCurrentImageIdx(prev => prev === 0 ? imagenes[selectedPublication.id].length - 1 : prev - 1)}
+                        className="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 shadow hover:bg-gray-200 z-10"
+                        style={{ display: imagenes[selectedPublication.id].length > 1 ? 'block' : 'none' }}
+                        aria-label="Anterior"
+                      >
+                        &#8592;
+                      </button>
+                      <img
+                        src={`http://localhost:3000/api/imagenes_productos/${imagenes[selectedPublication.id][currentImageIdx].id_imagenes}`}
+                        alt={selectedPublication.nombre}
+                        className="w-full h-64 object-cover bg-gray-100 rounded-lg"
+                        style={{ maxWidth: 320 }}
+                      />
+                      <button
+                        onClick={() => setCurrentImageIdx(prev => prev === imagenes[selectedPublication.id].length - 1 ? 0 : prev + 1)}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 shadow hover:bg-gray-200 z-10"
+                        style={{ display: imagenes[selectedPublication.id].length > 1 ? 'block' : 'none' }}
+                        aria-label="Siguiente"
+                      >
+                        &#8594;
+                      </button>
+                    </div>
+                    {/* Miniaturas */}
+                    {imagenes[selectedPublication.id].length > 1 && (
+                      <div className="flex gap-2 mt-2 justify-center">
+                        {imagenes[selectedPublication.id].map((img, idx) => (
+                          <img
+                            key={img.id_imagenes}
+                            src={`http://localhost:3000/api/imagenes_productos/${img.id_imagenes}`}
+                            alt={`Miniatura ${idx + 1}`}
+                            className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
+                            onClick={() => setCurrentImageIdx(idx)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="flex-1 flex flex-col gap-4">
+                  <h2 className="text-2xl font-bold mb-2" style={{ color: '#cbb4db' }}>{selectedPublication.nombre}</h2>
+                  <div className="text-gray-700 mb-2">{selectedPublication.descripcion}</div>
+                  <div className="text-lg font-bold mb-2" style={{ color: '#fbaccb' }}>Precio: ${selectedPublication.precio}</div>
+                  
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-2" style={{ color: '#cbb4db' }}>Vendedor</h3>
+                    {proveedor ? (
+                      <div className="rounded-lg p-4" style={{ background: '#f3e8ff', color: '#012e33' }}>
+                        <div><span className="font-semibold">Empresa:</span> {proveedor.nombre_empresa}</div>
+                        <div><span className="font-semibold">Email:</span> {proveedor.email_empresa}</div>
+                        <div><span className="font-semibold">Teléfono:</span> {proveedor.telefono_empresa}</div>
+                        <div><span className="font-semibold">Dirección:</span> {proveedor.direccion}</div>
+                      </div>
+                    ) : (
+                      <div className="text-gray-500">No se encontró información del proveedor.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}

@@ -37,6 +37,9 @@ const DetalleProducto = () => {
         setError('Error al cargar el producto');
         setLoading(false);
       });
+
+    // Cambia la URL después de cargar el producto
+    window.history.replaceState(null, '', '/productos/detalle');
   }, [id]);
 
   const handleFormChange = e => {

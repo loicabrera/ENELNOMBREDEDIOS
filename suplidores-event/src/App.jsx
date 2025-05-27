@@ -12,9 +12,6 @@ import AdminHomeDashboard from "./dashboardAdmin/AdminHomeDashboard";
 import AdminProveedor from "./dashboardAdmin/AdminProveedor";
 import HistorialPagos from './dashboardAdmin/HistorialPagos';
 import Membresias from './dashboardAdmin/Membresias';
-import Reportes from './dashboardAdmin/Reportes';
-import Soporte from './dashboardAdmin/Soporte';
-import Moderacion from './dashboardAdmin/Moderacion';
 import Publicaciones from './dashboardAdmin/Publicaciones';
 import ProtectedRoute from './components/ProtectedRoute';
 import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
@@ -37,6 +34,8 @@ import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
 import DetalleServicio from './pages/DetalleServicio';
 import DetalleProducto from './pages/DetalleProducto';
+import EditarProducto from './pages/EditarProducto';
+import EditarServicio from './pages/EditarServicio';
 
 import Login from "./components/LoginProveedor";
 import Footer from "./components/Footer";
@@ -70,9 +69,7 @@ function AdminLayout() {
           <Route path="publicaciones" element={<Publicaciones />} />
           <Route path="membresias" element={<Membresias />} />
           <Route path="pagos" element={<HistorialPagos />} />
-          <Route path="reportes" element={<Reportes />} />
-          <Route path="soporte" element={<Soporte />} />
-          <Route path="moderacion" element={<Moderacion />} />
+
         </Routes>
       </div>
     </div>
@@ -174,6 +171,67 @@ function App() {
           }
         />
 
+        {/* Rutas del Dashboard del Proveedor */}
+        <Route path="/dashboard-proveedor/*" element={<DashboardLayout />}>
+          <Route index element={<HomeProveedor />} />
+          <Route path="perfil" element={<Profile />} />
+          <Route path="negocios" element={<Negocios />} />
+          <Route path="publicaciones" element={<Publications />} />
+          <Route path="membresia" element={<Membership />} />
+          <Route path="notificaciones" element={<Notifications />} />
+          <Route path="negocios/:id" element={<DetalleNegocio />} />
+        </Route>
+
+        {/* Ruta para el formulario de datos del proveedor */}
+        <Route
+          path="/datosproveedor2"
+          element={
+            <Layout>
+              <DatosProveedor2 />
+            </Layout>
+          }
+        />
+
+        {/* Ruta alternativa sin guión */}
+        <Route path="/dashboardproveedor/*" element={<DashboardLayout />}>
+          <Route index element={<HomeProveedor />} />
+          <Route path="perfil" element={<Profile />} />
+          <Route path="negocios" element={<Negocios />} />
+          <Route path="publicaciones" element={<Publications />} />
+          <Route path="membresia" element={<Membership />} />
+          <Route path="notificaciones" element={<Notifications />} />
+        </Route>
+
+        {/* Ruta alternativa para el dashboard del proveedor */}
+        <Route 
+          path="/dashboard"
+          element={<HomeProveedor />}
+        />
+        
+        <Route
+          path="/servicios/:id"
+          element={
+            <Layout>
+              <DetalleServicio />
+            </Layout>
+          }
+        />
+        <Route
+          path="/productos/:id"
+          element={
+            <Layout>
+              <DetalleProducto />
+            </Layout>
+          }
+        />
+        <Route
+          path="/productos/editar/:id"
+          element={<EditarProducto />}
+        />
+        <Route
+          path="/servicios/editar/:id"
+          element={<EditarServicio />}
+        />
         {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

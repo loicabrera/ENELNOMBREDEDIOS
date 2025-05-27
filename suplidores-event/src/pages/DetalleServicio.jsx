@@ -37,6 +37,9 @@ const DetalleServicio = () => {
         setError('Error al cargar el servicio');
         setLoading(false);
       });
+
+    // Cambia la URL después de cargar el servicio
+    window.history.replaceState(null, '', '/servicios/detalle');
   }, [id]);
 
   const handleFormChange = e => {

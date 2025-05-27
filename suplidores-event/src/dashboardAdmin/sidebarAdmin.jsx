@@ -17,10 +17,6 @@ export default function SidebarAdmin() {
         <NavItem icon={<FileText size={20} />} label="Publicaciones" onClick={() => navigate('/dashboardadmin/publicaciones')} />
         <NavItem icon={<Layers size={20} />} label="Membresías" onClick={() => navigate('/dashboardadmin/membresias')} />
         <NavItem icon={<CreditCard size={20} />} label="Pagos" onClick={() => navigate('/dashboardadmin/pagos')} />
-        <NavItem icon={<BarChart size={20} />} label="Reportes" onClick={() => navigate('/dashboardadmin/reportes')} />
-        <NavItem icon={<HelpCircle size={20} />} label="Soporte" onClick={() => navigate('/dashboardadmin/soporte')} />
-        <NavItem icon={<ShieldCheck size={20} />} label="Moderación" onClick={() => navigate('/dashboardadmin/moderacion')} />
-        <NavItem icon={<Settings size={20} />} label="Configuración" onClick={() => navigate('/dashboardadmin/configuracion')} />
       </nav>
     </aside>
   );
