@@ -5,6 +5,8 @@ export default function AdminHomeDashboard() {
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [focusedCard, setFocusedCard] = useState(null);
+  const [membresias, setMembresias] = useState({ activas: 0, vencidas: 0 });
+  const [loadingMembresias, setLoadingMembresias] = useState(true);
 
   useEffect(() => {
     fetch('http://localhost:3000/proveedores')
@@ -14,6 +16,17 @@ export default function AdminHomeDashboard() {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/membresias/resumen')
+      .then(res => res.json())
+      .then(data => {
+        console.log('Membresías recibidas:', data);
+        setMembresias(data);
+        setLoadingMembresias(false);
+      })
+      .catch(() => setLoadingMembresias(false));
   }, []);
 
   // Calcular datos reales
@@ -31,7 +44,7 @@ export default function AdminHomeDashboard() {
   return (
     <div className="min-h-screen w-full bg-gray-50 p-4 ml-0 sm:ml-16 md:ml-64">
       <main className="w-full h-full mx-auto">
-        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-800 text-center">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-800">
           Resumen General
         </h1>
 
@@ -65,74 +78,55 @@ export default function AdminHomeDashboard() {
           <div 
             role="article"
             tabIndex="0"
-            aria-label="Estado de Proveedores"
-            onKeyPress={(e) => handleKeyPress(e, 'estado')}
-            onFocus={() => setFocusedCard('estado')}
+            aria-label="Proveedores Activos"
+            onKeyPress={(e) => handleKeyPress(e, 'activos')}
+            onFocus={() => setFocusedCard('activos')}
             onBlur={() => setFocusedCard(null)}
             className={`
               bg-white p-6 rounded-lg shadow-md
               transition-all duration-300 ease-in-out
               hover:shadow-lg hover:scale-[1.01]
               focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50
-              ${focusedCard === 'estado' ? 'ring-2 ring-green-500 ring-opacity-50' : ''}
+              ${focusedCard === 'activos' ? 'ring-2 ring-green-500 ring-opacity-50' : ''}
             `}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-700">Estado de Proveedores</h2>
-              <div className="flex gap-2" aria-hidden="true">
-                <CheckCircle className="w-8 h-8 text-green-500" />
-                <XCircle className="w-8 h-8 text-red-500" />
-              </div>
+              <h2 className="text-xl font-bold text-gray-700">Proveedores Activos</h2>
+              <CheckCircle className="w-8 h-8 text-green-500" aria-hidden="true" />
             </div>
-            <div className="flex justify-between items-end">
-              <div>
-                <p className="text-4xl md:text-5xl font-bold text-gray-800" aria-live="polite">
-                  {loading ? '...' : activos}
-                </p>
-                <p className="text-sm text-gray-500">Activos</p>
-              </div>
-              <div>
-                <p className="text-4xl md:text-5xl font-bold text-gray-800" aria-live="polite">
-                  {loading ? '...' : inactivos}
-                </p>
-                <p className="text-sm text-gray-500">Inactivos</p>
-              </div>
+            <div className="flex items-center justify-center">
+              <p className="text-4xl md:text-5xl font-bold text-green-600" aria-live="polite">
+                {loading ? '...' : activos}
+              </p>
             </div>
+            <p className="text-sm text-gray-500 mt-2 text-center">Proveedores activos</p>
           </div>
 
           <div 
             role="article"
             tabIndex="0"
-            aria-label="Estado de Aprobaciones"
-            onKeyPress={(e) => handleKeyPress(e, 'aprobaciones')}
-            onFocus={() => setFocusedCard('aprobaciones')}
+            aria-label="Proveedores Inactivos"
+            onKeyPress={(e) => handleKeyPress(e, 'inactivos')}
+            onFocus={() => setFocusedCard('inactivos')}
             onBlur={() => setFocusedCard(null)}
             className={`
               bg-white p-6 rounded-lg shadow-md
               transition-all duration-300 ease-in-out
               hover:shadow-lg hover:scale-[1.01]
-              focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-opacity-50
-              ${focusedCard === 'aprobaciones' ? 'ring-2 ring-yellow-500 ring-opacity-50' : ''}
+              focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50
+              ${focusedCard === 'inactivos' ? 'ring-2 ring-red-500 ring-opacity-50' : ''}
             `}
           >
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-700">Estado de Aprobaciones</h2>
-              <Clock className="w-8 h-8 text-yellow-500" aria-hidden="true" />
+              <h2 className="text-xl font-bold text-gray-700">Proveedores Inactivos</h2>
+              <XCircle className="w-8 h-8 text-red-500" aria-hidden="true" />
             </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <p className="text-3xl md:text-4xl font-bold text-green-600" aria-live="polite">340</p>
-                <p className="text-sm text-gray-500">Aprobadas</p>
-              </div>
-              <div>
-                <p className="text-3xl md:text-4xl font-bold text-yellow-600" aria-live="polite">24</p>
-                <p className="text-sm text-gray-500">Pendientes</p>
-              </div>
-              <div>
-                <p className="text-3xl md:text-4xl font-bold text-red-600" aria-live="polite">16</p>
-                <p className="text-sm text-gray-500">Rechazadas</p>
-              </div>
+            <div className="flex items-center justify-center">
+              <p className="text-4xl md:text-5xl font-bold text-red-600" aria-live="polite">
+                {loading ? '...' : inactivos}
+              </p>
             </div>
+            <p className="text-sm text-gray-500 mt-2 text-center">Proveedores inactivos</p>
           </div>
 
           <div 
@@ -156,11 +150,15 @@ export default function AdminHomeDashboard() {
             </div>
             <div className="flex justify-between items-end">
               <div>
-                <p className="text-4xl md:text-5xl font-bold text-green-600" aria-live="polite">110</p>
+                <p className="text-4xl md:text-5xl font-bold text-green-600" aria-live="polite">
+                  {loadingMembresias ? '...' : membresias.activas}
+                </p>
                 <p className="text-sm text-gray-500">Activas</p>
               </div>
               <div>
-                <p className="text-4xl md:text-5xl font-bold text-red-600" aria-live="polite">18</p>
+                <p className="text-4xl md:text-5xl font-bold text-red-600" aria-live="polite">
+                  {loadingMembresias ? '...' : membresias.vencidas}
+                </p>
                 <p className="text-sm text-gray-500">Vencidas</p>
               </div>
             </div>

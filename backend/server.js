@@ -12,6 +12,9 @@ import path from 'path';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
 import { Usuario } from './Models/Usuario.js';
+import { Membresia } from './Models/Membresias.js';
+import { Op } from 'sequelize';
+
 dotenv.config();
 
 const app = express();
@@ -1001,6 +1004,25 @@ app.get('/api/limite-fotos', async (req, res) => {
   }
 });
 
+app.get('/api/membresias/resumen', async (req, res) => {
+  try {
+    const activas = await Membresia.count({
+      where: {
+        estado: 'activa',
+        fecha_fin: { [Op.gt]: new Date() }
+      }
+    });
+    const vencidas = await Membresia.count({
+      where: {
+        fecha_fin: { [Op.lt]: new Date() }
+      }
+    });
+    res.json({ activas, vencidas });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener resumen de membresías' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {
@@ -1022,5 +1044,6 @@ async function startServer() {
     process.exit(1);
   }
 }
+
 
 startServer();
