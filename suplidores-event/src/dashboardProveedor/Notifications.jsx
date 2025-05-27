@@ -9,27 +9,28 @@ const Notifications = () => {
     const fetchMensajes = async () => {
       try {
         const user = JSON.parse(localStorage.getItem('user'));
-        if (!user || !user.PERSONA_id_persona) {
+        if (!user) {
           throw new Error('No se encontró información del usuario logueado');
         }
-
-        // 1. Obtener el id_provedor usando el PERSONA_id_persona
+        // Obtener el negocio activo
+        const negocioActivoId = localStorage.getItem('negocio_activo');
         const resProveedor = await fetch(`http://localhost:3000/proveedores`);
         if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
         const proveedores = await resProveedor.json();
-        const proveedor = proveedores.find(
-          (p) => p.PERSONA_id_persona === user.PERSONA_id_persona
-        );
+        let proveedor;
+        if (negocioActivoId) {
+          proveedor = proveedores.find(p => p.id_provedor === Number(negocioActivoId));
+        }
+        if (!proveedor) {
+          proveedor = proveedores.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        }
         if (!proveedor) throw new Error('No se encontró el proveedor');
-
         const idProveedor = proveedor.id_provedor;
-
         // 2. Obtener los mensajes de ese proveedor
         const response = await fetch(`http://localhost:3000/usuarios/proveedor/${idProveedor}`);
         if (!response.ok) {
           throw new Error('Error al obtener los mensajes');
         }
-
         const data = await response.json();
         setMensajes(data);
         setLoading(false);
@@ -38,7 +39,6 @@ const Notifications = () => {
         setLoading(false);
       }
     };
-
     fetchMensajes();
   }, []);
 

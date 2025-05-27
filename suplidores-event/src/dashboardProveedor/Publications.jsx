@@ -49,11 +49,18 @@ const Publications = () => {
       window.location.href = '/login';
       return;
     }
-    // Obtener proveedor autenticado
+    // Obtener el negocio activo
+    const negocioActivoId = localStorage.getItem('negocio_activo');
     fetch('http://localhost:3000/proveedores')
       .then(res => res.json())
       .then(data => {
-        const prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        let prov;
+        if (negocioActivoId) {
+          prov = data.find(p => p.id_provedor === Number(negocioActivoId));
+        }
+        if (!prov) {
+          prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        }
         setProveedor(prov);
         if (prov) {
           // Obtener productos del proveedor
