@@ -11,6 +11,7 @@ import multer from 'multer';
 import path from 'path';
 import dotenv from 'dotenv';
 import mysql from 'mysql2/promise';
+import { Usuario } from './Models/Usuario.js';
 dotenv.config();
 
 const app = express();
@@ -926,6 +927,38 @@ app.delete('/api/servicios/:id', async (req, res) => {
         sqlMessage: error.sqlMessage
       } : undefined
     });
+  }
+});
+
+// Endpoint para crear un usuario/contacto desde el formulario de contacto
+app.post('/usuarios', async (req, res) => {
+  try {
+    const { nombre, email, telefono, comentario, provedor_negocio_id_provedor } = req.body;
+    if (!nombre || !telefono || !comentario || !provedor_negocio_id_provedor) {
+      return res.status(400).json({ error: 'Faltan campos obligatorios.' });
+    }
+    const [result] = await db.query(
+      'INSERT INTO Usuario (nombre, email, telefono, comentario, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
+      [nombre, email, telefono, comentario, provedor_negocio_id_provedor]
+    );
+    res.status(201).json({ message: 'Contacto guardado correctamente', id_user: result.insertId });
+  } catch (error) {
+    console.error('Error al guardar contacto:', error);
+    res.status(500).json({ error: 'Error al guardar el contacto' });
+  }
+});
+
+// Obtener mensajes de contacto para un proveedor específico
+app.get('/usuarios', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query(
+      'SELECT * FROM usuario WHERE provedor_negocio_id_provedor = ? ORDER BY id_user DESC',
+      [id]
+    );
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los mensajes del proveedor' });
   }
 });
 

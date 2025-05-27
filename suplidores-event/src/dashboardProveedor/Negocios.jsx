@@ -14,27 +14,23 @@ const Negocios = () => {
       return;
     }
 
-    // Cargar los datos del proveedor
+    // Cargar todos los negocios del usuario
     fetch('http://localhost:3000/proveedores')
       .then(res => res.json())
       .then(data => {
-        const proveedorLogueado = data.find(
-          p => p.PERSONA_id_persona === user.PERSONA_id_persona
-        );
-        if (proveedorLogueado) {
-          // Convertir el proveedor en un formato de negocio
-          const negocio = {
-            id: proveedorLogueado.id_provedor,
-            nombre: proveedorLogueado.nombre_empresa,
-            tipo: proveedorLogueado.tipo_servicio,
-            direccion: proveedorLogueado.direccion,
-            telefono: proveedorLogueado.telefono_empresa,
-            email: proveedorLogueado.email_empresa,
-            estado: 'Activo',
-            fechaCreacion: proveedorLogueado.fecha_creacion
-          };
-          setNegocios([negocio]);
-        }
+        const negociosUsuario = data
+          .filter(p => p.PERSONA_id_persona === user.PERSONA_id_persona)
+          .map(proveedor => ({
+            id: proveedor.id_provedor,
+            nombre: proveedor.nombre_empresa,
+            tipo: proveedor.tipo_servicio,
+            direccion: proveedor.direccion,
+            telefono: proveedor.telefono_empresa,
+            email: proveedor.email_empresa,
+            estado: 'Activo', // Puedes mejorar esto luego
+            fechaCreacion: proveedor.fecha_creacion
+          }));
+        setNegocios(negociosUsuario);
         setLoading(false);
       })
       .catch(error => {
@@ -49,14 +45,18 @@ const Negocios = () => {
       window.location.href = '/login';
       return;
     }
-    
     // Redirigir al formulario de datos proveedor
-    navigate('/datosproveedor', {
+    navigate('/datosproveedor2', {
       state: {
         id_persona: user.PERSONA_id_persona,
         plan: 'basico'
       }
     });
+  };
+
+  const handleVerDetalles = (negocio) => {
+    localStorage.setItem('empresa_activa', negocio.id);
+    navigate('/dashboard-proveedor'); // O la ruta de tu dashboard
   };
 
   if (loading) {
@@ -101,7 +101,10 @@ const Negocios = () => {
                 <button className="flex-1 px-4 py-2 bg-[#012e33] text-white rounded-lg hover:bg-[#fbaccb] transition-colors duration-300">
                   Editar
                 </button>
-                <button className="flex-1 px-4 py-2 border-2 border-[#012e33] text-[#012e33] rounded-lg hover:bg-[#fbcbdb] transition-colors duration-300">
+                <button
+                  className="flex-1 px-4 py-2 border-2 border-[#012e33] text-[#012e33] rounded-lg hover:bg-[#fbcbdb] transition-colors duration-300"
+                  onClick={() => handleVerDetalles(negocio)}
+                >
                   Ver Detalles
                 </button>
               </div>
