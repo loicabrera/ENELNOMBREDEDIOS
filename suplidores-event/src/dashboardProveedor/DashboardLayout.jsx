@@ -22,6 +22,7 @@ const navigation = [
   { name: 'Notificaciones', href: '/dashboard-proveedor/notificaciones', icon: BellIcon },
 ];
 
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
@@ -30,6 +31,7 @@ export default function DashboardLayout() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
+  
   const handleLogout = () => {
     localStorage.removeItem('user');
     window.location.href = '/login';
