@@ -176,6 +176,18 @@ app.get('/proveedores', async (req, res) => {
   }
 });
 
+// Ruta para obtener un negocio por su id
+app.get('/proveedores/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [result] = await db.query('SELECT * FROM provedor_negocio WHERE id_provedor = ?', [id]);
+    if (result.length === 0) return res.status(404).json({ error: 'No encontrado' });
+    res.json(result[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el proveedor' });
+  }
+});
+
 // Ruta para crear un nuevo proveedor
 app.post('/crear_proveedores', async (req, res) => {
   try {

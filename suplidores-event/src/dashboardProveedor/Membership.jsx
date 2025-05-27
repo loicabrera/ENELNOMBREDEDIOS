@@ -19,28 +19,46 @@ const Membership = () => {
   const [showPlanSelector, setShowPlanSelector] = useState(false);
 
   useEffect(() => {
-    const fetchMembershipData = async () => {
-      try {
-        const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
-        if (!proveedorId) {
-          throw new Error('No se encontró el ID del proveedor');
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    // Obtener el negocio activo
+    const negocioActivoId = localStorage.getItem('negocio_activo');
+    fetch('http://localhost:3000/proveedores')
+      .then(res => res.json())
+      .then(data => {
+        let prov;
+        if (negocioActivoId) {
+          prov = data.find(p => p.id_provedor === Number(negocioActivoId));
         }
-
+        if (!prov) {
+          prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        }
+        if (!prov) {
+          setError('No se encontró el proveedor');
+          setLoading(false);
+          return;
+        }
         // Obtener la membresía actual del proveedor
-        const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${proveedorId}`);
-        setCurrentPlan(membresiaResponse.data);
-
-        // Obtener el historial de pagos
-        const pagosResponse = await axios.get(`http://localhost:3000/pagos/${proveedorId}`);
-        setPaymentHistory(pagosResponse.data);
-      } catch (err) {
+        fetch(`http://localhost:3000/membresia/${prov.id_provedor}`)
+          .then(res => res.json())
+          .then(membresiaData => {
+            setCurrentPlan(membresiaData);
+            // Obtener el historial de pagos
+            fetch(`http://localhost:3000/pagos/${prov.id_provedor}`)
+              .then(res => res.json())
+              .then(pagosData => {
+                setPaymentHistory(pagosData);
+                setLoading(false);
+              });
+          });
+      })
+      .catch(err => {
         setError(err.message);
-      } finally {
         setLoading(false);
-      }
-    };
-
-    fetchMembershipData();
+      });
   }, []);
 
   const availablePlans = [

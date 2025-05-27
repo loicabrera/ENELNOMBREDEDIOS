@@ -12,6 +12,7 @@ import {
   Bars3Icon
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
+import Footer from './Footer';
 
 const navigation = [
   { name: 'Inicio', href: '/dashboard-proveedor', icon: HomeIcon },
@@ -38,8 +39,8 @@ export default function DashboardLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fbcbdb]">
-      <div className="flex">
+    <div className="min-h-screen bg-[#fbcbdb] flex flex-col">
+      <div className="flex flex-1">
         {/* Sidebar */}
         <div className={`fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-16'}`}>
           <div className="flex flex-col h-full">
@@ -108,6 +109,7 @@ export default function DashboardLayout() {
           </main>
         </div>
       </div>
+      <Footer sidebarOpen={isSidebarOpen} />
     </div>
   );
 } 

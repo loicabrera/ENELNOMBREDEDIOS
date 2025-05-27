@@ -25,13 +25,20 @@ const HomeProveedor = () => {
       return;
     }
 
-    // Fetch proveedor
+    // Obtener el negocio activo
+    const negocioActivoId = localStorage.getItem('negocio_activo');
+
     fetch('http://localhost:3000/proveedores')
       .then(res => res.json())
       .then(data => {
-        const proveedorLogueado = data.find(
-          p => p.PERSONA_id_persona === user.PERSONA_id_persona
-        );
+        let proveedorLogueado;
+        if (negocioActivoId) {
+          proveedorLogueado = data.find(p => p.id_provedor === Number(negocioActivoId));
+        }
+        // Si no hay negocio activo, usa el primero del usuario
+        if (!proveedorLogueado) {
+          proveedorLogueado = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        }
         if (proveedorLogueado) {
           setProveedor(proveedorLogueado);
           // Fetch productos y servicios publicados

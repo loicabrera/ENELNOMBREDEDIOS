@@ -6,6 +6,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
+import { useEffect } from 'react';
 
 const Statistics = () => {
   // Mock data - replace with actual data from your backend
@@ -67,6 +68,33 @@ const Statistics = () => {
   const getTrendColor = (trend) => {
     return trend === 'up' ? 'text-green-600' : 'text-red-600';
   };
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (!user) {
+      window.location.href = '/login';
+      return;
+    }
+    // Obtener el negocio activo
+    const negocioActivoId = localStorage.getItem('negocio_activo');
+    fetch('http://localhost:3000/proveedores')
+      .then(res => res.json())
+      .then(data => {
+        let prov;
+        if (negocioActivoId) {
+          prov = data.find(p => p.id_provedor === Number(negocioActivoId));
+        }
+        if (!prov) {
+          prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+        }
+        if (!prov) {
+          // Manejar error si no hay proveedor
+          return;
+        }
+        // Aquí continúa tu lógica de estadísticas usando prov.id_provedor
+        // ...
+      });
+  }, []);
 
   return (
     <div className="space-y-6">
