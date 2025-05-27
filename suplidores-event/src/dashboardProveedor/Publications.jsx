@@ -42,6 +42,10 @@ const Publications = () => {
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [id_imagenes, ...] }
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const navigate = useNavigate();
+  const [limiteFotosProducto, setLimiteFotosProducto] = useState(8); // valor por defecto
+  const [errorImagenesProducto, setErrorImagenesProducto] = useState('');
+  const [limiteFotosServicio, setLimiteFotosServicio] = useState(8); // valor por defecto
+  const [errorImagenesServicio, setErrorImagenesServicio] = useState('');
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -56,6 +60,15 @@ const Publications = () => {
         const prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
         setProveedor(prov);
         if (prov) {
+          // Obtener límite de fotos para productos
+          fetch(`http://localhost:3000/api/limite-fotos?provedor_negocio_id_provedor=${prov.id_provedor}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.limite_fotos) {
+                setLimiteFotosProducto(data.limite_fotos);
+                setLimiteFotosServicio(data.limite_fotos);
+              }
+            });
           // Obtener productos del proveedor
           fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
             .then(res => res.json())
@@ -99,9 +112,26 @@ const Publications = () => {
     }));
   }, []);
 
-  const handleImagenesChange = useCallback(e => {
-    setImagenes([...e.target.files]);
-  }, []);
+  const handleImagenesChange = (e) => {
+    setErrorImagenesProducto('');
+    const files = Array.from(e.target.files);
+    let nuevasImagenes = [...productoForm.imagenes, ...files];
+
+    // Elimina duplicados por nombre y tamaño
+    nuevasImagenes = nuevasImagenes.filter(
+      (img, idx, arr) => arr.findIndex(i => i.name === img.name && i.size === img.size) === idx
+    );
+
+    if (nuevasImagenes.length > limiteFotosProducto) {
+      setErrorImagenesProducto(`Solo puedes subir hasta ${limiteFotosProducto} imágenes según tu membresía.`);
+      nuevasImagenes = nuevasImagenes.slice(0, limiteFotosProducto);
+    }
+
+    setProductoForm(prev => ({
+      ...prev,
+      imagenes: nuevasImagenes
+    }));
+  };
 
   // Ejemplo de función para crear producto (ajusta según tu formulario)
   const handleCrearProducto = async (nuevoProducto) => {
@@ -313,6 +343,24 @@ const Publications = () => {
       handleServicioSubmit(e);
     }, [handleServicioSubmit]);
 
+    const handleImagenesChange = (e) => {
+      setErrorImagenesServicio('');
+      const files = Array.from(e.target.files);
+      let nuevasImagenes = [...servicioForm.imagenes, ...files];
+      // Elimina duplicados por nombre y tamaño
+      nuevasImagenes = nuevasImagenes.filter(
+        (img, idx, arr) => arr.findIndex(i => i.name === img.name && i.size === img.size) === idx
+      );
+      if (nuevasImagenes.length > limiteFotosServicio) {
+        setErrorImagenesServicio(`Solo puedes subir hasta ${limiteFotosServicio} imágenes según tu membresía.`);
+        nuevasImagenes = nuevasImagenes.slice(0, limiteFotosServicio);
+      }
+      setServicioForm(prev => ({
+        ...prev,
+        imagenes: nuevasImagenes
+      }));
+    };
+
     return (
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
@@ -380,6 +428,7 @@ const Publications = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+              <div className="text-xs text-gray-500 mb-1">Puedes subir hasta {limiteFotosServicio} imágenes según tu membresía.</div>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
                 <div className="space-y-1 text-center">
                   <svg
@@ -409,17 +458,12 @@ const Publications = () => {
                         multiple
                         accept="image/*"
                         className="sr-only"
-                        onChange={(e) => {
-                          const files = Array.from(e.target.files);
-                          setServicioForm(prev => ({
-                            ...prev,
-                            imagenes: files
-                          }));
-                        }}
+                        onChange={handleImagenesChange}
                       />
                     </label>
                     <p className="pl-1">o arrastrar y soltar</p>
                   </div>
+                  {errorImagenesServicio && <div className="text-xs text-red-500 mt-1">{errorImagenesServicio}</div>}
                   <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
                   {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
                     <ul className="mt-2 text-xs text-gray-700 text-left">
@@ -538,6 +582,7 @@ const Publications = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+              <div className="text-xs text-gray-500 mb-1">Puedes subir hasta {limiteFotosProducto} imágenes según tu membresía.</div>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
                 <div className="space-y-1 text-center">
                   <svg
@@ -567,17 +612,12 @@ const Publications = () => {
                         multiple
                         accept="image/*"
                         className="sr-only"
-                        onChange={(e) => {
-                          const files = Array.from(e.target.files);
-                          setProductoForm(prev => ({
-                            ...prev,
-                            imagenes: files
-                          }));
-                        }}
+                        onChange={handleImagenesChange}
                       />
                     </label>
                     <p className="pl-1">o arrastrar y soltar</p>
                   </div>
+                  {errorImagenesProducto && <div className="text-xs text-red-500 mt-1">{errorImagenesProducto}</div>}
                   <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
                   {productoForm.imagenes && productoForm.imagenes.length > 0 && (
                     <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
