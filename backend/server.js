@@ -1023,6 +1023,44 @@ app.get('/api/membresias/resumen', async (req, res) => {
   }
 });
 
+// Endpoint para editar producto
+app.put('/api/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, descripcion, precio, tipo_producto } = req.body;
+  try {
+    const [result] = await db.query(
+      'UPDATE productos SET nombre = ?, descripcion = ?, precio = ?, tipo_producto = ? WHERE id_productos = ?',
+      [nombre, descripcion, precio, tipo_producto, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    res.json({ message: 'Producto actualizado correctamente' });
+  } catch (err) {
+    console.error('Error al actualizar producto:', err);
+    res.status(500).json({ error: 'Error al actualizar el producto' });
+  }
+});
+
+// Endpoint para editar servicio
+app.put('/api/servicios/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, descripcion, tipo_servicio, precio } = req.body;
+  try {
+    const [result] = await db.query(
+      'UPDATE SERVICIO SET nombre = ?, descripcion = ?, tipo_servicio = ?, precio = ? WHERE id_servicio = ?',
+      [nombre, descripcion, tipo_servicio, precio, id]
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Servicio no encontrado' });
+    }
+    res.json({ message: 'Servicio actualizado correctamente' });
+  } catch (err) {
+    console.error('Error al actualizar servicio:', err);
+    res.status(500).json({ error: 'Error al actualizar el servicio' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {

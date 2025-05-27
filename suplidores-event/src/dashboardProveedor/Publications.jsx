@@ -319,10 +319,13 @@ const Publications = () => {
     }
   };
 
-  // Acción: Editar publicación (puedes implementar el formulario de edición si lo deseas)
+  // Acción: Editar publicación
   const handleEditar = (pub) => {
-    alert('Funcionalidad de edición aún no implementada.');
-    // Aquí podrías abrir un modal o navegar a una página de edición
+    if (pub.tipo === 'Producto') {
+      navigate(`/productos/editar/${pub.id_productos}`);
+    } else {
+      navigate(`/servicios/editar/${pub.id_servicio}`);
+    }
   };
 
   // Acción: Eliminar publicación
