@@ -15,6 +15,7 @@ import Reportes from './dashboardAdmin/Reportes';
 import Soporte from './dashboardAdmin/Soporte';
 import Moderacion from './dashboardAdmin/Moderacion';
 import Publicaciones from './dashboardAdmin/Publicaciones';
+import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -198,6 +199,16 @@ function App() {
           <Route path="membresia" element={<Membership />} />
           <Route path="notificaciones" element={<Notifications />} />
         </Route>
+
+        {/* Ruta para el formulario de datos del proveedor */}
+        <Route
+          path="/datosproveedor2"
+          element={
+            <Layout>
+              <DatosProveedor2 />
+            </Layout>
+          }
+        />
 
         {/* Ruta alternativa sin guión */}
         <Route path="/dashboardproveedor/*" element={<DashboardLayout />}>
