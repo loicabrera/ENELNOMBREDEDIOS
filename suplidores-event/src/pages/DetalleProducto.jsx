@@ -11,6 +11,7 @@ const DetalleProducto = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState({ nombre: '', email: '', telefono: '', comentario: '' });
   const [formMsg, setFormMsg] = useState('');
+  const [currentImageIdx, setCurrentImageIdx] = useState(0);
 
   useEffect(() => {
     // Obtener datos del producto
@@ -69,7 +70,18 @@ const DetalleProducto = () => {
   if (loading) return <div className="p-8 text-center">Cargando producto...</div>;
   if (error || !producto) return <div className="p-8 text-center text-red-600">{error || 'Producto no encontrado'}</div>;
 
-  const imagenReal = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
+  // Carrusel: obtener la imagen actual
+  const imagenActual = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_productos/${imagenes[currentImageIdx]?.id_imagenes}` : null;
+
+  const handlePrevImage = () => {
+    setCurrentImageIdx((prev) => (prev === 0 ? imagenes.length - 1 : prev - 1));
+  };
+  const handleNextImage = () => {
+    setCurrentImageIdx((prev) => (prev === imagenes.length - 1 ? 0 : prev + 1));
+  };
+  const handleSelectImage = (idx) => {
+    setCurrentImageIdx(idx);
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-8">
@@ -91,12 +103,50 @@ const DetalleProducto = () => {
         </div>
       )}
       <div className="bg-white rounded-xl shadow-lg p-8 flex flex-col md:flex-row gap-8">
-        {imagenReal && (
-          <img
-            src={imagenReal}
-            alt={producto.nombre}
-            className="w-full md:w-80 h-64 object-cover bg-gray-100 rounded-lg"
-          />
+        {/* Carrusel de imágenes */}
+        {imagenes.length > 0 && (
+          <div className="flex flex-col items-center md:w-80 w-full">
+            <div className="relative w-full flex justify-center items-center">
+              <button
+                onClick={handlePrevImage}
+                className="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 shadow hover:bg-gray-200 z-10"
+                style={{ display: imagenes.length > 1 ? 'block' : 'none' }}
+                aria-label="Anterior"
+              >
+                &#8592;
+              </button>
+              {imagenActual && (
+                <img
+                  src={imagenActual}
+                  alt={producto.nombre}
+                  className="w-full h-64 object-cover bg-gray-100 rounded-lg"
+                  style={{ maxWidth: 320 }}
+                />
+              )}
+              <button
+                onClick={handleNextImage}
+                className="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-1 shadow hover:bg-gray-200 z-10"
+                style={{ display: imagenes.length > 1 ? 'block' : 'none' }}
+                aria-label="Siguiente"
+              >
+                &#8594;
+              </button>
+            </div>
+            {/* Miniaturas */}
+            {imagenes.length > 1 && (
+              <div className="flex gap-2 mt-2 justify-center">
+                {imagenes.map((img, idx) => (
+                  <img
+                    key={img.id_imagenes}
+                    src={`http://localhost:3000/api/imagenes_productos/${img.id_imagenes}`}
+                    alt={`Miniatura ${idx + 1}`}
+                    className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
+                    onClick={() => handleSelectImage(idx)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         )}
         <div className="flex-1 flex flex-col gap-4">
           <h2 className="text-2xl font-bold mb-2" style={{ color: '#cbb4db' }}>{producto.nombre}</h2>

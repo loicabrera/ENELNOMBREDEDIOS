@@ -23,6 +23,10 @@ const Publications = () => {
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [id_imagenes, ...] }
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
   const navigate = useNavigate();
+  const [limiteFotosProducto, setLimiteFotosProducto] = useState(8); // valor por defecto
+  const [errorImagenesProducto, setErrorImagenesProducto] = useState('');
+  const [limiteFotosServicio, setLimiteFotosServicio] = useState(8); // valor por defecto
+  const [errorImagenesServicio, setErrorImagenesServicio] = useState('');
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -44,6 +48,15 @@ const Publications = () => {
         }
         setProveedor(prov);
         if (prov) {
+          // Obtener límite de fotos para productos
+          fetch(`http://localhost:3000/api/limite-fotos?provedor_negocio_id_provedor=${prov.id_provedor}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.limite_fotos) {
+                setLimiteFotosProducto(data.limite_fotos);
+                setLimiteFotosServicio(data.limite_fotos);
+              }
+            });
           // Obtener productos del proveedor
           fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
             .then(res => res.json())
@@ -69,6 +82,194 @@ const Publications = () => {
         }
       });
   }, []);
+
+  // Memoize handlers
+  const handleServicioChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setServicioForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  const handleProductoChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setProductoForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  const handleImagenesChange = (e) => {
+    setErrorImagenesProducto('');
+    const files = Array.from(e.target.files);
+    let nuevasImagenes = [...productoForm.imagenes, ...files];
+
+    // Elimina duplicados por nombre y tamaño
+    nuevasImagenes = nuevasImagenes.filter(
+      (img, idx, arr) => arr.findIndex(i => i.name === img.name && i.size === img.size) === idx
+    );
+
+    if (nuevasImagenes.length > limiteFotosProducto) {
+      setErrorImagenesProducto(`Solo puedes subir hasta ${limiteFotosProducto} imágenes según tu membresía.`);
+      nuevasImagenes = nuevasImagenes.slice(0, limiteFotosProducto);
+    }
+
+    setProductoForm(prev => ({
+      ...prev,
+      imagenes: nuevasImagenes
+    }));
+  };
+
+  // Ejemplo de función para crear producto (ajusta según tu formulario)
+  const handleCrearProducto = async (nuevoProducto) => {
+    if (!proveedor) return;
+    // Crear producto
+    const res = await fetch('http://localhost:3000/api/productos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ...nuevoProducto,
+        provedor_negocio_id_provedor: proveedor.id_provedor
+      })
+    });
+    const data = await res.json();
+    if (data.id_producto) {
+      // Subir imágenes si hay
+      for (let img of nuevoProducto.imagenes) {
+        const formData = new FormData();
+        formData.append('imagen', img);
+        formData.append('productos_id_productos', data.id_producto);
+        await fetch('http://localhost:3000/api/imagenes_productos', {
+          method: 'POST',
+          body: formData
+        });
+      }
+      alert('Producto creado con éxito');
+      // Limpiar el formulario después de crear exitosamente
+      setProductoForm({
+        nombre: '',
+        descripcion: '',
+        precio: '',
+        tipo_producto: '',
+        categoria: '',
+        imagenes: []
+      });
+      // Recargar productos
+      fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
+        .then(res => res.json())
+        .then(setProductos);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusStyles = {
+      published: 'bg-green-100 text-green-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      draft: 'bg-gray-100 text-gray-800',
+      rejected: 'bg-red-100 text-red-800'
+    };
+
+    const statusIcons = {
+      published: <CheckCircleIcon className="w-4 h-4" />,
+      pending: <ClockIcon className="w-4 h-4" />,
+      draft: <EyeIcon className="w-4 h-4" />,
+      rejected: <XCircleIcon className="w-4 h-4" />
+    };
+
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStyles[status]}`}>
+        {statusIcons[status]}
+        <span className="ml-1 capitalize">{status}</span>
+      </span>
+    );
+  };
+
+  const handleServicioSubmit = async (e) => {
+    e.preventDefault();
+    if (!proveedor) {
+      console.error('No hay proveedor autenticado');
+      return;
+    }
+    if (!servicioForm.nombre || !servicioForm.descripcion || !servicioForm.tipo_servicio || !servicioForm.precio) {
+      alert('Por favor, completa todos los campos requeridos.');
+      return;
+    }
+    try {
+      // 1. Crear el servicio
+      const res = await fetch('http://localhost:3000/api/servicios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: servicioForm.nombre,
+          descripcion: servicioForm.descripcion,
+          tipo_servicio: servicioForm.tipo_servicio,
+          precio: servicioForm.precio,
+          provedor_negocio_id_provedor: proveedor.id_provedor
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert('Error al crear el servicio: ' + (data.error || 'Error desconocido'));
+        return;
+      }
+      if (data.id_servicio) {
+        // 2. Subir imágenes si hay
+        for (let img of servicioForm.imagenes) {
+          const formData = new FormData();
+          formData.append('imagen', img);
+          formData.append('SERVICIO_id_servicio', data.id_servicio);
+          await fetch('http://localhost:3000/api/imagenes_servicio', {
+            method: 'POST',
+            body: formData
+          });
+        }
+        alert('Servicio creado con éxito');
+        // Limpiar el formulario después de crear exitosamente
+        setServicioForm({
+          nombre: '',
+          descripcion: '',
+          tipo_servicio: '',
+          precio: '',
+          imagenes: []
+        });
+        // Recargar la lista de servicios
+        const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+        const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
+        setServicios(misServicios);
+      }
+    } catch (error) {
+      console.error('Error en el submit del servicio:', error);
+      alert('Ocurrió un error al enviar el formulario. Revisa la consola para más detalles.');
+    }
+  };
+
+  const handleProductoSubmit = (e) => {
+    e.preventDefault();
+    handleCrearProducto(productoForm);
+  };
+
+  const handleEliminarServicio = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este servicio?')) {
+      return;
+    }
+    try {
+      const res = await fetch(`http://localhost:3000/api/servicios/${id}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) {
+        throw new Error('Error al eliminar el servicio');
+      }
+      // Actualizar la lista de servicios
+      const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+      const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
+      setServicios(misServicios);
+      alert('Servicio eliminado exitosamente');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error al eliminar el servicio');
+    }
+  };
 
   // Unificar productos y servicios en una sola lista de publicaciones
   const publicaciones = [
@@ -146,55 +347,25 @@ const Publications = () => {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
-      if (!proveedor) return;
-      if (!form.nombre || !form.descripcion || !form.tipo_servicio || !form.precio) {
-        alert('Por favor, completa todos los campos requeridos.');
-        return;
+      handleServicioSubmit(e);
+    }, [handleServicioSubmit]);
+
+    const handleImagenesChange = (e) => {
+      setErrorImagenesServicio('');
+      const files = Array.from(e.target.files);
+      let nuevasImagenes = [...servicioForm.imagenes, ...files];
+      // Elimina duplicados por nombre y tamaño
+      nuevasImagenes = nuevasImagenes.filter(
+        (img, idx, arr) => arr.findIndex(i => i.name === img.name && i.size === img.size) === idx
+      );
+      if (nuevasImagenes.length > limiteFotosServicio) {
+        setErrorImagenesServicio(`Solo puedes subir hasta ${limiteFotosServicio} imágenes según tu membresía.`);
+        nuevasImagenes = nuevasImagenes.slice(0, limiteFotosServicio);
       }
-      setLoading(true);
-      try {
-        // 1. Crear el servicio
-        const res = await fetch('http://localhost:3000/api/servicios', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: form.nombre,
-            descripcion: form.descripcion,
-            tipo_servicio: form.tipo_servicio,
-            precio: form.precio,
-            provedor_negocio_id_provedor: proveedor.id_provedor
-          })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          alert('Error al crear el servicio: ' + (data.error || 'Error desconocido'));
-          setLoading(false);
-          return;
-        }
-        if (data.id_servicio) {
-          // 2. Subir imágenes si hay
-          for (let img of form.imagenes) {
-            const formData = new FormData();
-            formData.append('imagen', img);
-            formData.append('SERVICIO_id_servicio', data.id_servicio);
-            await fetch('http://localhost:3000/api/imagenes_servicio', {
-              method: 'POST',
-              body: formData
-            });
-          }
-          alert('Servicio creado con éxito');
-          setForm({ nombre: '', descripcion: '', tipo_servicio: '', precio: '', imagenes: [] });
-          // Recargar la lista de servicios en el padre
-          const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
-          const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
-          setServicios(misServicios);
-          setTipoVendedor(null);
-        }
-      } catch (error) {
-        alert('Ocurrió un error al enviar el formulario.');
-      } finally {
-        setLoading(false);
-      }
+      setServicioForm(prev => ({
+        ...prev,
+        imagenes: nuevasImagenes
+      }));
     };
 
     return (
@@ -220,43 +391,88 @@ const Publications = () => {
               <input type="number" name="precio" value={form.precio} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
             </div>
           </div>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-              <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows="4" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
-              <div className="space-y-1 text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                    <label htmlFor="file-upload-servicio" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                    <span>Subir imágenes</span>
-                      <input id="file-upload-servicio" name="file-upload-servicio" type="file" multiple accept="image/*" className="sr-only" onChange={handleImagenes} />
-                  </label>
-                  <p className="pl-1">o arrastrar y soltar</p>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea
+                name="descripcion"
+                value={servicioForm.descripcion}
+                onChange={handleServicioChange}
+                rows="4"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+              <div className="text-xs text-gray-500 mb-1">Puedes subir hasta {limiteFotosServicio} imágenes según tu membresía.</div>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+                <div className="space-y-1 text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload-servicio"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                    >
+                      <span>Subir imágenes</span>
+                      <input
+                        id="file-upload-servicio"
+                        name="file-upload-servicio"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={handleImagenesChange}
+                      />
+                    </label>
+                    <p className="pl-1">o arrastrar y soltar</p>
+                  </div>
+                  {errorImagenesServicio && <div className="text-xs text-red-500 mt-1">{errorImagenesServicio}</div>}
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                  {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
+                    <ul className="mt-2 text-xs text-gray-700 text-left">
+                      {servicioForm.imagenes.map((img, idx) => (
+                        <li key={idx}>{img.name}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                  {form.imagenes && form.imagenes.length > 0 && (
-                  <ul className="mt-2 text-xs text-gray-700 text-left">
-                      {form.imagenes.map((img, idx) => (
-                      <li key={idx}>{img.name}</li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div className="mt-8 flex justify-end space-x-4">
-          <button type="button" onClick={() => setTipoVendedor('selector')} className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Cancelar</button>
-          <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" disabled={loading}>{loading ? 'Publicando...' : 'Publicar Servicio'}</button>
-      </div>
-    </form>
+
+        <div className="mt-8 flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => setTipoVendedor('selector')}
+            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Publicar Servicio
+          </button>
+        </div>
+      </form>
     );
   };
 
@@ -342,43 +558,87 @@ const Publications = () => {
             </div>
           </div>
           <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-              <input type="text" name="categoria" value={form.categoria} onChange={handleChange} className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" placeholder="Opcional" />
-        </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-              <textarea name="descripcion" value={form.descripcion} onChange={handleChange} rows="4" className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors" required />
-        </div>
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
-              <div className="space-y-1 text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
-                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <div className="flex text-sm text-gray-600">
-                    <label htmlFor="file-upload-producto" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
-                    <span>Subir imágenes</span>
-                      <input id="file-upload-producto" name="file-upload-producto" type="file" multiple accept="image/*" className="sr-only" onChange={handleImagenes} />
-                  </label>
-                  <p className="pl-1">o arrastrar y soltar</p>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+              <input
+                type="text"
+                name="categoria"
+                value={productoForm.categoria}
+                onChange={handleProductoChange}
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Opcional"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+              <textarea
+                name="descripcion"
+                value={productoForm.descripcion}
+                onChange={handleProductoChange}
+                rows="4"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Imágenes</label>
+              <div className="text-xs text-gray-500 mb-1">Puedes subir hasta {limiteFotosProducto} imágenes según tu membresía.</div>
+              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-500 transition-colors">
+                <div className="space-y-1 text-center">
+                  <svg
+                    className="mx-auto h-12 w-12 text-gray-400"
+                    stroke="currentColor"
+                    fill="none"
+                    viewBox="0 0 48 48"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload-producto"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                    >
+                      <span>Subir imágenes</span>
+                      <input
+                        id="file-upload-producto"
+                        name="file-upload-producto"
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={handleImagenesChange}
+                      />
+                    </label>
+                    <p className="pl-1">o arrastrar y soltar</p>
+                  </div>
+                  {errorImagenesProducto && <div className="text-xs text-red-500 mt-1">{errorImagenesProducto}</div>}
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+                  {productoForm.imagenes && productoForm.imagenes.length > 0 && (
+                    <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
+                      {productoForm.imagenes.map((img, idx) => (
+                        <li key={idx} className="flex flex-col items-center">
+                          <img
+                            src={URL.createObjectURL(img)}
+                            alt={img.name}
+                            style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
+                          />
+                          <span>{img.name}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                  {form.imagenes && form.imagenes.length > 0 && (
-                  <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
-                      {form.imagenes.map((img, idx) => (
-                      <li key={idx} className="flex flex-col items-center">
-                          <img src={URL.createObjectURL(img)} alt={img.name} style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }} />
-                        <span>{img.name}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
             </div>
           </div>
-        </div>
         </div>
       <div className="mt-8 flex justify-end space-x-4">
           <button type="button" onClick={() => setTipoVendedor('selector')} className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">Cancelar</button>

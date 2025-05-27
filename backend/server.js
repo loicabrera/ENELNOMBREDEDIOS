@@ -978,6 +978,29 @@ app.get('/usuarios', async (req, res) => {
   }
 });
 
+// Endpoint para obtener el límite de fotos según la membresía activa del proveedor
+app.get('/api/limite-fotos', async (req, res) => {
+  const { provedor_negocio_id_provedor } = req.query;
+  if (!provedor_negocio_id_provedor) {
+    return res.status(400).json({ error: 'Falta el id del proveedor' });
+  }
+  try {
+    const [rows] = await db.query(`
+      SELECT M.limite_fotos
+      FROM PROVEDOR_MEMBRESIA PM
+      JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+      WHERE PM.id_provedor = ? AND PM.estado = 'activa'
+      ORDER BY PM.fecha_inicio DESC LIMIT 1
+    `, [provedor_negocio_id_provedor]);
+    if (!rows.length) {
+      return res.status(404).json({ error: 'No tienes membresía activa.' });
+    }
+    res.json({ limite_fotos: rows[0].limite_fotos });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener el límite de fotos.' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {
