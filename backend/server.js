@@ -713,7 +713,7 @@ app.post('/api/servicios', async (req, res) => {
     SELECT M.limite_servicios
     FROM PROVEDOR_MEMBRESIA PM
     JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
-    WHERE PM.id_provedor = ? AND PM.estado = 'activo'
+    WHERE PM.id_provedor = ? AND PM.estado = 'activa'
     ORDER BY PM.fecha_inicio DESC LIMIT 1
   `, [provedor_negocio_id_provedor]);
 
@@ -951,13 +951,17 @@ app.post('/usuarios', async (req, res) => {
 // Obtener mensajes de contacto para un proveedor específico
 app.get('/usuarios', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { provedor_negocio_id_provedor } = req.query;
+    if (!provedor_negocio_id_provedor) {
+      return res.status(400).json({ error: 'Falta el ID del proveedor' });
+    }
     const [result] = await db.query(
-      'SELECT * FROM usuario WHERE provedor_negocio_id_provedor = ? ORDER BY id_user DESC',
-      [id]
+      'SELECT * FROM Usuario WHERE provedor_negocio_id_provedor = ? ORDER BY id_user DESC',
+      [provedor_negocio_id_provedor]
     );
     res.json(result);
   } catch (error) {
+    console.error('Error al obtener mensajes:', error);
     res.status(500).json({ error: 'Error al obtener los mensajes del proveedor' });
   }
 });

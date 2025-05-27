@@ -25,7 +25,7 @@ const Notifications = () => {
         const idProveedor = proveedor.id_provedor;
 
         // 2. Obtener los mensajes de ese proveedor
-        const response = await fetch(`http://localhost:3000/usuarios/proveedor/${idProveedor}`);
+        const response = await fetch(`http://localhost:3000/usuarios?provedor_negocio_id_provedor=${idProveedor}`);
         if (!response.ok) {
           throw new Error('Error al obtener los mensajes');
         }
