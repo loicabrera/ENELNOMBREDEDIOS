@@ -35,6 +35,8 @@ import Servicios from "./pages/Servicios";
 import Vende from "./pages/Vende";
 import DetalleServicio from './pages/DetalleServicio';
 import DetalleProducto from './pages/DetalleProducto';
+import EditarProducto from './pages/EditarProducto';
+import EditarServicio from './pages/EditarServicio';
 
 import Login from "./components/LoginProveedor";
 import Footer from "./components/Footer";
@@ -243,6 +245,14 @@ function App() {
               <DetalleProducto />
             </Layout>
           }
+        />
+        <Route
+          path="/productos/editar/:id"
+          element={<EditarProducto />}
+        />
+        <Route
+          path="/servicios/editar/:id"
+          element={<EditarServicio />}
         />
       </Routes>
     </Router>
