@@ -1119,6 +1119,44 @@ app.put('/api/notificaciones/leer', async (req, res) => {
   }
 });
 
+// Ruta para login de administrador
+app.post('/login_admin', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Validar que se proporcionaron las credenciales
+    if (!username || !password) {
+      return res.status(400).json({
+        error: 'Se requieren nombre de usuario y contraseña'
+      });
+    }
+
+    // Verificar credenciales fijas
+    if (username === 'admin2024' && password === 'admin2024') {
+      // Enviar respuesta exitosa
+      res.json({
+        message: 'Login exitoso',
+        user: {
+          id: 1,
+          username: 'admin2024',
+          nombre: 'Administrador',
+          email: 'admin@example.com'
+        }
+      });
+    } else {
+      return res.status(401).json({
+        error: 'Credenciales inválidas'
+      });
+    }
+
+  } catch (error) {
+    console.error('Error en login de admin:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {

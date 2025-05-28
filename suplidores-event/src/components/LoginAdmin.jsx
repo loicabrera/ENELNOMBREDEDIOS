@@ -13,16 +13,23 @@ const LoginAdmin = () => {
 
   // Verificar si ya hay una sesión activa
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user && user.rol === 'admin') {
-      // Si hay una sesión activa de admin, redirigir al dashboard
-      const from = location.state?.from?.pathname || '/dashboardadmin';
-      navigate(from, { replace: true });
-    } else if (user) {
-      // Si hay una sesión pero no es de admin, limpiarla
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        if (user && user.rol === 'admin') {
+          console.log('Sesión de admin encontrada, redirigiendo...');
+          navigate('/dashboardadmin', { replace: true });
+        } else if (user) {
+          console.log('Sesión inválida encontrada, limpiando...');
+          localStorage.removeItem('user');
+        }
+      }
+    } catch (error) {
+      console.error('Error al verificar sesión:', error);
       localStorage.removeItem('user');
     }
-  }, [navigate, location]);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,15 +63,19 @@ const LoginAdmin = () => {
       // Limpiar cualquier sesión existente
       localStorage.removeItem('user');
 
-      // Guardar datos del usuario en localStorage
-      localStorage.setItem('user', JSON.stringify({
+      // Guardar datos del usuario en localStorage con el rol de admin
+      const userData = {
         ...data.user,
-        rol: 'admin' // Aseguramos que el rol sea admin
-      }));
+        rol: 'admin'
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      // Redirigir al dashboard de administrador o a la página anterior si existe
-      const from = location.state?.from?.pathname || '/dashboardadmin';
-      navigate(from, { replace: true });
+      console.log('Usuario admin guardado:', userData);
+      
+      // Forzar la redirección a la ruta correcta
+      setTimeout(() => {
+        navigate('/dashboardadmin/', { replace: true });
+      }, 100);
 
     } catch (error) {
       console.error('Error:', error);
@@ -93,8 +104,8 @@ const LoginAdmin = () => {
           <div className="w-full flex justify-center items-center mb-2" style={{ minHeight: 64 }}>
             {/* Aquí puedes poner el logo */}
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2 text-center">Acceso Administrativo</h2>
-          <p className="text-sm text-gray-600 mb-6 text-center">Ingresa tus credenciales de administrador</p>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-2 text-center">Iniciar sesión como administrador</h2>
+          <p className="text-sm text-gray-600 mb-6 text-center">Ingresa tus credenciales para acceder al panel de administración</p>
           {error && (
             <div className="mb-4 p-3 bg-red-50 rounded-md border border-red-200 w-full">
               <p className="text-red-700 text-center">{error}</p>
@@ -102,7 +113,7 @@ const LoginAdmin = () => {
           )}
           <form className="space-y-5 w-full" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuario Administrador</label>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuario</label>
               <div className="mt-1">
                 <input
                   id="username"
