@@ -1,13 +1,16 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   let user = null;
   
   // Función para limpiar el localStorage de manera segura
   const clearUserData = () => {
     try {
       localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
       console.log('Datos de usuario limpiados del localStorage');
     } catch (error) {
       console.error('Error al limpiar localStorage:', error);
@@ -19,16 +22,46 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return userData && 
            typeof userData === 'object' && 
            userData.rol && 
-           typeof userData.rol === 'string';
+           typeof userData.rol === 'string' &&
+           userData.expiresAt && 
+           new Date(userData.expiresAt) > new Date();
   };
+
+  // Efecto para manejar la navegación y el historial
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Limpiar datos cuando el usuario cierra la pestaña o navega fuera
+      clearUserData();
+    };
+
+    const handlePopState = () => {
+      // Si el usuario está en una ruta protegida y presiona atrás
+      if (location.pathname.includes('dashboard') || location.pathname.includes('perfil')) {
+        clearUserData();
+        // Reemplazar la entrada actual en el historial
+        window.history.replaceState(null, '', '/login');
+        navigate('/login', { replace: true });
+      }
+    };
+
+    // Agregar listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handlePopState);
+
+    // Limpiar listeners al desmontar
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [location, navigate]);
 
   try {
     const userStr = localStorage.getItem('user');
     if (userStr) {
       user = JSON.parse(userStr);
-      // Si el usuario no es válido, limpiar el localStorage
+      // Si el usuario no es válido o la sesión expiró, limpiar el localStorage
       if (!isValidUser(user)) {
-        console.log('Usuario inválido en localStorage, limpiando...');
+        console.log('Usuario inválido o sesión expirada, limpiando...');
         clearUserData();
         user = null;
       }

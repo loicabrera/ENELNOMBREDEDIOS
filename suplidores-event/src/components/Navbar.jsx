@@ -125,7 +125,14 @@ function Navbar() {
             </div>
 
             <div className="p-2">
-              <button className="flex items-center space-x-2 transition hover:text-blue-600">
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('user');
+                  localStorage.removeItem('negocio_activo');
+                  window.location.href = '/login';
+                }} 
+                className="flex items-center space-x-2 transition hover:text-blue-600"
+              >
                 <LogIn size={16} />
                 <div>Cerrar Sesión</div>
               </button>

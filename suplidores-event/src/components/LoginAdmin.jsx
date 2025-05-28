@@ -63,10 +63,14 @@ const LoginAdmin = () => {
       // Limpiar cualquier sesión existente
       localStorage.removeItem('user');
 
-      // Guardar datos del usuario en localStorage con el rol de admin
+      // Guardar datos del usuario en localStorage con el rol de admin y fecha de expiración
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // La sesión expira en 24 horas
+      
       const userData = {
         ...data.user,
-        rol: 'admin'
+        rol: 'admin',
+        expiresAt: expiresAt.toISOString()
       };
       localStorage.setItem('user', JSON.stringify(userData));
 

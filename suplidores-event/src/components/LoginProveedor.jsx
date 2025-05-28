@@ -17,10 +17,13 @@ const LoginProveedor = () => {
     if (user && user.rol === 'proveedor') {
       // Si hay una sesión activa de proveedor, redirigir al dashboard
       const from = location.state?.from?.pathname || '/dashboard-proveedor';
+      // Reemplazar la entrada actual en el historial
+      window.history.replaceState(null, '', from);
       navigate(from, { replace: true });
     } else if (user) {
       // Si hay una sesión pero no es de proveedor, limpiarla
       localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
     }
   }, [navigate, location]);
 
@@ -55,15 +58,22 @@ const LoginProveedor = () => {
 
       // Limpiar cualquier sesión existente
       localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
 
-      // Guardar datos del usuario en localStorage con el rol de proveedor
+      // Guardar datos del usuario en localStorage con el rol de proveedor y fecha de expiración
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // La sesión expira en 24 horas
+      
       localStorage.setItem('user', JSON.stringify({
         ...data.user,
-        rol: 'proveedor'
+        rol: 'proveedor',
+        expiresAt: expiresAt.toISOString()
       }));
 
       // Redirigir al dashboard del proveedor o a la página anterior si existe
       const from = location.state?.from?.pathname || '/dashboard-proveedor';
+      // Reemplazar la entrada actual en el historial
+      window.history.replaceState(null, '', from);
       navigate(from, { replace: true });
 
     } catch (error) {
