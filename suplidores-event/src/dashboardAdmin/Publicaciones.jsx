@@ -1,40 +1,45 @@
-import React, { useState } from 'react';
-import { Search, Filter, CheckCircle, XCircle, Clock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Search, CheckCircle, XCircle, Clock } from 'lucide-react';
 
 const Publicaciones = () => {
-  const [publicaciones] = useState([
-    {
-      id: 1,
-      titulo: "Servicio de Catering Premium",
-      proveedor: "Catering Express",
-      categoria: "Catering",
-      fecha: "2024-03-15",
-      estado: "pendiente",
-      descripcion: "Servicio de catering para eventos empresariales y sociales..."
-    },
-    {
-      id: 2,
-      titulo: "Decoración de Eventos",
-      proveedor: "Decoraciones Elegantes",
-      categoria: "Decoración",
-      fecha: "2024-03-14",
-      estado: "aprobado",
-      descripcion: "Servicio completo de decoración para bodas y eventos..."
-    },
-    {
-      id: 3,
-      titulo: "Música en Vivo",
-      proveedor: "Música en Vivo",
-      categoria: "Entretenimiento",
-      fecha: "2024-03-13",
-      estado: "rechazado",
-      descripcion: "Grupo musical para eventos sociales y corporativos..."
-    }
-  ]);
-
+  const [publicaciones, setPublicaciones] = useState([]);
+  const [proveedores, setProveedores] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [filtroCategoria, setFiltroCategoria] = useState('todas');
   const [busqueda, setBusqueda] = useState('');
+
+  useEffect(() => {
+    Promise.all([
+      fetch('http://localhost:3000/api/productos-todos').then(r => r.json()),
+      fetch('http://localhost:3000/api/servicios').then(r => r.json()),
+      fetch('http://localhost:3000/proveedores').then(r => r.json())
+    ]).then(([productos, servicios, proveedores]) => {
+      const pubs = [
+        ...productos.map(p => ({
+          id: p.id_productos,
+          titulo: p.nombre,
+          proveedor: proveedores.find(pr => pr.id_provedor === p.provedor_negocio_id_provedor)?.nombre_empresa || 'Desconocido',
+          categoria: p.categoria || p.tipo_producto || 'Sin categoría',
+          fecha: p.fecha_creacion || p.createdAt || '',
+          estado: p.estado || 'aprobado',
+          descripcion: p.descripcion,
+          tipo: 'Producto'
+        })),
+        ...servicios.map(s => ({
+          id: s.id_servicio,
+          titulo: s.nombre,
+          proveedor: proveedores.find(pr => pr.id_provedor === s.provedor_negocio_id_provedor)?.nombre_empresa || 'Desconocido',
+          categoria: s.tipo_servicio || 'Sin categoría',
+          fecha: s.fecha_creacion || s.createdAt || '',
+          estado: s.estado || 'aprobado',
+          descripcion: s.descripcion,
+          tipo: 'Servicio'
+        }))
+      ];
+      setPublicaciones(pubs);
+      setProveedores(proveedores);
+    });
+  }, []);
 
   const getEstadoIcon = (estado) => {
     switch (estado) {
@@ -62,11 +67,13 @@ const Publicaciones = () => {
     }
   };
 
+  const categoriasUnicas = Array.from(new Set(publicaciones.map(p => p.categoria)));
+
   const publicacionesFiltradas = publicaciones.filter(pub => {
     const cumpleEstado = filtroEstado === 'todos' || pub.estado === filtroEstado;
     const cumpleCategoria = filtroCategoria === 'todas' || pub.categoria === filtroCategoria;
     const cumpleBusqueda = pub.titulo.toLowerCase().includes(busqueda.toLowerCase()) ||
-                          pub.proveedor.toLowerCase().includes(busqueda.toLowerCase());
+      pub.proveedor.toLowerCase().includes(busqueda.toLowerCase());
     return cumpleEstado && cumpleCategoria && cumpleBusqueda;
   });
 
@@ -109,9 +116,9 @@ const Publicaciones = () => {
               onChange={(e) => setFiltroCategoria(e.target.value)}
             >
               <option value="todas">Todas las categorías</option>
-              <option value="Catering">Catering</option>
-              <option value="Decoración">Decoración</option>
-              <option value="Entretenimiento">Entretenimiento</option>
+              {categoriasUnicas.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
           </div>
         </div>
@@ -139,13 +146,16 @@ const Publicaciones = () => {
                   Estado
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {publicacionesFiltradas.map((pub) => (
-                <tr key={pub.id}>
+                <tr key={pub.tipo + '-' + pub.id}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{pub.titulo}</div>
                     <div className="text-sm text-gray-500 truncate max-w-xs">{pub.descripcion}</div>
@@ -157,7 +167,7 @@ const Publicaciones = () => {
                     <div className="text-sm text-gray-900">{pub.categoria}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{new Date(pub.fecha).toLocaleDateString()}</div>
+                    <div className="text-sm text-gray-900">{pub.fecha ? new Date(pub.fecha).toLocaleDateString() : ''}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
@@ -166,6 +176,9 @@ const Publicaciones = () => {
                         {pub.estado.charAt(0).toUpperCase() + pub.estado.slice(1)}
                       </span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">{pub.tipo}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button className="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
