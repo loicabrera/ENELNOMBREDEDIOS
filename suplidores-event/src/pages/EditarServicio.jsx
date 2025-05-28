@@ -90,15 +90,26 @@ const EditarServicio = () => {
           <div className="flex gap-4">
             <div className="flex-1">
               <label className="block text-sm font-semibold mb-2 text-gray-700">Tipo de servicio</label>
-              <input
-                type="text"
+              <select
                 name="tipo_servicio"
                 value={form.tipo_servicio}
                 onChange={handleChange}
-                placeholder="Tipo de servicio"
                 className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db] text-lg"
                 required
-              />
+              >
+                <option value="">Seleccione una categoría</option>
+                <option value="Comida y Bebidas">Comida y Bebidas</option>
+                <option value="Catering">Catering</option>
+                <option value="Decoración">Decoración</option>
+                <option value="Entretenimiento">Entretenimiento</option>
+                <option value="Fotografía y Video">Fotografía y Video</option>
+                <option value="Música">Música</option>
+                <option value="Coordinación de Eventos">Coordinación de Eventos</option>
+                <option value="Lugar y Espacio">Lugar y Espacio</option>
+                <option value="Mobiliario y Equipos">Mobiliario y Equipos</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Otros">Otros</option>
+              </select>
             </div>
             <div className="flex-1">
               <label className="block text-sm font-semibold mb-2 text-gray-700">Precio</label>

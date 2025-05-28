@@ -102,14 +102,23 @@ const EditarProducto = () => {
             </div>
             <div className="flex-1">
               <label className="block text-sm font-semibold mb-2 text-gray-700">Tipo de producto</label>
-              <input
-                type="text"
+              <select
                 name="tipo_producto"
                 value={form.tipo_producto}
                 onChange={handleChange}
-                placeholder="Tipo de producto"
                 className="border border-gray-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db] text-lg"
-              />
+                required
+              >
+                <option value="">Seleccione una categoría</option>
+                <option value="Floristería">Floristería (Flores, Arreglos, Ramos)</option>
+                <option value="Decoración">Decoración (Centros de mesa, Globos, Accesorios)</option>
+                <option value="Mobiliario">Mobiliario (Mesas, Sillas, Carpas)</option>
+                <option value="Iluminación">Iluminación (Luces, Candiles, Lámparas)</option>
+                <option value="Vajilla">Vajilla (Platos, Copas, Cubiertos)</option>
+                <option value="Textiles">Textiles (Manteles, Servilletas, Cortinas)</option>
+                <option value="Recuerdos">Recuerdos (Souvenirs, Detalles, Regalos)</option>
+                <option value="Otros">Otros</option>
+              </select>
             </div>
           </div>
           <button type="submit" className="mt-6 bg-[#cbb4db] hover:bg-[#b39cc9] text-white font-bold py-3 rounded-lg text-lg shadow transition-all duration-200">Guardar Cambios</button>
