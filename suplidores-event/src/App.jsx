@@ -88,7 +88,7 @@ function App() {
 
         {/* Rutas protegidas para administradores */}
         <Route
-          path="/dashboardadmin"
+          path="/dashboardadmin/*"
           element={
             <ProtectedRoute allowedRoles={['admin']}>
               <AdminLayout />

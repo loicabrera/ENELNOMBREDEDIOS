@@ -23,11 +23,13 @@ const LoginAdmin = () => {
         } else if (user) {
           console.log('Sesión inválida encontrada, limpiando...');
           localStorage.removeItem('user');
+          localStorage.removeItem('negocio_activo');
         }
       }
     } catch (error) {
       console.error('Error al verificar sesión:', error);
       localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
     }
   }, [navigate]);
 
@@ -62,6 +64,7 @@ const LoginAdmin = () => {
 
       // Limpiar cualquier sesión existente
       localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
 
       // Guardar datos del usuario en localStorage con el rol de admin y fecha de expiración
       const expiresAt = new Date();
@@ -76,10 +79,8 @@ const LoginAdmin = () => {
 
       console.log('Usuario admin guardado:', userData);
       
-      // Forzar la redirección a la ruta correcta
-      setTimeout(() => {
-        navigate('/dashboardadmin/', { replace: true });
-      }, 100);
+      // Forzar la redirección al dashboard de admin
+      window.location.href = '/dashboardadmin';
 
     } catch (error) {
       console.error('Error:', error);

@@ -77,11 +77,16 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log('Roles permitidos:', allowedRoles);
   console.log('========================');
 
-  // Si no hay usuario válido, redirigir al login
+  // Si no hay usuario válido, redirigir al login correspondiente
   if (!user || !user.rol) {
     console.log('No hay usuario válido, redirigiendo a login');
     clearUserData(); // Limpiar cualquier dato corrupto
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    if (location.pathname.includes('dashboardadmin')) {
+      window.location.href = '/LoginAdmin';
+      return null;
+    }
+    window.location.href = '/login';
+    return null;
   }
 
   // Verificación específica para rutas de admin
@@ -90,7 +95,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     if (user.rol !== 'admin') {
       console.log('Redirigiendo a LoginAdmin - Acceso no autorizado a ruta de admin');
       clearUserData(); // Limpiar datos si no es admin
-      return <Navigate to="/LoginAdmin" state={{ from: location }} replace />;
+      window.location.href = '/LoginAdmin';
+      return null;
     }
   }
 
@@ -98,7 +104,12 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user.rol)) {
     console.log('Usuario no tiene rol permitido:', user.rol);
     clearUserData(); // Limpiar datos si el rol no está permitido
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    if (user.rol === 'admin') {
+      window.location.href = '/LoginAdmin';
+      return null;
+    }
+    window.location.href = '/login';
+    return null;
   }
 
   // Si todo está bien, renderizar el componente
