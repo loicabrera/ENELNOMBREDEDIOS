@@ -622,6 +622,36 @@ app.post('/login_proveedor', async (req, res) => {
   }
 });
 
+// Ruta para login de administrador
+app.post('/login_admin', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    // Credenciales fijas para el administrador
+    const ADMIN_USERNAME = 'admin2024';
+    const ADMIN_PASSWORD = 'admin2024';
+
+    // Verificar las credenciales
+    if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+      return res.status(401).json({ error: 'Credenciales de administrador incorrectas' });
+    }
+
+    // Si las credenciales son correctas, crear el objeto de administrador
+    const admin = {
+      username: ADMIN_USERNAME,
+      rol: 'admin'
+    };
+
+    res.json({ 
+      message: 'Login exitoso', 
+      user: admin 
+    });
+  } catch (error) {
+    console.error('Error en login_admin:', error);
+    res.status(500).json({ error: 'Error interno del servidor' });
+  }
+});
+
 // Endpoint para subir imagen de producto (con validación de membresía)
 app.post('/api/imagenes_productos', uploadMemoryProductos.single('imagen'), async (req, res) => {
   try {

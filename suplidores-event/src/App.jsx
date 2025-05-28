@@ -1,4 +1,4 @@
-import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes, Navigate, Outlet } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
 import DashboardLayout from './dashboardProveedor/DashboardLayout';
 import Profile from './dashboardProveedor/Profile';
@@ -16,6 +16,7 @@ import Publicaciones from './dashboardAdmin/Publicaciones';
 import ProtectedRoute from './components/ProtectedRoute';
 import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
 import DetalleNegocio from './dashboardProveedor/DetalleNegocio';
+import LoginAdmin from './components/LoginAdmin';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -62,15 +63,8 @@ function AdminLayout() {
   return (
     <div className="flex">
       <SidebarAdmin />
-      <div className="flex-1">
-        <Routes>
-          <Route path="/" element={<AdminHomeDashboard />} />
-          <Route path="proveedores" element={<AdminProveedor />} />
-          <Route path="publicaciones" element={<Publicaciones />} />
-          <Route path="membresias" element={<Membresias />} />
-          <Route path="pagos" element={<HistorialPagos />} />
-
-        </Routes>
+      <div className="flex-1 ml-64">
+        <Outlet />
       </div>
     </div>
   );
@@ -82,6 +76,7 @@ function App() {
       <Routes>
         {/* Rutas públicas */}
         <Route path="/login" element={<Login />} />
+        <Route path="/LoginAdmin" element={<LoginAdmin />} />
         <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/home" element={<Layout><Home /></Layout>} />
         <Route path="/servicios" element={<Layout><Servicios /></Layout>} />
@@ -89,6 +84,22 @@ function App() {
         <Route path="/vende" element={<Layout><Vende /></Layout>} />
         <Route path="/servicios/:id" element={<Layout><DetalleServicio /></Layout>} />
         <Route path="/productos/:id" element={<Layout><DetalleProducto /></Layout>} />
+
+        {/* Rutas protegidas para administradores */}
+        <Route
+          path="/dashboardadmin"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdminHomeDashboard />} />
+          <Route path="proveedores" element={<AdminProveedor />} />
+          <Route path="publicaciones" element={<Publicaciones />} />
+          <Route path="membresias" element={<Membresias />} />
+          <Route path="pagos" element={<HistorialPagos />} />
+        </Route>
 
         {/* Rutas protegidas para proveedores */}
         <Route
@@ -106,17 +117,8 @@ function App() {
           <Route path="membresia" element={<Membership />} />
           <Route path="stats" element={<Stats />} />
           <Route path="notificaciones" element={<Notifications />} />
+          <Route path="negocios/:id" element={<DetalleNegocio />} />
         </Route>
-
-        {/* Rutas protegidas para administradores */}
-        <Route
-          path="/dashboardadmin/*"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        />
 
         {/* Rutas protegidas para clientes */}
         <Route
@@ -171,17 +173,6 @@ function App() {
           }
         />
 
-        {/* Rutas del Dashboard del Proveedor */}
-        <Route path="/dashboard-proveedor/*" element={<DashboardLayout />}>
-          <Route index element={<HomeProveedor />} />
-          <Route path="perfil" element={<Profile />} />
-          <Route path="negocios" element={<Negocios />} />
-          <Route path="publicaciones" element={<Publications />} />
-          <Route path="membresia" element={<Membership />} />
-          <Route path="notificaciones" element={<Notifications />} />
-          <Route path="negocios/:id" element={<DetalleNegocio />} />
-        </Route>
-
         {/* Ruta para el formulario de datos del proveedor */}
         <Route
           path="/datosproveedor2"
@@ -192,46 +183,28 @@ function App() {
           }
         />
 
-        {/* Ruta alternativa sin guión */}
-        <Route path="/dashboardproveedor/*" element={<DashboardLayout />}>
-          <Route index element={<HomeProveedor />} />
-          <Route path="perfil" element={<Profile />} />
-          <Route path="negocios" element={<Negocios />} />
-          <Route path="publicaciones" element={<Publications />} />
-          <Route path="membresia" element={<Membership />} />
-          <Route path="notificaciones" element={<Notifications />} />
-        </Route>
-
-        {/* Ruta alternativa para el dashboard del proveedor */}
-        <Route 
-          path="/dashboard"
-          element={<HomeProveedor />}
-        />
-        
-        <Route
-          path="/servicios/:id"
-          element={
-            <Layout>
-              <DetalleServicio />
-            </Layout>
-          }
-        />
-        <Route
-          path="/productos/:id"
-          element={
-            <Layout>
-              <DetalleProducto />
-            </Layout>
-          }
-        />
+        {/* Rutas protegidas para edición */}
         <Route
           path="/productos/editar/:id"
-          element={<EditarProducto />}
+          element={
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <Layout>
+                <EditarProducto />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
         <Route
           path="/servicios/editar/:id"
-          element={<EditarServicio />}
+          element={
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <Layout>
+                <EditarServicio />
+              </Layout>
+            </ProtectedRoute>
+          }
         />
+
         {/* Ruta por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
