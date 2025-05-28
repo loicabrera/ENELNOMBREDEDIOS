@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const LoginProveedor = () => {
+const LoginAdmin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [error, setError] = useState(null);
@@ -14,12 +14,12 @@ const LoginProveedor = () => {
   // Verificar si ya hay una sesión activa
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
-    if (user && user.rol === 'proveedor') {
-      // Si hay una sesión activa de proveedor, redirigir al dashboard
-      const from = location.state?.from?.pathname || '/dashboard-proveedor';
+    if (user && user.rol === 'admin') {
+      // Si hay una sesión activa de admin, redirigir al dashboard
+      const from = location.state?.from?.pathname || '/dashboardadmin';
       navigate(from, { replace: true });
     } else if (user) {
-      // Si hay una sesión pero no es de proveedor, limpiarla
+      // Si hay una sesión pero no es de admin, limpiarla
       localStorage.removeItem('user');
     }
   }, [navigate, location]);
@@ -39,7 +39,7 @@ const LoginProveedor = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/login_proveedor', {
+      const response = await fetch('http://localhost:3000/login_admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,14 +56,14 @@ const LoginProveedor = () => {
       // Limpiar cualquier sesión existente
       localStorage.removeItem('user');
 
-      // Guardar datos del usuario en localStorage con el rol de proveedor
+      // Guardar datos del usuario en localStorage
       localStorage.setItem('user', JSON.stringify({
         ...data.user,
-        rol: 'proveedor'
+        rol: 'admin' // Aseguramos que el rol sea admin
       }));
 
-      // Redirigir al dashboard del proveedor o a la página anterior si existe
-      const from = location.state?.from?.pathname || '/dashboard-proveedor';
+      // Redirigir al dashboard de administrador o a la página anterior si existe
+      const from = location.state?.from?.pathname || '/dashboardadmin';
       navigate(from, { replace: true });
 
     } catch (error) {
@@ -91,10 +91,10 @@ const LoginProveedor = () => {
         <div className="bg-white bg-opacity-95 rounded-3xl shadow-2xl p-8 w-full flex flex-col items-center">
           {/* Espacio para el logo */}
           <div className="w-full flex justify-center items-center mb-2" style={{ minHeight: 64 }}>
-            {/* Aquí puedes poner el logo, por ejemplo: <img src=\"URL_DEL_LOGO\" alt=\"Logo\" className=\"h-12\" /> */}
+            {/* Aquí puedes poner el logo */}
           </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2 text-center">Iniciar sesión como proveedor</h2>
-          <p className="text-sm text-gray-600 mb-6 text-center">Ingresa tus credenciales para acceder a tu cuenta</p>
+          <h2 className="text-2xl font-extrabold text-gray-900 mb-2 text-center">Acceso Administrativo</h2>
+          <p className="text-sm text-gray-600 mb-6 text-center">Ingresa tus credenciales de administrador</p>
           {error && (
             <div className="mb-4 p-3 bg-red-50 rounded-md border border-red-200 w-full">
               <p className="text-red-700 text-center">{error}</p>
@@ -102,7 +102,7 @@ const LoginProveedor = () => {
           )}
           <form className="space-y-5 w-full" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuario</label>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuario Administrador</label>
               <div className="mt-1">
                 <input
                   id="username"
@@ -141,26 +141,10 @@ const LoginProveedor = () => {
               </button>
             </div>
           </form>
-          <div className="mt-6 w-full">
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">¿No tienes una cuenta?</span>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/vende')}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-blue-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
-              Regístrate como proveedor
-            </button>
-          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default LoginProveedor; 
+export default LoginAdmin; 
