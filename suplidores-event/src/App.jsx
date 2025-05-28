@@ -74,7 +74,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Rutas públicas */}
+        {/* Rutas públicas (sin autenticación) */}
         <Route path="/login" element={<Login />} />
         <Route path="/LoginAdmin" element={<LoginAdmin />} />
         <Route path="/" element={<Layout><Home /></Layout>} />
@@ -84,6 +84,8 @@ function App() {
         <Route path="/vende" element={<Layout><Vende /></Layout>} />
         <Route path="/servicios/:id" element={<Layout><DetalleServicio /></Layout>} />
         <Route path="/productos/:id" element={<Layout><DetalleProducto /></Layout>} />
+        <Route path="/registro/:plan" element={<Layout><DatosPersonas /></Layout>} />
+        <Route path="/registro/evento" element={<Layout><DatosProveedor /></Layout>} />
 
         {/* Rutas protegidas para administradores */}
         <Route
@@ -125,9 +127,7 @@ function App() {
           path="/perfil"
           element={
             <ProtectedRoute allowedRoles={['cliente']}>
-              <Layout>
-                <Perfil />
-              </Layout>
+              <Layout><Perfil /></Layout>
             </ProtectedRoute>
           }
         />
@@ -137,9 +137,7 @@ function App() {
           path="/pago"
           element={
             <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
-              <Layout>
-                <PaymentContainer />
-              </Layout>
+              <Layout><PaymentContainer /></Layout>
             </ProtectedRoute>
           }
         />
@@ -148,28 +146,8 @@ function App() {
           path="/confirmacion"
           element={
             <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
-              <Layout>
-                <Confirmacion />
-              </Layout>
+              <Layout><Confirmacion /></Layout>
             </ProtectedRoute>
-          }
-        />
-
-        {/* Rutas de registro */}
-        <Route
-          path="/registro/:plan"
-          element={
-            <Layout>
-              <DatosPersonas />
-            </Layout>
-          }
-        />
-        <Route
-          path="/registro/evento"
-          element={
-            <Layout>
-              <DatosProveedor />
-            </Layout>
           }
         />
 
@@ -177,9 +155,9 @@ function App() {
         <Route
           path="/datosproveedor2"
           element={
-            <Layout>
-              <DatosProveedor2 />
-            </Layout>
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <Layout><DatosProveedor2 /></Layout>
+            </ProtectedRoute>
           }
         />
 
@@ -188,9 +166,7 @@ function App() {
           path="/productos/editar/:id"
           element={
             <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout>
-                <EditarProducto />
-              </Layout>
+              <Layout><EditarProducto /></Layout>
             </ProtectedRoute>
           }
         />
@@ -198,9 +174,7 @@ function App() {
           path="/servicios/editar/:id"
           element={
             <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout>
-                <EditarServicio />
-              </Layout>
+              <Layout><EditarServicio /></Layout>
             </ProtectedRoute>
           }
         />
