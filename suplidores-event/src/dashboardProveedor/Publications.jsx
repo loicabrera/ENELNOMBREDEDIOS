@@ -105,22 +105,21 @@ const Publications = () => {
       });
   }, []);
 
-  // Memoize handlers
-  const handleServicioChange = useCallback((e) => {
+  const handleServicioChange = (e) => {
     const { name, value } = e.target;
     setServicioForm(prev => ({
       ...prev,
       [name]: value
     }));
-  }, []);
+  };
 
-  const handleProductoChange = useCallback((e) => {
+  const handleProductoChange = (e) => {
     const { name, value } = e.target;
     setProductoForm(prev => ({
       ...prev,
       [name]: value
     }));
-  }, []);
+  };
 
   const handleImagenesChange = (e) => {
     setErrorImagenesProducto('');
@@ -138,6 +137,24 @@ const Publications = () => {
     }
 
     setProductoForm(prev => ({
+      ...prev,
+      imagenes: nuevasImagenes
+    }));
+  };
+
+  const handleImagenesServicioChange = (e) => {
+    setErrorImagenesServicio('');
+    const files = Array.from(e.target.files);
+    let nuevasImagenes = [...servicioForm.imagenes, ...files];
+    // Elimina duplicados por nombre y tamaño
+    nuevasImagenes = nuevasImagenes.filter(
+      (img, idx, arr) => arr.findIndex(i => i.name === img.name && i.size === img.size) === idx
+    );
+    if (nuevasImagenes.length > limiteFotosServicio) {
+      setErrorImagenesServicio(`Solo puedes subir hasta ${limiteFotosServicio} imágenes según tu membresía.`);
+      nuevasImagenes = nuevasImagenes.slice(0, limiteFotosServicio);
+    }
+    setServicioForm(prev => ({
       ...prev,
       imagenes: nuevasImagenes
     }));
@@ -360,29 +377,78 @@ const Publications = () => {
     }));
   };
 
-  // Memoize form components with their handlers
-  const ServicioForm = memo(() => {
-    const handleSubmit = useCallback((e) => {
-      e.preventDefault();
-      handleServicioSubmit(e);
-    }, [handleServicioSubmit]);
+  // Nuevo componente de formulario de servicio
+  const ServicioForm = () => {
+    const [formData, setFormData] = useState({
+      nombre: '',
+      descripcion: '',
+      tipo_servicio: '',
+      precio: '',
+      imagenes: []
+    });
 
-    const handleImagenesChange = (e) => {
-      setErrorImagenesServicio('');
-      const files = Array.from(e.target.files);
-      let nuevasImagenes = [...servicioForm.imagenes, ...files];
-      // Elimina duplicados por nombre y tamaño
-      nuevasImagenes = nuevasImagenes.filter(
-        (img, idx, arr) => arr.findIndex(i => i.name === img.name && i.size === img.size) === idx
-      );
-      if (nuevasImagenes.length > limiteFotosServicio) {
-        setErrorImagenesServicio(`Solo puedes subir hasta ${limiteFotosServicio} imágenes según tu membresía.`);
-        nuevasImagenes = nuevasImagenes.slice(0, limiteFotosServicio);
-      }
-      setServicioForm(prev => ({
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prev => ({
         ...prev,
-        imagenes: nuevasImagenes
+        [name]: value
       }));
+    };
+
+    const handleImageChange = (e) => {
+      const files = Array.from(e.target.files);
+      setFormData(prev => ({
+        ...prev,
+        imagenes: [...prev.imagenes, ...files].slice(0, limiteFotosServicio)
+      }));
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (!proveedor) {
+        console.error('No hay proveedor autenticado');
+        return;
+      }
+
+      try {
+        // Crear el servicio
+        const res = await fetch('http://localhost:3000/api/servicios', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: formData.nombre,
+            descripcion: formData.descripcion,
+            tipo_servicio: formData.tipo_servicio,
+            precio: formData.precio,
+            provedor_negocio_id_provedor: proveedor.id_provedor
+          })
+        });
+
+        const data = await res.json();
+        if (data.id_servicio) {
+          // Subir imágenes
+          for (let img of formData.imagenes) {
+            const formDataImg = new FormData();
+            formDataImg.append('imagen', img);
+            formDataImg.append('SERVICIO_id_servicio', data.id_servicio);
+            await fetch('http://localhost:3000/api/imagenes_servicio', {
+              method: 'POST',
+              body: formDataImg
+            });
+          }
+
+          alert('Servicio creado con éxito');
+          setTipoVendedor('selector');
+          
+          // Recargar servicios
+          const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+          const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
+          setServicios(misServicios);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al crear el servicio');
+      }
     };
 
     return (
@@ -405,8 +471,8 @@ const Publications = () => {
               <input
                 type="text"
                 name="nombre"
-                value={servicioForm.nombre}
-                onChange={handleServicioChange}
+                value={formData.nombre}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -414,14 +480,26 @@ const Publications = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Servicio</label>
-              <input
-                type="text"
+              <select
                 name="tipo_servicio"
-                value={servicioForm.tipo_servicio}
-                onChange={handleServicioChange}
+                value={formData.tipo_servicio}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
-              />
+              >
+                <option value="">Seleccione una categoría</option>
+                <option value="Comida y Bebidas">Comida y Bebidas</option>
+                <option value="Catering">Catering</option>
+                <option value="Decoración">Decoración</option>
+                <option value="Entretenimiento">Entretenimiento</option>
+                <option value="Fotografía y Video">Fotografía y Video</option>
+                <option value="Música">Música</option>
+                <option value="Coordinación de Eventos">Coordinación de Eventos</option>
+                <option value="Lugar y Espacio">Lugar y Espacio</option>
+                <option value="Mobiliario y Equipos">Mobiliario y Equipos</option>
+                <option value="Transporte">Transporte</option>
+                <option value="Otros">Otros</option>
+              </select>
             </div>
 
             <div>
@@ -429,8 +507,8 @@ const Publications = () => {
               <input
                 type="number"
                 name="precio"
-                value={servicioForm.precio}
-                onChange={handleServicioChange}
+                value={formData.precio}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -442,8 +520,8 @@ const Publications = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
               <textarea
                 name="descripcion"
-                value={servicioForm.descripcion}
-                onChange={handleServicioChange}
+                value={formData.descripcion}
+                onChange={handleInputChange}
                 rows="4"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
@@ -482,16 +560,15 @@ const Publications = () => {
                         multiple
                         accept="image/*"
                         className="sr-only"
-                        onChange={handleImagenesChange}
+                        onChange={handleImageChange}
                       />
                     </label>
                     <p className="pl-1">o arrastrar y soltar</p>
                   </div>
-                  {errorImagenesServicio && <div className="text-xs text-red-500 mt-1">{errorImagenesServicio}</div>}
                   <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                  {servicioForm.imagenes && servicioForm.imagenes.length > 0 && (
+                  {formData.imagenes.length > 0 && (
                     <ul className="mt-2 text-xs text-gray-700 text-left">
-                      {servicioForm.imagenes.map((img, idx) => (
+                      {formData.imagenes.map((img, idx) => (
                         <li key={idx}>{img.name}</li>
                       ))}
                     </ul>
@@ -519,20 +596,89 @@ const Publications = () => {
         </div>
       </form>
     );
-  });
+  };
 
-  // Formulario de Producto
-  const ProductoForm = memo(() => {
-    const handleSubmit = useCallback((e) => {
+  // Nuevo componente de formulario de producto
+  const ProductoForm = () => {
+    const [formData, setFormData] = useState({
+      nombre: '',
+      descripcion: '',
+      precio: '',
+      tipo_producto: '',
+      categoria: '',
+      imagenes: []
+    });
+
+    const handleInputChange = (e) => {
+      const { name, value } = e.target;
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    };
+
+    const handleImageChange = (e) => {
+      const files = Array.from(e.target.files);
+      setFormData(prev => ({
+        ...prev,
+        imagenes: [...prev.imagenes, ...files].slice(0, limiteFotosProducto)
+      }));
+    };
+
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      handleProductoSubmit(e);
-    }, [handleProductoSubmit]);
+      if (!proveedor) {
+        console.error('No hay proveedor autenticado');
+        return;
+      }
+
+      try {
+        // Crear el producto
+        const res = await fetch('http://localhost:3000/api/productos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: formData.nombre,
+            descripcion: formData.descripcion,
+            precio: formData.precio,
+            tipo_producto: formData.tipo_producto,
+            categoria: formData.categoria,
+            provedor_negocio_id_provedor: proveedor.id_provedor
+          })
+        });
+
+        const data = await res.json();
+        if (data.id_producto) {
+          // Subir imágenes
+          for (let img of formData.imagenes) {
+            const formDataImg = new FormData();
+            formDataImg.append('imagen', img);
+            formDataImg.append('productos_id_productos', data.id_producto);
+            await fetch('http://localhost:3000/api/imagenes_productos', {
+              method: 'POST',
+              body: formDataImg
+            });
+          }
+
+          alert('Producto creado con éxito');
+          setTipoVendedor('selector');
+          
+          // Recargar productos
+          const prods = await fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`).then(res => res.json());
+          setProductos(prods);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al crear el producto');
+      }
+    };
 
     return (
       <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold text-gray-900">Nuevo Producto</h2>
           <button
+            type="button"
             onClick={() => setTipoVendedor('selector')}
             className="text-gray-500 hover:text-gray-700"
           >
@@ -547,8 +693,8 @@ const Publications = () => {
               <input
                 type="text"
                 name="nombre"
-                value={productoForm.nombre}
-                onChange={handleProductoChange}
+                value={formData.nombre}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -556,14 +702,23 @@ const Publications = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Producto</label>
-              <input
-                type="text"
+              <select
                 name="tipo_producto"
-                value={productoForm.tipo_producto}
-                onChange={handleProductoChange}
+                value={formData.tipo_producto}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
-              />
+              >
+                <option value="">Seleccione una categoría</option>
+                <option value="Floristería">Floristería (Flores, Arreglos, Ramos)</option>
+                <option value="Decoración">Decoración (Centros de mesa, Globos, Accesorios)</option>
+                <option value="Mobiliario">Mobiliario (Mesas, Sillas, Carpas)</option>
+                <option value="Iluminación">Iluminación (Luces, Candiles, Lámparas)</option>
+                <option value="Vajilla">Vajilla (Platos, Copas, Cubiertos)</option>
+                <option value="Textiles">Textiles (Manteles, Servilletas, Cortinas)</option>
+                <option value="Recuerdos">Recuerdos (Souvenirs, Detalles, Regalos)</option>
+                <option value="Otros">Otros</option>
+              </select>
             </div>
 
             <div>
@@ -571,8 +726,8 @@ const Publications = () => {
               <input
                 type="number"
                 name="precio"
-                value={productoForm.precio}
-                onChange={handleProductoChange}
+                value={formData.precio}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
               />
@@ -585,8 +740,8 @@ const Publications = () => {
               <input
                 type="text"
                 name="categoria"
-                value={productoForm.categoria}
-                onChange={handleProductoChange}
+                value={formData.categoria}
+                onChange={handleInputChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Opcional"
               />
@@ -596,8 +751,8 @@ const Publications = () => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
               <textarea
                 name="descripcion"
-                value={productoForm.descripcion}
-                onChange={handleProductoChange}
+                value={formData.descripcion}
+                onChange={handleInputChange}
                 rows="4"
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 required
@@ -636,16 +791,15 @@ const Publications = () => {
                         multiple
                         accept="image/*"
                         className="sr-only"
-                        onChange={handleImagenesChange}
+                        onChange={handleImageChange}
                       />
                     </label>
                     <p className="pl-1">o arrastrar y soltar</p>
                   </div>
-                  {errorImagenesProducto && <div className="text-xs text-red-500 mt-1">{errorImagenesProducto}</div>}
                   <p className="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB</p>
-                  {productoForm.imagenes && productoForm.imagenes.length > 0 && (
+                  {formData.imagenes.length > 0 && (
                     <ul className="mt-2 text-xs text-gray-700 text-left flex flex-wrap gap-2">
-                      {productoForm.imagenes.map((img, idx) => (
+                      {formData.imagenes.map((img, idx) => (
                         <li key={idx} className="flex flex-col items-center">
                           <img
                             src={URL.createObjectURL(img)}
@@ -680,7 +834,7 @@ const Publications = () => {
         </div>
       </form>
     );
-  });
+  };
 
   return (
     <div className="min-h-screen bg-white w-full">

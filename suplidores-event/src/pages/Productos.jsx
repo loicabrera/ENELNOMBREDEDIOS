@@ -6,7 +6,7 @@ const Productos = () => {
   const [imagenesProductos, setImagenesProductos] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,8 +35,7 @@ const Productos = () => {
       });
   }, []);
 
-  const tiposUnicos = Array.from(new Set(productos.map(p => p.tipo_producto).filter(Boolean)));
-  const productosFiltrados = tipoFiltro ? productos.filter(p => p.tipo_producto === tipoFiltro) : productos;
+  const productosFiltrados = filtroTipo ? productos.filter(p => p.tipo_producto === filtroTipo) : productos;
 
   if (loading) return <div className="p-8 text-center">Cargando productos...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
@@ -44,18 +43,21 @@ const Productos = () => {
   return (
     <div className="max-w-6xl mx-auto p-8">
       <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: '#cbb4db' }}>Productos disponibles</h2>
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
-        <label className="font-medium" style={{ color: '#cbb4db' }}>Filtrar por tipo de producto:</label>
+      <div className="flex flex-wrap gap-4 mb-8">
         <select
-          className="border px-3 py-2 rounded bg-[#fbcbdb] border-[#cbb4db] focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db] transition"
-          style={{ color: '#cbb4db', fontWeight: 600 }}
-          value={tipoFiltro}
-          onChange={e => setTipoFiltro(e.target.value)}
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value)}
+          className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db]"
         >
-          <option value="">Todos</option>
-          {tiposUnicos.map(tipo => (
-            <option key={tipo} value={tipo}>{tipo}</option>
-          ))}
+          <option value="">Todas las categorías</option>
+          <option value="Floristería">Floristería (Flores, Arreglos, Ramos)</option>
+          <option value="Decoración">Decoración (Centros de mesa, Globos, Accesorios)</option>
+          <option value="Mobiliario">Mobiliario (Mesas, Sillas, Carpas)</option>
+          <option value="Iluminación">Iluminación (Luces, Candiles, Lámparas)</option>
+          <option value="Vajilla">Vajilla (Platos, Copas, Cubiertos)</option>
+          <option value="Textiles">Textiles (Manteles, Servilletas, Cortinas)</option>
+          <option value="Recuerdos">Recuerdos (Souvenirs, Detalles, Regalos)</option>
+          <option value="Otros">Otros</option>
         </select>
       </div>
       {productosFiltrados.length === 0 ? (

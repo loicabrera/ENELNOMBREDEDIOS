@@ -8,7 +8,7 @@ const Servicios = () => {
   const [imagenesServicios, setImagenesServicios] = useState({}); // { id_servicio: [imagenes] }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [tipoFiltro, setTipoFiltro] = useState('');
+  const [filtroTipo, setFiltroTipo] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,8 +38,7 @@ const Servicios = () => {
       });
   }, []);
 
-  const tiposUnicos = Array.from(new Set(servicios.map(s => s.tipo_servicio).filter(Boolean)));
-  const serviciosFiltrados = tipoFiltro ? servicios.filter(s => s.tipo_servicio === tipoFiltro) : servicios;
+  const serviciosFiltrados = filtroTipo ? servicios.filter(s => s.tipo_servicio === filtroTipo) : servicios;
 
   if (loading) return <div className="p-8 text-center">Cargando servicios...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
@@ -47,18 +46,24 @@ const Servicios = () => {
   return (
     <div className="max-w-6xl mx-auto p-8">
       <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: '#cbb4db' }}>Servicios disponibles</h2>
-      <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
-        <label className="font-medium" style={{ color: '#cbb4db' }}>Filtrar por tipo de servicio:</label>
+      <div className="flex flex-wrap gap-4 mb-8">
         <select
-          className="border px-3 py-2 rounded bg-[#fbcbdb] border-[#cbb4db] focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db] transition"
-          style={{ color: '#cbb4db', fontWeight: 600 }}
-          value={tipoFiltro}
-          onChange={e => setTipoFiltro(e.target.value)}
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value)}
+          className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db]"
         >
-          <option value="">Todos</option>
-          {tiposUnicos.map(tipo => (
-            <option key={tipo} value={tipo}>{tipo}</option>
-          ))}
+          <option value="">Todas las categorías</option>
+          <option value="Comida y Bebidas">Comida y Bebidas</option>
+          <option value="Catering">Catering</option>
+          <option value="Decoración">Decoración</option>
+          <option value="Entretenimiento">Entretenimiento</option>
+          <option value="Fotografía y Video">Fotografía y Video</option>
+          <option value="Música">Música</option>
+          <option value="Coordinación de Eventos">Coordinación de Eventos</option>
+          <option value="Lugar y Espacio">Lugar y Espacio</option>
+          <option value="Mobiliario y Equipos">Mobiliario y Equipos</option>
+          <option value="Transporte">Transporte</option>
+          <option value="Otros">Otros</option>
         </select>
       </div>
       {serviciosFiltrados.length === 0 ? (
@@ -72,7 +77,7 @@ const Servicios = () => {
               <div
                 key={servicio.id_servicio}
                 className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-2xl transition-shadow duration-200 cursor-pointer"
-                onClick={() => navigate(`/servicios/${servicio.id_servicio}`)}
+                onClick={() => navigate(`/editar-servicio/${servicio.id_servicio}`)}
               >
                 {imagenReal && (
                   <img
