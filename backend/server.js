@@ -286,6 +286,9 @@ app.post('/crear_proveedores', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error al crear proveedor:', error);
+    console.error('Detalles del error:', error.message);
+    console.error('Stack trace:', error.stack);
+    console.error('Datos recibidos:', req.body);
     
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({

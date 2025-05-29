@@ -22,7 +22,7 @@ export const Proveedor = conexion.define('provedor_negocio', {
     allowNull: false
   },
   tipo_servicio: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: false
   },
   fecha_creacion: {
