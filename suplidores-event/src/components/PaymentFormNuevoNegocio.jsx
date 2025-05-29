@@ -68,7 +68,8 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
             monto_pago: amount,
             MEMBRESIA_id_membresia: membresiaId,
             provedor_negocio_id_provedor: proveedorId,
-            PERSONA_id_persona: personaId
+            PERSONA_id_persona: personaId,
+            esRegistroInicial: false
           })
         });
 

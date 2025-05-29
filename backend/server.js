@@ -352,7 +352,8 @@ app.post('/registrar_pago', async (req, res) => {
       monto_pago,
       MEMBRESIA_id_membresia,
       provedor_negocio_id_provedor,
-      PERSONA_id_persona
+      PERSONA_id_persona,
+      esRegistroInicial // Nueva bandera
     } = req.body;
 
     // Validar que los campos requeridos estén presentes
@@ -399,32 +400,40 @@ app.post('/registrar_pago', async (req, res) => {
       }
     );
 
-    // Generar usuario y contraseña aleatorios
-    const user_name = generarUsuarioAleatorio();
-    const password = generarPasswordAleatorio();
+    // Solo generar credenciales si es el registro inicial
+    if (esRegistroInicial) {
+      // Generar usuario y contraseña aleatorios
+      const user_name = generarUsuarioAleatorio();
+      const password = generarPasswordAleatorio();
 
-    // Log antes del insert en inicio_seccion
-    console.log('Intentando insertar en inicio_seccion:', { user_name, password, PERSONA_id_persona });
+      // Log antes del insert en inicio_seccion
+      console.log('Intentando insertar en inicio_seccion:', { user_name, password, PERSONA_id_persona });
 
-    // Insertar en la tabla inicio_seccion
-    await conexion.query(
-      `INSERT INTO inicio_seccion (password, user_name, PERSONA_id_persona)
-       VALUES (?, ?, ?)`,
-      {
-        replacements: [password, user_name, PERSONA_id_persona]
-      }
-    );
+      // Insertar en la tabla inicio_seccion
+      await conexion.query(
+        `INSERT INTO inicio_seccion (password, user_name, PERSONA_id_persona)
+         VALUES (?, ?, ?)`,
+        {
+          replacements: [password, user_name, PERSONA_id_persona]
+        }
+      );
 
-    // Log después del insert
-    console.log('Insert en inicio_seccion exitoso para:', { user_name, PERSONA_id_persona });
+      // Log después del insert
+      console.log('Insert en inicio_seccion exitoso para:', { user_name, PERSONA_id_persona });
 
-    res.status(201).json({
-      message: 'Pago, membresía y credenciales registrados exitosamente',
-      credenciales: {
-        user_name,
-        password
-      }
-    });
+      return res.status(201).json({
+        message: 'Pago, membresía y credenciales registrados exitosamente',
+        credenciales: {
+          user_name,
+          password
+        }
+      });
+    } else {
+      // No generar credenciales
+      return res.status(201).json({
+        message: 'Pago y membresía registrados exitosamente'
+      });
+    }
   } catch (error) {
     console.error('Error al registrar el pago:', error);
     res.status(500).json({ error: 'Error interno del servidor' });
