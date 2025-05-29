@@ -1,57 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Membresias = () => {
-  // Datos de ejemplo
-  const [membresias] = useState({
-    activas: [
-      {
-        id_prov_membresia: 1,
-        nombre_empresa: "Floristería Bella",
-        nombre: "Ana",
-        apellido: "García",
-        nombre_pla: "Plan Premium",
-        fecha_inicio: "2024-03-01",
-        fecha_fin: "2024-04-01",
-        PERSONA_id_persona: 1
-      },
-      {
-        id_prov_membresia: 2,
-        nombre_empresa: "Decoraciones Elegantes",
-        nombre: "Carlos",
-        apellido: "Rodríguez",
-        nombre_pla: "Plan Básico",
-        fecha_inicio: "2024-03-15",
-        fecha_fin: "2024-04-15",
-        PERSONA_id_persona: 2
-      }
-    ],
-    proximasVencer: [
-      {
-        id_prov_membresia: 3,
-        nombre_empresa: "Música en Vivo",
-        nombre: "María",
-        apellido: "López",
-        nombre_pla: "Plan Destacado",
-        fecha_inicio: "2024-02-15",
-        fecha_fin: "2024-03-20",
-        PERSONA_id_persona: 3
-      }
-    ],
-    vencidas: [
-      {
-        id_prov_membresia: 4,
-        nombre_empresa: "Catering Express",
-        nombre: "Juan",
-        apellido: "Martínez",
-        nombre_pla: "Plan Básico",
-        fecha_inicio: "2024-01-01",
-        fecha_fin: "2024-02-01",
-        PERSONA_id_persona: 4
-      }
-    ]
-  });
+  const [membresias, setMembresias] = useState({ activas: [], proximasVencer: [], vencidas: [] });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:3000/api/membresias/admin')
+      .then(res => res.json())
+      .then(data => {
+        setMembresias(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const [selectedProvider, setSelectedProvider] = useState(null);
+
+  const cambiarEstadoMembresia = async (id, nuevoEstado) => {
+    try {
+      const res = await fetch(`http://localhost:3000/api/membresias/${id}/estado`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+      if (!res.ok) throw new Error('Error al cambiar el estado');
+      window.location.reload(); // Refresca para ver el cambio
+    } catch (error) {
+      alert('No se pudo cambiar el estado de la membresía');
+    }
+  };
 
   const MembresiaCard = ({ membresia, tipo }) => (
     <div className="bg-white rounded-lg shadow-md p-6 mb-4">
@@ -81,19 +58,20 @@ const Membresias = () => {
           </span>
         </div>
       </div>
-      {tipo === 'activa' && !selectedProvider?.id_persona && (
+      {tipo === 'activa' && (
         <button
-          onClick={() => setSelectedProvider({
-            id_persona: membresia.PERSONA_id_persona,
-            credentials: {
-              username: 'usuario_ejemplo',
-              password: 'contraseña123',
-              email: 'ejemplo@email.com'
-            }
-          })}
-          className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          onClick={() => cambiarEstadoMembresia(membresia.id_prov_membresia, 'inactiva')}
+          className="mt-4 w-full bg-red-600 text-white py-2 px-4 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
         >
-          Generar credenciales
+          Inactivar
+        </button>
+      )}
+      {tipo === 'vencida' && (
+        <button
+          onClick={() => cambiarEstadoMembresia(membresia.id_prov_membresia, 'activa')}
+          className="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+        >
+          Activar
         </button>
       )}
     </div>

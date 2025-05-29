@@ -77,7 +77,7 @@ const Servicios = () => {
               <div
                 key={servicio.id_servicio}
                 className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col hover:shadow-2xl transition-shadow duration-200 cursor-pointer"
-                onClick={() => navigate(`/editar-servicio/${servicio.id_servicio}`)}
+                onClick={() => navigate(`/servicios/${servicio.id_servicio}`)}
               >
                 {imagenReal && (
                   <img

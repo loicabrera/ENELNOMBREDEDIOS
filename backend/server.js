@@ -668,13 +668,21 @@ app.post('/api/imagenes_productos', uploadMemoryProductos.single('imagen'), asyn
   }
 });
 
-// Endpoint para obtener productos de un proveedor
+// Endpoint para obtener productos de un proveedor SOLO si la membresía está activa
 app.get('/api/productos', async (req, res) => {
   const { provedor_negocio_id_provedor } = req.query;
   if (!provedor_negocio_id_provedor) {
     return res.status(400).json({ error: 'Falta el id del proveedor' });
   }
   try {
+    // Verifica membresía activa
+    const [membresia] = await db.query(
+      `SELECT * FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ? AND estado = 'activa' ORDER BY fecha_fin DESC LIMIT 1`,
+      [provedor_negocio_id_provedor]
+    );
+    if (!membresia.length) {
+      return res.status(403).json({ error: 'No tienes una membresía activa.' });
+    }
     const [rows] = await db.query(
       'SELECT * FROM productos WHERE provedor_negocio_id_provedor = ?',
       [provedor_negocio_id_provedor]
@@ -697,10 +705,15 @@ app.get('/api/productos-todos', async (req, res) => {
   }
 });
 
-// Endpoint para obtener todos los servicios publicados (MySQL directo)
+// Endpoint para obtener todos los servicios publicados SOLO si la membresía está activa
 app.get('/api/servicios', async (req, res) => {
   try {
-    const [rows] = await conexion.query('SELECT * FROM SERVICIO');
+    const [rows] = await conexion.query(`
+      SELECT s.* FROM SERVICIO s
+      JOIN provedor_negocio pn ON s.provedor_negocio_id_provedor = pn.id_provedor
+      JOIN PROVEDOR_MEMBRESIA pm ON pm.id_provedor = pn.id_provedor
+      WHERE pm.estado = 'activa'
+    `);
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener los servicios' });
@@ -1116,6 +1129,75 @@ app.put('/api/notificaciones/leer', async (req, res) => {
   } catch (error) {
     console.error('Error al marcar mensajes como leídos:', error);
     res.status(500).json({ error: 'Error al marcar mensajes como leídos' });
+  }
+});
+
+// Endpoint para eliminar producto
+app.delete('/api/productos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Elimina primero las imágenes asociadas al producto
+    await db.query('DELETE FROM IMAGENES_productos WHERE productos_id_productos = ?', [id]);
+    // Luego elimina el producto
+    const [result] = await db.query('DELETE FROM productos WHERE id_productos = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+    res.json({ message: 'Producto eliminado exitosamente' });
+  } catch (error) {
+    console.error('Error al eliminar producto:', error);
+    res.status(500).json({ error: 'Error al eliminar el producto' });
+  }
+});
+
+// Cambiar estado de membresía (activar/inactivar)
+app.put('/api/membresias/:id/estado', async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body; // 'activa', 'inactiva', 'vencida'
+  if (!['activa', 'inactiva', 'vencida'].includes(estado)) {
+    return res.status(400).json({ error: 'Estado no válido' });
+  }
+  try {
+    const [result] = await conexion.query(
+      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+      { replacements: [estado, id] }
+    );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Membresía no encontrada' });
+    }
+    res.json({ message: `Membresía actualizada a ${estado}` });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar el estado de la membresía' });
+  }
+});
+
+// Endpoint para obtener todas las membresías para el panel admin
+app.get('/api/membresias/admin', async (req, res) => {
+  try {
+    const [rows] = await conexion.query(`
+      SELECT pm.*, m.nombre_pla, p.nombre_empresa, per.nombre, per.apellido
+      FROM PROVEDOR_MEMBRESIA pm
+      JOIN MEMBRESIA m ON pm.MEMBRESIA_id_memebresia = m.id_memebresia
+      JOIN provedor_negocio p ON pm.id_provedor = p.id_provedor
+      JOIN PERSONA per ON p.PERSONA_id_persona = per.id_persona
+      ORDER BY pm.fecha_fin DESC
+    `);
+    const hoy = new Date();
+    const activas = [], proximasVencer = [], vencidas = [];
+    for (const m of rows) {
+      const fechaFin = new Date(m.fecha_fin);
+      const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
+      if (m.estado === 'activa' && diasRestantes > 7) {
+        activas.push(m);
+      } else if (m.estado === 'activa' && diasRestantes > 0 && diasRestantes <= 7) {
+        proximasVencer.push(m);
+      } else {
+        vencidas.push(m);
+      }
+    }
+    res.json({ activas, proximasVencer, vencidas });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener membresías' });
   }
 });
 
