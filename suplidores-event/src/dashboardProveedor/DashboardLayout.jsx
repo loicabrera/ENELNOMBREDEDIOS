@@ -94,6 +94,7 @@ export default function DashboardLayout() {
 
   const handleLogout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('negocio_activo');
     window.location.href = '/login';
   };
 
