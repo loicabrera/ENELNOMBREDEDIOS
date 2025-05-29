@@ -135,9 +135,7 @@ function App() {
         <Route
           path="/pago"
           element={
-            <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
-              <Layout><PaymentContainer /></Layout>
-            </ProtectedRoute>
+            <Layout><PaymentContainer /></Layout>
           }
         />
 
@@ -163,9 +161,7 @@ function App() {
         <Route
           path="/datosproveedor2"
           element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><DatosProveedor2 /></Layout>
-            </ProtectedRoute>
+            <Layout><DatosProveedor2 /></Layout>
           }
         />
 

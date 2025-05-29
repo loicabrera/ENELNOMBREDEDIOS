@@ -203,15 +203,25 @@ const DatosProveedor = () => {
     else if (plan === 'premium') membresiaId = 3;
     localStorage.setItem('MEMBRESIA_id_membresia', membresiaId);
 
-    // Redirigir a la página de pago con el monto correcto
-    navigate('/pago-nuevo-negocio', { 
-      state: { 
-        amount: planInfo.monto,
-        planName: planInfo.nombre,
-        isNewBusiness: true,
-        businessName: formData.nombre_empresa
-      } 
-    });
+    // Si viene del registro inicial, navega a /pago
+    if (!location.state?.isNewBusiness) {
+      navigate('/pago', { 
+        state: { 
+          amount: planInfo.monto,
+          planName: planInfo.nombre
+        } 
+      });
+    } else {
+      // Si viene de agregar un nuevo negocio, navega a /pago-nuevo-negocio
+      navigate('/pago-nuevo-negocio', { 
+        state: { 
+          amount: planInfo.monto,
+          planName: planInfo.nombre,
+          isNewBusiness: true,
+          businessName: formData.nombre_empresa
+        } 
+      });
+    }
   };
 
   // Información sobre el registro del proveedor

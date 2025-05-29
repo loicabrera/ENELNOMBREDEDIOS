@@ -81,7 +81,8 @@ const AdminProveedor = () => {
         .catch(() => setLoading(false));
     }, []);
 
-    const publicacionesAprobadas = publicaciones.filter(p => p.estado === 'aprobado').length;
+    // Publicaciones Aprobadas: contar todas las publicaciones
+    const publicacionesAprobadas = publicaciones.length;
     const categoriasData = {
       options: {
         chart: { id: "categorias" },
@@ -115,43 +116,50 @@ const AdminProveedor = () => {
     };
 
     return (
-      <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-6 pl-64 ml-4 border-l border-gray-200 shadow-lg">
+      <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-6 items-center justify-center border-l border-gray-200 shadow-lg">
         {/* Tabs */}
-        {/* Elimino las tabs y dejo solo el dashboard */}
-        <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">Panel de Proveedores</h2>
+        <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight">Panel de Proveedores</h2>
         {/* Resumen en tarjetas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full mb-8">
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <div className="text-gray-500 text-sm mb-1">Total Proveedores</div>
-            <div className="text-3xl font-semibold">{proveedores.length}</div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full max-w-6xl mb-12 mx-auto">
+          <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center border border-gray-100">
+            <div className="text-gray-500 text-base mb-2 font-medium">Total Proveedores</div>
+            <div className="text-5xl font-extrabold text-blue-700">{proveedores.length}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <div className="text-gray-500 text-sm mb-1">Publicaciones Aprobadas</div>
-            <div className="text-3xl font-semibold">{publicacionesAprobadas}</div>
+          <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center border border-gray-100">
+            <div className="text-gray-500 text-base mb-2 font-medium">Publicaciones Aprobadas</div>
+            <div className="text-5xl font-extrabold text-purple-700">{publicacionesAprobadas}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <div className="text-gray-500 text-sm mb-1">Membresías Activas</div>
-            <div className="text-3xl font-semibold">{membresias.activas}</div>
+          <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center border border-gray-100">
+            <div className="text-gray-500 text-base mb-2 font-medium">Membresías Activas</div>
+            <div className="text-5xl font-extrabold text-green-700">{membresias.activas}</div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 flex flex-col items-center">
-            <div className="text-gray-500 text-sm mb-1">Solicitudes Recibidas Hoy</div>
-            <div className="text-3xl font-semibold">{solicitudesHoy}</div>
+          <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center border border-gray-100">
+            <div className="text-gray-500 text-base mb-2 font-medium">Solicitudes Recibidas Hoy</div>
+            <div className="text-5xl font-extrabold text-yellow-600">{solicitudesHoy}</div>
           </div>
         </div>
 
         {/* NUEVAS GRÁFICAS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="font-medium mb-4 text-center">Proveedores por Tipo de Servicio</div>
-            <Chart
-              options={serviciosChart.options}
-              series={serviciosChart.series}
-              type="bar"
-              height={250}
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-6xl mb-8 mx-auto">
+          <div className="bg-white rounded-2xl shadow p-6 overflow-x-auto max-w-full border border-gray-100">
+            <div className="font-semibold mb-4 text-center text-lg text-gray-700">Proveedores por Tipo de Servicio</div>
+            <div style={{ minWidth: 400 }}>
+              <Chart
+                options={{
+                  ...serviciosChart.options,
+                  xaxis: {
+                    ...serviciosChart.options.xaxis,
+                    labels: { rotate: -45, style: { fontSize: '12px' } }
+                  }
+                }}
+                series={serviciosChart.series}
+                type="bar"
+                height={250}
+              />
+            </div>
           </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="font-medium mb-4 text-center">Proveedores Activos vs Inactivos</div>
+          <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+            <div className="font-semibold mb-4 text-center text-lg text-gray-700">Proveedores Activos vs Inactivos</div>
             <Chart
               options={activosChart.options}
               series={activosChart.series}
@@ -159,8 +167,8 @@ const AdminProveedor = () => {
               height={250}
             />
           </div>
-          <div className="bg-white rounded-lg shadow p-6 md:col-span-2">
-            <div className="font-medium mb-4 text-center">Proveedores Registrados por Mes (Último Año)</div>
+          <div className="bg-white rounded-2xl shadow p-6 md:col-span-2 border border-gray-100">
+            <div className="font-semibold mb-4 text-center text-lg text-gray-700">Proveedores Registrados por Mes (Último Año)</div>
             <Chart
               options={porMesChart.options}
               series={porMesChart.series}
@@ -168,8 +176,8 @@ const AdminProveedor = () => {
               height={250}
             />
           </div>
-          <div className="bg-white rounded-lg shadow p-6 md:col-span-2">
-            <div className="font-medium mb-4 text-center">Publicaciones por Categoría</div>
+          <div className="bg-white rounded-2xl shadow p-6 md:col-span-2 border border-gray-100">
+            <div className="font-semibold mb-4 text-center text-lg text-gray-700">Publicaciones por Categoría</div>
             <Chart
               options={categoriasData.options}
               series={categoriasData.series}

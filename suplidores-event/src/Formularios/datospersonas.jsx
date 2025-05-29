@@ -142,7 +142,7 @@ const DatosPersonas = () => {
       localStorage.setItem('PERSONA_id_persona', data.persona.id_persona);
 
       // Redirigir al formulario de proveedor
-      navigate('/datosproveedor', {
+      navigate('/datosproveedor2', {
         state: {
           id_persona: data.persona.id_persona,
           plan: location.state?.plan
