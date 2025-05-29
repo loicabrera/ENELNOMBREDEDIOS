@@ -40,6 +40,8 @@ import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import PaymentContainer from './components/PaymentContainer';
 import Confirmacion from './components/Confirmacion';
+import PaymentContainerNuevoNegocio from './components/PaymentContainerNuevoNegocio';
+import ConfirmacionNuevoNegocio from './components/ConfirmacionNuevoNegocio';
 
 // Nuevo componente Layout más flexible
 function Layout({ children }) {
@@ -166,6 +168,23 @@ function App() {
           element={
             <Layout>
               <Confirmacion />
+            </Layout>
+          }
+        />
+        {/* Rutas de pago y confirmación para negocio adicional */}
+        <Route
+          path="/pago-nuevo-negocio"
+          element={
+            <Layout>
+              <PaymentContainerNuevoNegocio />
+            </Layout>
+          }
+        />
+        <Route
+          path="/confirmacion-nuevo-negocio"
+          element={
+            <Layout>
+              <ConfirmacionNuevoNegocio />
             </Layout>
           }
         />

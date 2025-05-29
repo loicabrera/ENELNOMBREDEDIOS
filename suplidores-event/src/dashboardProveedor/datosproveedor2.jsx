@@ -193,7 +193,7 @@ const DatosProveedor = () => {
           setShowConfirmation(true);
         } else {
           // Es un negocio adicional, ir al pago directamente
-          navigate('/pago', { 
+          navigate('/pago-nuevo-negocio', { 
             state: { 
               amount: planInfo.monto,
               planName: planInfo.nombre,
@@ -228,7 +228,7 @@ const DatosProveedor = () => {
         const plan = location.state?.plan;
         const planInfo = planes[plan];
         // Siempre ir al pago sin mostrar el modal
-        navigate('/pago', { 
+        navigate('/pago-nuevo-negocio', { 
           state: { 
             amount: planInfo.monto,
             planName: planInfo.nombre,
