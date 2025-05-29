@@ -107,6 +107,18 @@ const DatosProveedor = () => {
       setError('La fecha de creación es requerida');
       return false;
     }
+    if (!formData.direccion || !formData.direccion.trim()) {
+      setError('La dirección es requerida');
+      return false;
+    }
+    if (!formData.descripcion || !formData.descripcion.trim()) {
+      setError('La descripción es requerida');
+      return false;
+    }
+    if (!formData.redes_sociales || !formData.redes_sociales.trim()) {
+      setError('Las redes sociales son requeridas');
+      return false;
+    }
     return true;
   };
 

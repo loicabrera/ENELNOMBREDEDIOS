@@ -19,12 +19,25 @@ export default function useNegocioActivo() {
       .then(res => res.json())
       .then(data => {
         let proveedorLogueado;
+        
+        // Primero buscar el negocio activo
         if (negocioActivoId) {
-          proveedorLogueado = data.find(p => p.id_provedor === Number(negocioActivoId));
+          proveedorLogueado = data.find(p => 
+            p.id_provedor === Number(negocioActivoId) && 
+            p.PERSONA_id_persona === user.PERSONA_id_persona
+          );
         }
+        
+        // Si no se encuentra el negocio activo o no pertenece al usuario actual,
+        // buscar el primer negocio del usuario
         if (!proveedorLogueado) {
           proveedorLogueado = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
+          // Si se encuentra un negocio del usuario, actualizar el negocio activo
+          if (proveedorLogueado) {
+            localStorage.setItem('negocio_activo', proveedorLogueado.id_provedor);
+          }
         }
+
         if (proveedorLogueado) {
           setProveedor(proveedorLogueado);
         } else {

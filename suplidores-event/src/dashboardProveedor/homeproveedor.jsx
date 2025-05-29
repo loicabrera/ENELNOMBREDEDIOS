@@ -112,25 +112,11 @@ const HomeProveedor = () => {
       color: "bg-blue-100 text-blue-600"
     },
     {
-      title: "Solicitudes",
-      description: "Revisa las solicitudes de contacto de tus clientes",
-      icon: ChatBubbleLeftRightIcon,
-      link: "/dashboard-proveedor/solicitudes",
-      color: "bg-purple-100 text-purple-600"
-    },
-    {
       title: "Membresía",
       description: "Gestiona tu plan y estado de membresía",
       icon: CreditCardIcon,
       link: "/dashboard-proveedor/membresia",
       color: "bg-green-100 text-green-600"
-    },
-    {
-      title: "Estadísticas",
-      description: "Visualiza el rendimiento de tus publicaciones",
-      icon: ChartBarIcon,
-      link: "/dashboard-proveedor/stats",
-      color: "bg-yellow-100 text-yellow-600"
     },
     {
       title: "Perfil",

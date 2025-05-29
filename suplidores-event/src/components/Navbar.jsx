@@ -92,6 +92,7 @@ function Navbar() {
       </nav>
 
       {/* Profile button */}
+      {/* Eliminado el bloque de perfil */}
       <div className="p-3 border-t border-gray-200">
         <button
           onClick={() => setProfileOpen(!profileOpen)}
