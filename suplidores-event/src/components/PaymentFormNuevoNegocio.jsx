@@ -9,6 +9,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -74,14 +75,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
         });
 
         const pagoData = await pagoResponse.json();
-
-        navigate('/confirmacion-nuevo-negocio', { 
-          state: { 
-            success: true,
-            planName,
-            amount
-          }
-        });
+        setPaymentSuccess(true);
       }
     } catch (err) {
       console.error('Error:', err);
@@ -89,6 +83,17 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoToNegocios = () => {
+    navigate('/dashboard-proveedor/negocios', {
+      state: {
+        success: true,
+        planName,
+        amount,
+        message: '¡Pago realizado con éxito!'
+      }
+    });
   };
 
   return (
@@ -105,50 +110,67 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
             </div>
           )}
 
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-gray-600">Plan seleccionado:</span>
-              <span className="font-semibold">{planName}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Monto total:</span>
-              <span className="text-xl font-bold">${amount.toFixed(2)}</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Detalles de la tarjeta
-              </label>
-              <div className="p-3 border border-gray-300 rounded-md">
-                <CardElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#424770',
-                        '::placeholder': {
-                          color: '#aab7c4',
-                        },
-                      },
-                      invalid: {
-                        color: '#9e2146',
-                      },
-                    },
-                  }}
-                />
+          {paymentSuccess ? (
+            <div className="text-center">
+              <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md">
+                <p className="text-lg font-semibold">¡Pago realizado con éxito!</p>
+                <p className="mt-2">Tu plan ha sido activado correctamente.</p>
               </div>
+              <button
+                onClick={handleGoToNegocios}
+                className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 transition-colors"
+              >
+                Ir al Panel de Negocios
+              </button>
             </div>
+          ) : (
+            <>
+              <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-gray-600">Plan seleccionado:</span>
+                  <span className="font-semibold">{planName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-gray-600">Monto total:</span>
+                  <span className="text-xl font-bold">${amount.toFixed(2)}</span>
+                </div>
+              </div>
 
-            <button
-              type="submit"
-              disabled={!stripe || loading}
-              className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Procesando...' : `Pagar $${amount.toFixed(2)}`}
-            </button>
-          </form>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Detalles de la tarjeta
+                  </label>
+                  <div className="p-3 border border-gray-300 rounded-md">
+                    <CardElement
+                      options={{
+                        style: {
+                          base: {
+                            fontSize: '16px',
+                            color: '#424770',
+                            '::placeholder': {
+                              color: '#aab7c4',
+                            },
+                          },
+                          invalid: {
+                            color: '#9e2146',
+                          },
+                        },
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!stripe || loading}
+                  className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Procesando...' : `Pagar $${amount.toFixed(2)}`}
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
     </div>
