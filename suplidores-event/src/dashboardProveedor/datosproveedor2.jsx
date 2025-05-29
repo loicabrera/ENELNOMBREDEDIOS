@@ -204,7 +204,7 @@ const DatosProveedor = () => {
     localStorage.setItem('MEMBRESIA_id_membresia', membresiaId);
 
     // Redirigir a la página de pago con el monto correcto
-    navigate('/pago', { 
+    navigate('/pago-nuevo-negocio', { 
       state: { 
         amount: planInfo.monto,
         planName: planInfo.nombre,

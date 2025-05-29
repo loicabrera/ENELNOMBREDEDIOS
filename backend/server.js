@@ -353,6 +353,9 @@ app.post('/registrar_pago', async (req, res) => {
       esRegistroInicial // Nueva bandera
     } = req.body;
 
+    // Log para depuración
+    console.log('Valor de esRegistroInicial recibido:', esRegistroInicial);
+
     // Validar que los campos requeridos estén presentes
     if (!monto || !fecha_pago || !monto_pago || !MEMBRESIA_id_membresia || !provedor_negocio_id_provedor || !PERSONA_id_persona) {
       return res.status(400).json({ error: 'Faltan campos obligatorios' });
@@ -397,8 +400,8 @@ app.post('/registrar_pago', async (req, res) => {
       }
     );
 
-    // Solo generar credenciales si es el registro inicial
-    if (esRegistroInicial) {
+    // Solo generar credenciales si es el registro inicial (true o 'true')
+    if (esRegistroInicial === true || esRegistroInicial === 'true') {
       // Generar usuario y contraseña aleatorios
       const user_name = generarUsuarioAleatorio();
       const password = generarPasswordAleatorio();
@@ -1285,6 +1288,26 @@ app.post('/cambiar_plan', async (req, res) => {
   } catch (error) {
     console.error('Error al cambiar el plan:', error);
     res.status(500).json({ error: 'Error al cambiar el plan' });
+  }
+});
+
+// Eliminar un negocio (proveedor) y sus datos relacionados
+app.delete('/proveedores/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Eliminar membresías asociadas
+    await conexion.query('DELETE FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ?', { replacements: [id] });
+    // Eliminar productos asociados
+    await conexion.query('DELETE FROM productos WHERE provedor_negocio_id_provedor = ?', { replacements: [id] });
+    // Eliminar servicios asociados
+    await conexion.query('DELETE FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', { replacements: [id] });
+    // Eliminar el proveedor (negocio)
+    await conexion.query('DELETE FROM provedor_negocio WHERE id_provedor = ?', { replacements: [id] });
+
+    res.json({ message: 'Negocio eliminado correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar negocio:', error);
+    res.status(500).json({ error: 'Error al eliminar el negocio' });
   }
 });
 

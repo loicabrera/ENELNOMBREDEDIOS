@@ -59,6 +59,23 @@ const Negocios = () => {
     navigate('/dashboard-proveedor'); // O la ruta de tu dashboard
   };
 
+  const handleEliminarNegocio = async (idNegocio) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar este negocio? Esta acción no se puede deshacer.')) return;
+    try {
+      const res = await fetch(`http://localhost:3000/proveedores/${idNegocio}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        setNegocios(negocios.filter(n => n.id !== idNegocio));
+        alert('Negocio eliminado correctamente');
+      } else {
+        alert('Error al eliminar el negocio');
+      }
+    } catch (error) {
+      alert('Error al eliminar el negocio');
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">
@@ -113,6 +130,12 @@ const Negocios = () => {
                 >
                   Activar 
                 </Link>
+                <button
+                  onClick={() => handleEliminarNegocio(negocio.id)}
+                  className="flex-1 px-4 py-2 border-2 border-red-600 text-red-600 rounded-lg hover:bg-red-100 transition-colors duration-300 focus:outline-none"
+                >
+                  Eliminar
+                </button>
               </div>
             </div>
           ))}

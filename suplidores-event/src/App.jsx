@@ -41,6 +41,7 @@ import Login from "./components/LoginProveedor";
 import Footer from "./components/Footer";
 import Navbar from "./components/Navbar";
 import PaymentContainer from './components/PaymentContainer';
+import PaymentContainerNuevoNegocio from './components/PaymentContainerNuevoNegocio';
 import Confirmacion from './components/Confirmacion';
 
 // Nuevo componente Layout más flexible
@@ -136,6 +137,15 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
               <Layout><PaymentContainer /></Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/pago-nuevo-negocio"
+          element={
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <Layout><PaymentContainerNuevoNegocio /></Layout>
             </ProtectedRoute>
           }
         />
