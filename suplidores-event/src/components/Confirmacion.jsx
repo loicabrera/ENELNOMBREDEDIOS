@@ -109,11 +109,11 @@ const Confirmacion = () => {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-[#012e33]">Usuario:</span>
-                      <span className="font-medium">{credentials.user_name}</span>
+                      <span className="font-medium" style={{ textTransform: 'none' }}>{credentials.user_name}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-[#012e33]">Contraseña:</span>
-                      <span className="font-medium">{credentials.password}</span>
+                      <span className="font-medium" style={{ textTransform: 'none' }}>{credentials.password}</span>
                     </div>
                   </div>
                   <p className="mt-4 text-sm text-[#012e33]">

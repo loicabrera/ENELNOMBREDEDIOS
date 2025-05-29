@@ -151,9 +151,7 @@ function App() {
         <Route
           path="/confirmacion"
           element={
-            <ProtectedRoute allowedRoles={['cliente', 'proveedor']}>
-              <Layout><Confirmacion /></Layout>
-            </ProtectedRoute>
+            <Layout><Confirmacion /></Layout>
           }
         />
 

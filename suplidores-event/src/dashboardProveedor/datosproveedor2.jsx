@@ -203,8 +203,8 @@ const DatosProveedor = () => {
     else if (plan === 'premium') membresiaId = 3;
     localStorage.setItem('MEMBRESIA_id_membresia', membresiaId);
 
-    // Si viene del registro inicial, navega a /pago
-    if (!location.state?.isNewBusiness) {
+    // Si viene del registro inicial (NO isNewBusiness), navega a /pago
+    if (!location.state || !location.state.isNewBusiness) {
       navigate('/pago', { 
         state: { 
           amount: planInfo.monto,
