@@ -1284,6 +1284,46 @@ app.delete('/api/proveedores/:id', async (req, res) => {
   }
 });
 
+// Cambiar el plan de membresía de un proveedor
+app.post('/cambiar_plan', async (req, res) => {
+  const { proveedorId, planId } = req.body;
+  try {
+    // Finalizar la membresía activa actual
+    await conexion.query(
+      `UPDATE PROVEDOR_MEMBRESIA SET estado = 'vencida', fecha_fin = NOW() WHERE id_provedor = ? AND estado = 'activa'`,
+      { replacements: [proveedorId] }
+    );
+
+    // Obtener la duración real del nuevo plan
+    const [[membresia]] = await conexion.query(
+      'SELECT duracion_dias FROM MEMBRESIA WHERE id_memebresia = ?',
+      { replacements: [planId] }
+    );
+    const duracionDias = Number(membresia.duracion_dias) || 30;
+
+    // Calcular fechas
+    const fechaInicio = new Date();
+    const fechaFin = new Date(fechaInicio);
+    fechaFin.setDate(fechaFin.getDate() + duracionDias);
+    const formatDateToMySQL = (date) => date.toISOString().slice(0, 19).replace('T', ' ');
+    const fechaInicioSQL = formatDateToMySQL(fechaInicio);
+    const fechaFinSQL = formatDateToMySQL(fechaFin);
+    const fechaPagoSQL = formatDateToMySQL(new Date());
+
+    // Crear la nueva membresía
+    await conexion.query(
+      `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor, estado)
+       VALUES (?, ?, ?, ?, ?, 'activa')`,
+      { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, planId, proveedorId] }
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error al cambiar el plan:', error);
+    res.status(500).json({ error: 'Error al cambiar el plan' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {

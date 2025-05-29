@@ -17,6 +17,7 @@ const Membership = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showPlanSelector, setShowPlanSelector] = useState(false);
+  const [alerta, setAlerta] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -172,6 +173,24 @@ const Membership = () => {
     }
   };
 
+  // Cambiar estado de membresía (activar/inactivar)
+  const handleChangeEstado = async (nuevoEstado) => {
+    try {
+      const idMembresia = currentPlan?.id_prov_membresia;
+      if (!idMembresia) return;
+      await axios.put(`http://localhost:3000/api/membresias/${idMembresia}/estado`, { estado: nuevoEstado });
+      setAlerta({
+        tipo: 'success',
+        mensaje: `Membresía ${nuevoEstado === 'activa' ? 'activada' : 'inactivada'} correctamente` 
+      });
+      // Actualizar los datos de la membresía
+      const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${currentPlan.id_provedor}`);
+      setCurrentPlan(membresiaResponse.data);
+    } catch (err) {
+      setAlerta({ tipo: 'error', mensaje: 'Error al cambiar el estado de la membresía' });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -190,6 +209,10 @@ const Membership = () => {
 
   return (
     <div className="space-y-6">
+      {/* ALERTA */}
+      {alerta && (
+        <div className={`p-4 mb-4 rounded ${alerta.tipo === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{alerta.mensaje}</div>
+      )}
       {/* Current Plan */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-start">
@@ -255,6 +278,26 @@ const Membership = () => {
                 <CreditCardIcon className="w-5 h-5 mr-2" />
                 Cambiar Plan
               </button>
+              {/* Botones para activar/inactivar membresía */}
+              {currentPlan?.estado === 'activa' ? (
+                <button
+                  type="button"
+                  onClick={() => handleChangeEstado('inactiva')}
+                  className="flex-1 flex items-center justify-center px-4 py-2 border border-red-600 text-red-600 rounded-lg hover:bg-red-50"
+                >
+                  <XCircleIcon className="w-5 h-5 mr-2" />
+                  Inactivar
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => handleChangeEstado('activa')}
+                  className="flex-1 flex items-center justify-center px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50"
+                >
+                  <CheckCircleIcon className="w-5 h-5 mr-2" />
+                  Activar
+                </button>
+              )}
             </div>
           </div>
         </div>
