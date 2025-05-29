@@ -286,9 +286,6 @@ app.post('/crear_proveedores', async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error al crear proveedor:', error);
-    console.error('Detalles del error:', error.message);
-    console.error('Stack trace:', error.stack);
-    console.error('Datos recibidos:', req.body);
     
     if (error.name === 'SequelizeValidationError') {
       return res.status(400).json({
@@ -487,26 +484,22 @@ app.get('/membresia/:proveedorId', async (req, res) => {
     const fechaFin = new Date(membresia.fecha_fin);
     const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
 
-    // Determinar el estado basado en los días restantes
-    let estado;
     if (diasRestantes > 7) {
-      estado = 'activa';
+      membresia.estado = 'activa';
     } else if (diasRestantes > 0) {
-      estado = 'por vencer';
+      membresia.estado = 'por vencer';
     } else {
-      estado = 'vencida';
+      membresia.estado = 'vencida';
     }
 
-    // Actualiza el estado en la base de datos si es diferente
-    if (membresia.estado !== estado) {
-      await conexion.query(
-        'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
-        { replacements: [estado, membresia.id_prov_membresia] }
-      );
-      membresia.estado = estado;
-    }
+    // Actualiza el estado en la base de datos si es necesario
+    await conexion.query(
+      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+      { replacements: [membresia.estado, membresia.id_prov_membresia] }
+    );
 
     membresia.dias_restantes = Math.max(0, diasRestantes);
+
     res.json(membresia);
   } catch (error) {
     console.error(error);
@@ -1200,34 +1193,12 @@ app.get('/api/membresias/admin', async (req, res) => {
     `);
     const hoy = new Date();
     const activas = [], proximasVencer = [], vencidas = [];
-    
     for (const m of rows) {
       const fechaFin = new Date(m.fecha_fin);
       const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-      
-      // Determinar el estado basado en los días restantes
-      let estado;
-      if (diasRestantes > 7) {
-        estado = 'activa';
-      } else if (diasRestantes > 0) {
-        estado = 'por vencer';
-      } else {
-        estado = 'vencida';
-      }
-
-      // Actualizar el estado en la base de datos si es diferente
-      if (m.estado !== estado) {
-        await conexion.query(
-          'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
-          { replacements: [estado, m.id_prov_membresia] }
-        );
-        m.estado = estado;
-      }
-
-      // Clasificar la membresía según su estado
-      if (estado === 'activa') {
+      if (m.estado === 'activa' && diasRestantes > 7) {
         activas.push(m);
-      } else if (estado === 'por vencer') {
+      } else if (m.estado === 'activa' && diasRestantes > 0 && diasRestantes <= 7) {
         proximasVencer.push(m);
       } else {
         vencidas.push(m);
@@ -1239,57 +1210,41 @@ app.get('/api/membresias/admin', async (req, res) => {
   }
 });
 
-// Endpoint para eliminar un proveedor/negocio
-app.delete('/api/proveedores/:id', async (req, res) => {
-  const { id } = req.params;
+// Ruta para login de administrador
+app.post('/login_admin', async (req, res) => {
   try {
-    // Iniciar una transacción
-    await db.query('START TRANSACTION');
+    const { username, password } = req.body;
 
-    try {
-      // Primero eliminar las imágenes asociadas a los servicios del proveedor
-      const [servicios] = await db.query('SELECT id_servicio FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', [id]);
-      for (const servicio of servicios) {
-        await db.query('DELETE FROM IMAGENES_servicio WHERE SERVICIO_id_servicio = ?', [servicio.id_servicio]);
-      }
-
-      // Eliminar los servicios del proveedor
-      await db.query('DELETE FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', [id]);
-
-      // Eliminar las imágenes asociadas a los productos del proveedor
-      const [productos] = await db.query('SELECT id_productos FROM productos WHERE provedor_negocio_id_provedor = ?', [id]);
-      for (const producto of productos) {
-        await db.query('DELETE FROM IMAGENES_productos WHERE productos_id_productos = ?', [producto.id_productos]);
-      }
-
-      // Eliminar los productos del proveedor
-      await db.query('DELETE FROM productos WHERE provedor_negocio_id_provedor = ?', [id]);
-
-      // Eliminar las membresías del proveedor
-      await db.query('DELETE FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ?', [id]);
-
-      // Eliminar los mensajes de contacto del proveedor
-      await db.query('DELETE FROM Usuario WHERE provedor_negocio_id_provedor = ?', [id]);
-
-      // Finalmente, eliminar el proveedor
-      const [result] = await db.query('DELETE FROM provedor_negocio WHERE id_provedor = ?', [id]);
-
-      if (result.affectedRows === 0) {
-        await db.query('ROLLBACK');
-        return res.status(404).json({ error: 'Proveedor no encontrado' });
-      }
-
-      // Si todo salió bien, confirmar la transacción
-      await db.query('COMMIT');
-      res.json({ message: 'Proveedor eliminado exitosamente' });
-    } catch (error) {
-      // Si algo salió mal, revertir la transacción
-      await db.query('ROLLBACK');
-      throw error;
+    // Validar que se proporcionaron las credenciales
+    if (!username || !password) {
+      return res.status(400).json({
+        error: 'Se requieren nombre de usuario y contraseña'
+      });
     }
+
+    // Verificar credenciales fijas
+    if (username === 'admin2024' && password === 'admin2024') {
+      // Enviar respuesta exitosa
+      res.json({
+        message: 'Login exitoso',
+        user: {
+          id: 1,
+          username: 'admin2024',
+          nombre: 'Administrador',
+          email: 'admin@example.com'
+        }
+      });
+    } else {
+      return res.status(401).json({
+        error: 'Credenciales inválidas'
+      });
+    }
+
   } catch (error) {
-    console.error('Error al eliminar el proveedor:', error);
-    res.status(500).json({ error: 'Error al eliminar el proveedor' });
+    console.error('Error en login de admin:', error);
+    res.status(500).json({
+      error: 'Error interno del servidor'
+    });
   }
 });
 

@@ -7,6 +7,8 @@ const Publicaciones = () => {
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [filtroCategoria, setFiltroCategoria] = useState('todas');
   const [busqueda, setBusqueda] = useState('');
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [publicacionSeleccionada, setPublicacionSeleccionada] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -78,7 +80,7 @@ const Publicaciones = () => {
   });
 
   return (
-    <div className="p-6 ml-64">
+    <div className="p-6 w-full">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Gestión de Publicaciones</h1>
         <p className="text-gray-600">Administra y revisa las publicaciones de los proveedores</p>
@@ -126,75 +128,76 @@ const Publicaciones = () => {
 
       {/* Lista de publicaciones */}
       <div className="bg-white rounded-lg shadow">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Título
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Proveedor
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Categoría
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Fecha
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Acciones
-                </th>
+        <table className="w-full table-fixed divide-y divide-gray-200 text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="px-2 py-3 w-1/6 truncate">Título</th>
+              <th className="px-2 py-3 w-1/6 truncate">Proveedor</th>
+              <th className="px-2 py-3 w-1/6 truncate">Categoría</th>
+              <th className="px-2 py-3 w-1/6 truncate">Estado</th>
+              <th className="px-2 py-3 w-1/12 truncate">Tipo</th>
+              <th className="px-2 py-3 w-1/6 truncate">Acciones</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {publicacionesFiltradas.map((pub) => (
+              <tr key={pub.tipo + '-' + pub.id}>
+                <td className="px-2 py-2 w-1/6 truncate">
+                  <div className="text-sm font-medium text-gray-900 truncate">{pub.titulo}</div>
+                  <div className="text-sm text-gray-500 truncate">{pub.descripcion}</div>
+                </td>
+                <td className="px-2 py-2 w-1/6 truncate">
+                  <div className="text-sm text-gray-900 truncate">{pub.proveedor}</div>
+                </td>
+                <td className="px-2 py-2 w-1/6 truncate">
+                  <div className="text-sm text-gray-900 truncate">{pub.categoria}</div>
+                </td>
+                <td className="px-2 py-2 w-1/6 truncate">
+                  <div className="flex items-center">
+                    {getEstadoIcon(pub.estado)}
+                    <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getEstadoColor(pub.estado)}`}>
+                      {pub.estado.charAt(0).toUpperCase() + pub.estado.slice(1)}
+                    </span>
+                  </div>
+                </td>
+                <td className="px-2 py-2 w-1/12 truncate">
+                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">{pub.tipo}</span>
+                </td>
+                <td className="px-2 py-2 w-1/6 truncate text-sm font-medium">
+                  <button className="text-blue-600 hover:text-blue-900 mr-3" onClick={() => { setPublicacionSeleccionada(pub); setModalAbierto(true); }}>Ver</button>
+                  {pub.estado === 'pendiente' && (
+                    <>
+                      <button className="text-green-600 hover:text-green-900 mr-3">Aprobar</button>
+                      <button className="text-red-600 hover:text-red-900">Rechazar</button>
+                    </>
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {publicacionesFiltradas.map((pub) => (
-                <tr key={pub.tipo + '-' + pub.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{pub.titulo}</div>
-                    <div className="text-sm text-gray-500 truncate max-w-xs">{pub.descripcion}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{pub.proveedor}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{pub.categoria}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{pub.fecha ? new Date(pub.fecha).toLocaleDateString() : ''}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      {getEstadoIcon(pub.estado)}
-                      <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getEstadoColor(pub.estado)}`}>
-                        {pub.estado.charAt(0).toUpperCase() + pub.estado.slice(1)}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">{pub.tipo}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
-                    {pub.estado === 'pendiente' && (
-                      <>
-                        <button className="text-green-600 hover:text-green-900 mr-3">Aprobar</button>
-                        <button className="text-red-600 hover:text-red-900">Rechazar</button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
+
+      {/* Modal de detalles */}
+      {modalAbierto && publicacionSeleccionada && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+              onClick={() => setModalAbierto(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4">Detalles de la Publicación</h2>
+            <div className="mb-2"><span className="font-semibold">Título:</span> {publicacionSeleccionada.titulo}</div>
+            <div className="mb-2"><span className="font-semibold">Proveedor:</span> {publicacionSeleccionada.proveedor}</div>
+            <div className="mb-2"><span className="font-semibold">Categoría:</span> {publicacionSeleccionada.categoria}</div>
+            <div className="mb-2"><span className="font-semibold">Estado:</span> {publicacionSeleccionada.estado}</div>
+            <div className="mb-2"><span className="font-semibold">Tipo:</span> {publicacionSeleccionada.tipo}</div>
+            <div className="mb-2"><span className="font-semibold">Descripción:</span> {publicacionSeleccionada.descripcion}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

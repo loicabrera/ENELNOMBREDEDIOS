@@ -52,12 +52,6 @@ const DatosProveedor = () => {
       setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
       navigate('/');
     }
-
-    // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
-    if (!location.state?.fromRegistro) {
-      setShowConfirmation(false);
-      setProveedorCreado(null);
-    }
   }, [location.state, navigate]);
 
   const [formData, setFormData] = useState({
@@ -184,58 +178,11 @@ const DatosProveedor = () => {
       if (success) {
         const plan = location.state?.plan;
         const planInfo = planes[plan];
-        if (location.state?.fromRegistro) {
-          // Es el flujo de registro inicial, mostrar credenciales/modal
-          setProveedorCreado({
-            ...formData,
-            plan: planInfo
-          });
-          setShowConfirmation(true);
-        } else {
-          // Es un negocio adicional, ir al pago directamente
-          navigate('/pago-nuevo-negocio', { 
-            state: { 
-              amount: planInfo.monto,
-              planName: planInfo.nombre,
-              isNewBusiness: true,
-              businessName: formData.nombre_empresa
-            } 
-          });
-        }
-      }
-    } catch (error) {
-      console.error('Error en el envío:', error);
-      setError('Error al procesar el formulario');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Nuevo formulario para agregar negocio adicional
-  const handleSubmitAdditionalBusiness = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (!validarFormulario()) {
-        setLoading(false);
-        return;
-      }
-
-      const success = await insertarDatos();
-      if (success) {
-        const plan = location.state?.plan;
-        const planInfo = planes[plan];
-        // Siempre ir al pago sin mostrar el modal
-        navigate('/pago-nuevo-negocio', { 
-          state: { 
-            amount: planInfo.monto,
-            planName: planInfo.nombre,
-            isNewBusiness: true,
-            businessName: formData.nombre_empresa
-          } 
+        setProveedorCreado({
+          ...formData,
+          plan: planInfo
         });
+        setShowConfirmation(true);
       }
     } catch (error) {
       console.error('Error en el envío:', error);
@@ -301,287 +248,145 @@ const DatosProveedor = () => {
                   Información de empresa: <span className="font-normal">Complete los datos de su negocio</span>
                 </div>
                 
-                {location.state?.fromRegistro ? (
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Nombre de la empresa:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="nombre_empresa" 
-                          value={formData.nombre_empresa} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Nombre de su empresa"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Email de la empresa:
-                        </label>
-                        <input 
-                          type="email" 
-                          name="email_empresa" 
-                          value={formData.email_empresa} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="email@empresa.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Teléfono de la empresa:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="telefono_empresa" 
-                          value={formData.telefono_empresa} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="000-000-0000"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Tipo de servicio:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="tipo_servicio" 
-                          value={formData.tipo_servicio} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Ej: Banquete, Decoración, Fotografía, Música, Coordinación..."
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Fecha de creación:
-                        </label>
-                        <input 
-                          type="date" 
-                          name="fecha_creacion" 
-                          value={formData.fecha_creacion} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Redes sociales:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="redes_sociales" 
-                          value={formData.redes_sociales} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="LinkedIn, Instagram, Facebook..."
-                        />
-                      </div>
-                    </div>
-
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Dirección:
+                        Nombre de la empresa:
                       </label>
                       <input 
                         type="text" 
-                        name="direccion" 
-                        value={formData.direccion} 
+                        name="nombre_empresa" 
+                        value={formData.nombre_empresa} 
                         onChange={handleChange} 
                         required 
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Dirección completa de la empresa"
+                        placeholder="Nombre de su empresa"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Descripción:
+                        Email de la empresa:
                       </label>
-                      <textarea 
-                        name="descripcion" 
-                        value={formData.descripcion} 
+                      <input 
+                        type="email" 
+                        name="email_empresa" 
+                        value={formData.email_empresa} 
                         onChange={handleChange} 
                         required 
-                        rows="4"
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Describa brevemente su empresa y servicios..."
-                      ></textarea>
+                        placeholder="email@empresa.com"
+                      />
                     </div>
+                  </div>
 
-                    <div className="pt-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50 text-[#012e33]"
-                        style={{ background: colors.lightPink }}
-                        onMouseOver={e => e.currentTarget.style.background = colors.pink}
-                        onMouseOut={e => e.currentTarget.style.background = colors.lightPink}
-                      >
-                        {loading ? 'Procesando...' : 'Siguiente'}
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <form onSubmit={handleSubmitAdditionalBusiness} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Nombre de la empresa:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="nombre_empresa" 
-                          value={formData.nombre_empresa} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Nombre de su empresa"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Email de la empresa:
-                        </label>
-                        <input 
-                          type="email" 
-                          name="email_empresa" 
-                          value={formData.email_empresa} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="email@empresa.com"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Teléfono de la empresa:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="telefono_empresa" 
-                          value={formData.telefono_empresa} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="000-000-0000"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Tipo de servicio:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="tipo_servicio" 
-                          value={formData.tipo_servicio} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Ej: Banquete, Decoración, Fotografía, Música, Coordinación..."
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Fecha de creación:
-                        </label>
-                        <input 
-                          type="date" 
-                          name="fecha_creacion" 
-                          value={formData.fecha_creacion} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Redes sociales:
-                        </label>
-                        <input 
-                          type="text" 
-                          name="redes_sociales" 
-                          value={formData.redes_sociales} 
-                          onChange={handleChange} 
-                          required 
-                          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="LinkedIn, Instagram, Facebook..."
-                        />
-                      </div>
-                    </div>
-
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Dirección:
+                        Teléfono de la empresa:
                       </label>
                       <input 
                         type="text" 
-                        name="direccion" 
-                        value={formData.direccion} 
+                        name="telefono_empresa" 
+                        value={formData.telefono_empresa} 
                         onChange={handleChange} 
                         required 
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Dirección completa de la empresa"
+                        placeholder="000-000-0000"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Descripción:
+                        Tipo de servicio:
                       </label>
-                      <textarea 
-                        name="descripcion" 
-                        value={formData.descripcion} 
+                      <input 
+                        type="text" 
+                        name="tipo_servicio" 
+                        value={formData.tipo_servicio} 
                         onChange={handleChange} 
                         required 
-                        rows="4"
                         className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Describa brevemente su empresa y servicios..."
-                      ></textarea>
+                        placeholder="Ej: Banquete, Decoración, Fotografía, Música, Coordinación..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Fecha de creación:
+                      </label>
+                      <input 
+                        type="date" 
+                        name="fecha_creacion" 
+                        value={formData.fecha_creacion} 
+                        onChange={handleChange} 
+                        required 
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
                     </div>
 
-                    <div className="pt-4">
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50 text-[#012e33]"
-                        style={{ background: colors.lightPink }}
-                        onMouseOver={e => e.currentTarget.style.background = colors.pink}
-                        onMouseOut={e => e.currentTarget.style.background = colors.lightPink}
-                      >
-                        {loading ? 'Procesando...' : 'Siguiente'}
-                      </button>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Redes sociales:
+                      </label>
+                      <input 
+                        type="text" 
+                        name="redes_sociales" 
+                        value={formData.redes_sociales} 
+                        onChange={handleChange} 
+                        required 
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="LinkedIn, Instagram, Facebook..."
+                      />
                     </div>
-                  </form>
-                )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Dirección:
+                    </label>
+                    <input 
+                      type="text" 
+                      name="direccion" 
+                      value={formData.direccion} 
+                      onChange={handleChange} 
+                      required 
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Dirección completa de la empresa"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Descripción:
+                    </label>
+                    <textarea 
+                      name="descripcion" 
+                      value={formData.descripcion} 
+                      onChange={handleChange} 
+                      required 
+                      rows="4"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Describa brevemente su empresa y servicios..."
+                    ></textarea>
+                  </div>
+
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full font-medium py-3 px-4 rounded-md transition duration-300 ease-in-out disabled:opacity-50 text-[#012e33]"
+                      style={{ background: colors.lightPink }}
+                      onMouseOver={e => e.currentTarget.style.background = colors.pink}
+                      onMouseOut={e => e.currentTarget.style.background = colors.lightPink}
+                    >
+                      {loading ? 'Procesando...' : 'Siguiente'}
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
             
@@ -613,7 +418,7 @@ const DatosProveedor = () => {
       </div>
 
       {/* Modal de confirmación */}
-      {showConfirmation && proveedorCreado && location.state?.fromRegistro && (
+      {showConfirmation && proveedorCreado && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
             <h3 className="text-xl font-bold text-[#012e33] mb-4">Confirmar Pago</h3>

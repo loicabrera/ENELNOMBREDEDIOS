@@ -117,7 +117,7 @@ const DatosProveedor = () => {
 
       console.log('Enviando datos al servidor:', {
         ...formData,
-        PERSONA_id_persona: personaId
+        p_e_r_s_o_n_a_id_persona: personaId
       });
 
       const response = await fetch('http://localhost:3000/crear_proveedores', {
@@ -127,7 +127,7 @@ const DatosProveedor = () => {
         },
         body: JSON.stringify({
           ...formData,
-          PERSONA_id_persona: personaId
+          p_e_r_s_o_n_a_id_persona: personaId
         }),
       });
 

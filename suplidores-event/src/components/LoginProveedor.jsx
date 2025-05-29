@@ -1,14 +1,31 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LoginProveedor = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
+
+  // Verificar si ya hay una sesión activa
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (user && user.rol === 'proveedor') {
+      // Si hay una sesión activa de proveedor, redirigir al dashboard
+      const from = location.state?.from?.pathname || '/dashboard-proveedor';
+      // Reemplazar la entrada actual en el historial
+      window.history.replaceState(null, '', from);
+      navigate(from, { replace: true });
+    } else if (user) {
+      // Si hay una sesión pero no es de proveedor, limpiarla
+      localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
+    }
+  }, [navigate, location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,11 +56,25 @@ const LoginProveedor = () => {
         throw new Error(data.error || 'Error al iniciar sesión');
       }
 
-      // Guardar datos del usuario en localStorage
-      localStorage.setItem('user', JSON.stringify(data.user));
+      // Limpiar cualquier sesión existente
+      localStorage.removeItem('user');
+      localStorage.removeItem('negocio_activo');
 
-      // Redirigir al dashboard del proveedor
-      navigate('/dashboard-proveedor');
+      // Guardar datos del usuario en localStorage con el rol de proveedor y fecha de expiración
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // La sesión expira en 24 horas
+      
+      localStorage.setItem('user', JSON.stringify({
+        ...data.user,
+        rol: 'proveedor',
+        expiresAt: expiresAt.toISOString()
+      }));
+
+      // Redirigir al dashboard del proveedor o a la página anterior si existe
+      const from = location.state?.from?.pathname || '/dashboard-proveedor';
+      // Reemplazar la entrada actual en el historial
+      window.history.replaceState(null, '', from);
+      navigate(from, { replace: true });
 
     } catch (error) {
       console.error('Error:', error);
