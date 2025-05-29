@@ -7,6 +7,8 @@ const Publicaciones = () => {
   const [filtroEstado, setFiltroEstado] = useState('todos');
   const [filtroCategoria, setFiltroCategoria] = useState('todas');
   const [busqueda, setBusqueda] = useState('');
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [publicacionSeleccionada, setPublicacionSeleccionada] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -132,7 +134,6 @@ const Publicaciones = () => {
               <th className="px-2 py-3 w-1/6 truncate">Título</th>
               <th className="px-2 py-3 w-1/6 truncate">Proveedor</th>
               <th className="px-2 py-3 w-1/6 truncate">Categoría</th>
-              <th className="px-2 py-3 w-1/6 truncate">Fecha</th>
               <th className="px-2 py-3 w-1/6 truncate">Estado</th>
               <th className="px-2 py-3 w-1/12 truncate">Tipo</th>
               <th className="px-2 py-3 w-1/6 truncate">Acciones</th>
@@ -152,9 +153,6 @@ const Publicaciones = () => {
                   <div className="text-sm text-gray-900 truncate">{pub.categoria}</div>
                 </td>
                 <td className="px-2 py-2 w-1/6 truncate">
-                  <div className="text-sm text-gray-900 truncate">{pub.fecha ? new Date(pub.fecha).toLocaleDateString() : ''}</div>
-                </td>
-                <td className="px-2 py-2 w-1/6 truncate">
                   <div className="flex items-center">
                     {getEstadoIcon(pub.estado)}
                     <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getEstadoColor(pub.estado)}`}>
@@ -166,7 +164,7 @@ const Publicaciones = () => {
                   <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">{pub.tipo}</span>
                 </td>
                 <td className="px-2 py-2 w-1/6 truncate text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-900 mr-3">Ver</button>
+                  <button className="text-blue-600 hover:text-blue-900 mr-3" onClick={() => { setPublicacionSeleccionada(pub); setModalAbierto(true); }}>Ver</button>
                   {pub.estado === 'pendiente' && (
                     <>
                       <button className="text-green-600 hover:text-green-900 mr-3">Aprobar</button>
@@ -179,6 +177,27 @@ const Publicaciones = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Modal de detalles */}
+      {modalAbierto && publicacionSeleccionada && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
+              onClick={() => setModalAbierto(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4">Detalles de la Publicación</h2>
+            <div className="mb-2"><span className="font-semibold">Título:</span> {publicacionSeleccionada.titulo}</div>
+            <div className="mb-2"><span className="font-semibold">Proveedor:</span> {publicacionSeleccionada.proveedor}</div>
+            <div className="mb-2"><span className="font-semibold">Categoría:</span> {publicacionSeleccionada.categoria}</div>
+            <div className="mb-2"><span className="font-semibold">Estado:</span> {publicacionSeleccionada.estado}</div>
+            <div className="mb-2"><span className="font-semibold">Tipo:</span> {publicacionSeleccionada.tipo}</div>
+            <div className="mb-2"><span className="font-semibold">Descripción:</span> {publicacionSeleccionada.descripcion}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
