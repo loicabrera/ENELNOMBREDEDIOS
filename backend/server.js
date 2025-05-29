@@ -1201,6 +1201,60 @@ app.get('/api/membresias/admin', async (req, res) => {
   }
 });
 
+// Endpoint para eliminar un proveedor/negocio
+app.delete('/api/proveedores/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Iniciar una transacción
+    await db.query('START TRANSACTION');
+
+    try {
+      // Primero eliminar las imágenes asociadas a los servicios del proveedor
+      const [servicios] = await db.query('SELECT id_servicio FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', [id]);
+      for (const servicio of servicios) {
+        await db.query('DELETE FROM IMAGENES_servicio WHERE SERVICIO_id_servicio = ?', [servicio.id_servicio]);
+      }
+
+      // Eliminar los servicios del proveedor
+      await db.query('DELETE FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', [id]);
+
+      // Eliminar las imágenes asociadas a los productos del proveedor
+      const [productos] = await db.query('SELECT id_productos FROM productos WHERE provedor_negocio_id_provedor = ?', [id]);
+      for (const producto of productos) {
+        await db.query('DELETE FROM IMAGENES_productos WHERE productos_id_productos = ?', [producto.id_productos]);
+      }
+
+      // Eliminar los productos del proveedor
+      await db.query('DELETE FROM productos WHERE provedor_negocio_id_provedor = ?', [id]);
+
+      // Eliminar las membresías del proveedor
+      await db.query('DELETE FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ?', [id]);
+
+      // Eliminar los mensajes de contacto del proveedor
+      await db.query('DELETE FROM Usuario WHERE provedor_negocio_id_provedor = ?', [id]);
+
+      // Finalmente, eliminar el proveedor
+      const [result] = await db.query('DELETE FROM provedor_negocio WHERE id_provedor = ?', [id]);
+
+      if (result.affectedRows === 0) {
+        await db.query('ROLLBACK');
+        return res.status(404).json({ error: 'Proveedor no encontrado' });
+      }
+
+      // Si todo salió bien, confirmar la transacción
+      await db.query('COMMIT');
+      res.json({ message: 'Proveedor eliminado exitosamente' });
+    } catch (error) {
+      // Si algo salió mal, revertir la transacción
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error al eliminar el proveedor:', error);
+    res.status(500).json({ error: 'Error al eliminar el proveedor' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {
