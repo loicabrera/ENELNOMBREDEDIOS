@@ -92,55 +92,7 @@ function Navbar() {
       </nav>
 
       {/* Profile button */}
-      {/* Eliminado el bloque de perfil */}
-      <div className="p-3 border-t border-gray-200">
-        <button
-          onClick={() => setProfileOpen(!profileOpen)}
-          className="flex items-center space-x-2 w-full"
-        >
-          <div className="h-8 w-8 rounded-full bg-purple/20 flex items-center justify-center">
-            <User size={16} className="text-gray-700" />
-          </div>
-          {asideOpen && <span className="text-sm">Perfil</span>}
-        </button>
-        {/* Profile dropdown */}
-        {profileOpen && (
-          <div className="absolute bottom-16 left-0 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
-            <div className="flex items-center space-x-2 p-2">
-              <div className="h-9 w-9 rounded-full bg-purple/20 flex items-center justify-center">
-                <User size={18} className="text-gray-700" />
-              </div>
-              <div className="font-medium">Hafiz Haziq</div>
-            </div>
-
-            <div className="flex flex-col bg-white space-y-3 p-2">
-              <a href="#" className="transition hover:text-blue-600">
-                Mi Perfil
-              </a>
-              <a href="#" className="transition hover:text-blue-600">
-                Editar Perfil
-              </a>
-              <a href="#" className="transition hover:text-blue-600">
-                Configuración
-              </a>
-            </div>
-
-            <div className="p-2">
-              <button 
-                onClick={() => {
-                  localStorage.removeItem('user');
-                  localStorage.removeItem('negocio_activo');
-                  window.location.href = '/login';
-                }} 
-                className="flex items-center space-x-2 transition hover:text-blue-600"
-              >
-                <LogIn size={16} />
-                <div>Cerrar Sesión</div>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Eliminado el bloque de perfil para clientes */}
     </div>
   );
 }
