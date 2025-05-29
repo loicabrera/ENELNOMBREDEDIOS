@@ -366,7 +366,7 @@ CREATE TABLE `provedor_negocio` (
   `nombre_empresa` varchar(50) NOT NULL,
   `email_empresa` varchar(50) NOT NULL,
   `telefono_empresa` char(13) NOT NULL,
-  `tipo_servicio` TEXT NOT NULL,
+  `tipo_servicio` varchar(50) NOT NULL,
   `fecha_creacion` datetime NOT NULL,
   `direccion` varchar(50) NOT NULL,
   `descripcion` text NOT NULL,

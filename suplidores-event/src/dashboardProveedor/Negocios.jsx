@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { BuildingStorefrontIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Negocios = () => {
   const [negocios, setNegocios] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [negocioToDelete, setNegocioToDelete] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -61,37 +59,6 @@ const Negocios = () => {
     navigate('/dashboard-proveedor'); // O la ruta de tu dashboard
   };
 
-  const handleDeleteClick = (negocio) => {
-    setNegocioToDelete(negocio);
-    setShowDeleteModal(true);
-  };
-
-  const handleConfirmDelete = async () => {
-    try {
-      const response = await fetch(`http://localhost:3000/api/proveedores/${negocioToDelete.id}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        // Remove the deleted business from the state
-        setNegocios(negocios.filter(n => n.id !== negocioToDelete.id));
-        setShowDeleteModal(false);
-        setNegocioToDelete(null);
-      } else {
-        console.error('Error al eliminar el negocio');
-        alert('Error al eliminar el negocio');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error al eliminar el negocio');
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setShowDeleteModal(false);
-    setNegocioToDelete(null);
-  };
-
   if (loading) {
     return (
       <div className="w-full min-h-screen flex justify-center items-center bg-[#fbcbdb]">
@@ -138,6 +105,7 @@ const Negocios = () => {
                 </div>
               </div>
               <div className="mt-6 flex gap-2">
+               
                 <Link
                   to={`/dashboard-proveedor/negocios/${negocio.id}`}
                   className="flex-1 px-4 py-2 border-2 border-[#012e33] text-[#012e33] rounded-lg hover:bg-[#fbcbdb] transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#012e33]"
@@ -145,43 +113,11 @@ const Negocios = () => {
                 >
                   Ver Detalles
                 </Link>
-                <button
-                  onClick={() => handleDeleteClick(negocio)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-red-500"
-                >
-                  <TrashIcon className="h-5 w-5" />
-                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Modal de confirmación de eliminación */}
-      {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold text-[#012e33] mb-4">Confirmar eliminación</h3>
-            <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que deseas eliminar el negocio "{negocioToDelete?.nombre}"? Esta acción no se puede deshacer.
-            </p>
-            <div className="flex justify-end gap-4">
-              <button
-                onClick={handleCancelDelete}
-                className="px-4 py-2 border-2 border-[#012e33] text-[#012e33] rounded-lg hover:bg-[#fbcbdb] transition-colors duration-300"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleConfirmDelete}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-300"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
