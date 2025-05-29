@@ -478,22 +478,26 @@ app.get('/membresia/:proveedorId', async (req, res) => {
     const fechaFin = new Date(membresia.fecha_fin);
     const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
 
+    // Determinar el estado basado en los días restantes
+    let estado;
     if (diasRestantes > 7) {
-      membresia.estado = 'activa';
+      estado = 'activa';
     } else if (diasRestantes > 0) {
-      membresia.estado = 'por vencer';
+      estado = 'por vencer';
     } else {
-      membresia.estado = 'vencida';
+      estado = 'vencida';
     }
 
-    // Actualiza el estado en la base de datos si es necesario
-    await conexion.query(
-      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
-      { replacements: [membresia.estado, membresia.id_prov_membresia] }
-    );
+    // Actualiza el estado en la base de datos si es diferente
+    if (membresia.estado !== estado) {
+      await conexion.query(
+        'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+        { replacements: [estado, membresia.id_prov_membresia] }
+      );
+      membresia.estado = estado;
+    }
 
     membresia.dias_restantes = Math.max(0, diasRestantes);
-
     res.json(membresia);
   } catch (error) {
     console.error(error);
@@ -1187,12 +1191,34 @@ app.get('/api/membresias/admin', async (req, res) => {
     `);
     const hoy = new Date();
     const activas = [], proximasVencer = [], vencidas = [];
+    
     for (const m of rows) {
       const fechaFin = new Date(m.fecha_fin);
       const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-      if (m.estado === 'activa' && diasRestantes > 7) {
+      
+      // Determinar el estado basado en los días restantes
+      let estado;
+      if (diasRestantes > 7) {
+        estado = 'activa';
+      } else if (diasRestantes > 0) {
+        estado = 'por vencer';
+      } else {
+        estado = 'vencida';
+      }
+
+      // Actualizar el estado en la base de datos si es diferente
+      if (m.estado !== estado) {
+        await conexion.query(
+          'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+          { replacements: [estado, m.id_prov_membresia] }
+        );
+        m.estado = estado;
+      }
+
+      // Clasificar la membresía según su estado
+      if (estado === 'activa') {
         activas.push(m);
-      } else if (m.estado === 'activa' && diasRestantes > 0 && diasRestantes <= 7) {
+      } else if (estado === 'por vencer') {
         proximasVencer.push(m);
       } else {
         vencidas.push(m);
@@ -1201,6 +1227,60 @@ app.get('/api/membresias/admin', async (req, res) => {
     res.json({ activas, proximasVencer, vencidas });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener membresías' });
+  }
+});
+
+// Endpoint para eliminar un proveedor/negocio
+app.delete('/api/proveedores/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Iniciar una transacción
+    await db.query('START TRANSACTION');
+
+    try {
+      // Primero eliminar las imágenes asociadas a los servicios del proveedor
+      const [servicios] = await db.query('SELECT id_servicio FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', [id]);
+      for (const servicio of servicios) {
+        await db.query('DELETE FROM IMAGENES_servicio WHERE SERVICIO_id_servicio = ?', [servicio.id_servicio]);
+      }
+
+      // Eliminar los servicios del proveedor
+      await db.query('DELETE FROM SERVICIO WHERE provedor_negocio_id_provedor = ?', [id]);
+
+      // Eliminar las imágenes asociadas a los productos del proveedor
+      const [productos] = await db.query('SELECT id_productos FROM productos WHERE provedor_negocio_id_provedor = ?', [id]);
+      for (const producto of productos) {
+        await db.query('DELETE FROM IMAGENES_productos WHERE productos_id_productos = ?', [producto.id_productos]);
+      }
+
+      // Eliminar los productos del proveedor
+      await db.query('DELETE FROM productos WHERE provedor_negocio_id_provedor = ?', [id]);
+
+      // Eliminar las membresías del proveedor
+      await db.query('DELETE FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ?', [id]);
+
+      // Eliminar los mensajes de contacto del proveedor
+      await db.query('DELETE FROM Usuario WHERE provedor_negocio_id_provedor = ?', [id]);
+
+      // Finalmente, eliminar el proveedor
+      const [result] = await db.query('DELETE FROM provedor_negocio WHERE id_provedor = ?', [id]);
+
+      if (result.affectedRows === 0) {
+        await db.query('ROLLBACK');
+        return res.status(404).json({ error: 'Proveedor no encontrado' });
+      }
+
+      // Si todo salió bien, confirmar la transacción
+      await db.query('COMMIT');
+      res.json({ message: 'Proveedor eliminado exitosamente' });
+    } catch (error) {
+      // Si algo salió mal, revertir la transacción
+      await db.query('ROLLBACK');
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error al eliminar el proveedor:', error);
+    res.status(500).json({ error: 'Error al eliminar el proveedor' });
   }
 });
 
