@@ -49,6 +49,12 @@ const DetalleProducto = () => {
   const handleFormSubmit = async e => {
     e.preventDefault();
     setFormMsg('');
+    // Validar teléfono
+    const telefonoRegex = /^\d{3}-\d{3}-\d{4}$/;
+    if (!telefonoRegex.test(form.telefono)) {
+      setFormMsg('El teléfono debe tener el formato: 000-000-0000');
+      return;
+    }
     try {
       const res = await fetch('http://localhost:3000/usuarios', {
         method: 'POST',

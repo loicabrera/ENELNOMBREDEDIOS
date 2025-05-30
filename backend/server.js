@@ -884,6 +884,36 @@ app.get('/api/imagenes_productos/:id', async (req, res) => {
   res.send(rows[0].imagen_blob);
 });
 
+// Endpoint para eliminar una imagen de producto
+app.delete('/api/imagenes_productos/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await db.query('DELETE FROM IMAGENES_productos WHERE id_imagenes = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Imagen de producto no encontrada' });
+    }
+    res.json({ message: 'Imagen de producto eliminada correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar imagen de producto:', error);
+    res.status(500).json({ error: 'Error al eliminar la imagen de producto' });
+  }
+});
+
+// Endpoint para eliminar una imagen de servicio
+app.delete('/api/imagenes_servicio/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [result] = await db.query('DELETE FROM IMAGENES_servicio WHERE id_imagenes = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Imagen de servicio no encontrada' });
+    }
+    res.json({ message: 'Imagen de servicio eliminada correctamente' });
+  } catch (error) {
+    console.error('Error al eliminar imagen de servicio:', error);
+    res.status(500).json({ error: 'Error al eliminar la imagen de servicio' });
+  }
+});
+
 // Cambiar contraseña de proveedor
 app.post('/api/cambiar-password', async (req, res) => {
   const { user_name, oldPassword, newPassword } = req.body;

@@ -386,6 +386,8 @@ const Publications = () => {
       precio: '',
       imagenes: []
     });
+    const [loading, setLoading] = useState(false);
+    const [alreadyClicked, setAlreadyClicked] = useState(false);
 
     const handleInputChange = (e) => {
       const { name, value } = e.target;
@@ -405,8 +407,16 @@ const Publications = () => {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
+      if (loading || alreadyClicked) {
+        alert('Ya se está procesando la publicación. Por favor espera.');
+        return;
+      }
+      setLoading(true);
+      setAlreadyClicked(true);
       if (!proveedor) {
         console.error('No hay proveedor autenticado');
+        setLoading(false);
+        setAlreadyClicked(false);
         return;
       }
 
@@ -439,7 +449,6 @@ const Publications = () => {
 
           alert('Servicio creado con éxito');
           setTipoVendedor('selector');
-          
           // Recargar servicios
           const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
           const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
@@ -448,6 +457,9 @@ const Publications = () => {
       } catch (error) {
         console.error('Error:', error);
         alert('Error al crear el servicio');
+      } finally {
+        setLoading(false);
+        setAlreadyClicked(false);
       }
     };
 
@@ -584,14 +596,16 @@ const Publications = () => {
             type="button"
             onClick={() => setTipoVendedor('selector')}
             className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={loading}
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60"
+            disabled={loading}
           >
-            Publicar Servicio
+            {loading ? 'Publicando...' : 'Publicar Servicio'}
           </button>
         </div>
       </form>
@@ -608,6 +622,8 @@ const Publications = () => {
       categoria: '',
       imagenes: []
     });
+    const [loading, setLoading] = useState(false);
+    const [alreadyClicked, setAlreadyClicked] = useState(false);
 
     const handleInputChange = (e) => {
       const { name, value } = e.target;
@@ -627,8 +643,16 @@ const Publications = () => {
 
     const handleSubmit = async (e) => {
       e.preventDefault();
+      if (loading || alreadyClicked) {
+        alert('Ya se está procesando la publicación. Por favor espera.');
+        return;
+      }
+      setLoading(true);
+      setAlreadyClicked(true);
       if (!proveedor) {
         console.error('No hay proveedor autenticado');
+        setLoading(false);
+        setAlreadyClicked(false);
         return;
       }
 
@@ -662,7 +686,6 @@ const Publications = () => {
 
           alert('Producto creado con éxito');
           setTipoVendedor('selector');
-          
           // Recargar productos
           const prods = await fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`).then(res => res.json());
           setProductos(prods);
@@ -670,6 +693,9 @@ const Publications = () => {
       } catch (error) {
         console.error('Error:', error);
         alert('Error al crear el producto');
+      } finally {
+        setLoading(false);
+        setAlreadyClicked(false);
       }
     };
 
@@ -822,14 +848,16 @@ const Publications = () => {
             type="button"
             onClick={() => setTipoVendedor('selector')}
             className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={loading}
           >
             Cancelar
           </button>
           <button
             type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-60"
+            disabled={loading}
           >
-            Publicar Producto
+            {loading ? 'Publicando...' : 'Publicar Producto'}
           </button>
         </div>
       </form>

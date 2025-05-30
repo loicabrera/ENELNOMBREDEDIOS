@@ -8,6 +8,10 @@ const EditarServicio = () => {
   const [form, setForm] = useState({ nombre: '', descripcion: '', tipo_servicio: '', precio: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imagenes, setImagenes] = useState([]);
+  const [imagenesNuevas, setImagenesNuevas] = useState([]);
+  const [imagenesEliminadas, setImagenesEliminadas] = useState([]);
+  const [limiteFotos, setLimiteFotos] = useState(8);
 
   useEffect(() => {
     fetch('http://localhost:3000/api/servicios')
@@ -32,25 +36,59 @@ const EditarServicio = () => {
         setError('Error al cargar el servicio');
         setLoading(false);
       });
+    // Cargar imágenes actuales
+    fetch(`http://localhost:3000/api/imagenes_servicio/por-servicio/${id}`)
+      .then(res => res.json())
+      .then(setImagenes);
+    // Cargar límite de fotos (opcional)
   }, [id]);
 
   const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleEliminarImagen = (imgId) => {
+    setImagenesEliminadas(prev => [...prev, imgId]);
+    setImagenes(prev => prev.filter(img => img.id_imagenes !== imgId));
+  };
+
+  const handleImagenesNuevas = (e) => {
+    const files = Array.from(e.target.files);
+    if (imagenes.length + imagenesNuevas.length + files.length > limiteFotos) {
+      alert(`Solo puedes tener hasta ${limiteFotos} imágenes en total.`);
+      return;
+    }
+    setImagenesNuevas(prev => [...prev, ...files]);
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
     try {
+      // 1. Actualizar datos del servicio
       const res = await fetch(`http://localhost:3000/api/servicios/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
       });
-      if (res.ok) {
-        navigate('/dashboard-proveedor/publicaciones');
-      } else {
+      if (!res.ok) {
         setError('Error al guardar los cambios');
+        return;
       }
+      // 2. Eliminar imágenes marcadas
+      for (let imgId of imagenesEliminadas) {
+        await fetch(`http://localhost:3000/api/imagenes_servicio/${imgId}`, { method: 'DELETE' });
+      }
+      // 3. Subir nuevas imágenes
+      for (let img of imagenesNuevas) {
+        const formData = new FormData();
+        formData.append('imagen', img);
+        formData.append('SERVICIO_id_servicio', id);
+        await fetch('http://localhost:3000/api/imagenes_servicio', {
+          method: 'POST',
+          body: formData
+        });
+      }
+      navigate('/dashboard-proveedor/publicaciones');
     } catch {
       setError('Error de conexión');
     }
@@ -124,6 +162,57 @@ const EditarServicio = () => {
               />
             </div>
           </div>
+
+          {/* Imágenes actuales */}
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">Imágenes actuales</label>
+            <div className="flex flex-wrap gap-4">
+              {imagenes.map(img => (
+                <div key={img.id_imagenes} className="relative group">
+                  <img
+                    src={`http://localhost:3000/api/imagenes_servicio/${img.id_imagenes}`}
+                    alt="Imagen servicio"
+                    className="w-24 h-24 object-cover rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleEliminarImagen(img.id_imagenes)}
+                    className="absolute top-1 right-1 bg-red-600 text-white rounded-full px-2 py-1 text-xs opacity-80 group-hover:opacity-100"
+                    title="Eliminar imagen"
+                  >
+                    X
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Subir nuevas imágenes */}
+          <div>
+            <label className="block text-sm font-semibold mb-2 text-gray-700">Agregar nuevas imágenes</label>
+            <input
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={handleImagenesNuevas}
+              className="block w-full text-sm text-gray-500"
+            />
+            {imagenesNuevas.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {imagenesNuevas.map((img, idx) => (
+                  <div key={idx} className="flex flex-col items-center">
+                    <img
+                      src={URL.createObjectURL(img)}
+                      alt={img.name}
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                    <span className="text-xs mt-1">{img.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <button type="submit" className="mt-6 bg-[#cbb4db] hover:bg-[#b39cc9] text-white font-bold py-3 rounded-lg text-lg shadow transition-all duration-200">Guardar Cambios</button>
         </form>
       </div>
