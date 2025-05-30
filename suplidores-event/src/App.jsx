@@ -178,11 +178,11 @@ function App() {
           }
         />
 
-        {/* Ruta para el formulario de datos del proveedor */}
+        {/* Ruta para el formulario de datos del proveedor (accesible para todos) */}
         <Route
-          path="/datosproveedor2"
+          path="/datosproveedor"
           element={
-            <SimpleLayout><DatosProveedor2 /></SimpleLayout>
+            <SimpleLayout><DatosProveedor /></SimpleLayout>
           }
         />
 
