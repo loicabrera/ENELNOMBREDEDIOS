@@ -20,8 +20,44 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configuración de CORS más permisiva para desarrollo
+app.use(cors({
+  origin: 'http://localhost:5173', // URL de tu frontend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true
+}));
+
+// Middleware para manejar errores de CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+// Middleware para logging de solicitudes
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  next();
+});
+
+// Middleware para manejar errores
+app.use((err, req, res, next) => {
+  console.error('Error en el servidor:', err);
+  res.status(500).json({
+    error: 'Error interno del servidor',
+    details: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// Ruta para verificar el estado del servidor
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Servidor funcionando correctamente' });
+});
+
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -306,6 +342,22 @@ app.post('/create-payment-intent', async (req, res) => {
   try {
     const { amount, planName } = req.body;
 
+    // Validar datos requeridos
+    if (!amount || !planName) {
+      return res.status(400).json({
+        error: 'Faltan datos requeridos: amount y planName son obligatorios'
+      });
+    }
+
+    // Validar que el monto sea un número positivo
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({
+        error: 'El monto debe ser un número positivo'
+      });
+    }
+
+    console.log('Creando PaymentIntent con:', { amount, planName });
+
     // Crear un PaymentIntent con Stripe
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount, // El monto ya viene en centavos desde el frontend
@@ -315,14 +367,29 @@ app.post('/create-payment-intent', async (req, res) => {
       }
     });
 
+    console.log('PaymentIntent creado exitosamente:', paymentIntent.id);
+
     // Enviar el client secret al frontend
     res.json({
       clientSecret: paymentIntent.client_secret
     });
   } catch (error) {
     console.error('Error al crear el intent de pago:', error);
+    
+    // Manejar errores específicos de Stripe
+    if (error.type === 'StripeCardError') {
+      return res.status(400).json({
+        error: 'Error con la tarjeta: ' + error.message
+      });
+    } else if (error.type === 'StripeInvalidRequestError') {
+      return res.status(400).json({
+        error: 'Error en la solicitud: ' + error.message
+      });
+    }
+
     res.status(500).json({
-      error: 'Error al procesar el pago'
+      error: 'Error al procesar el pago',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -1338,6 +1405,111 @@ app.delete('/proveedores/:id', async (req, res) => {
   } catch (error) {
     console.error('Error al eliminar negocio:', error);
     res.status(500).json({ error: 'Error al eliminar el negocio' });
+  }
+});
+
+// Endpoint para registrar el pago de cambio de plan
+app.post('/registrar_pago_cambio_plan', async (req, res) => {
+  try {
+    const { monto, fecha_pago, monto_pago, newPlanId, proveedorId } = req.body;
+
+    console.log('Datos recibidos:', req.body);
+
+    // Validación detallada de datos requeridos
+    const camposFaltantes = [];
+    if (!monto) camposFaltantes.push('monto');
+    if (!fecha_pago) camposFaltantes.push('fecha_pago');
+    if (!monto_pago) camposFaltantes.push('monto_pago');
+    if (!newPlanId) camposFaltantes.push('newPlanId');
+    if (!proveedorId) camposFaltantes.push('proveedorId');
+
+    if (camposFaltantes.length > 0) {
+      console.log('Campos faltantes:', camposFaltantes);
+      return res.status(400).json({ 
+        error: `Faltan campos requeridos: ${camposFaltantes.join(', ')}`,
+        camposFaltantes 
+      });
+    }
+
+    // Iniciar transacción
+    await db.query('START TRANSACTION');
+
+    try {
+      // Primero verificar si existe una membresía para este proveedor
+      const [[membresiaExistente]] = await db.query(
+        'SELECT * FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ? ORDER BY fecha_fin DESC LIMIT 1',
+        [proveedorId]
+      );
+
+      console.log('Membresía existente:', membresiaExistente);
+
+      if (!membresiaExistente) {
+        throw new Error('No se encontró una membresía para este proveedor');
+      }
+
+      // Obtener la duración del nuevo plan
+      const [[membresia]] = await db.query(
+        'SELECT duracion_dias FROM MEMBRESIA WHERE id_memebresia = ?',
+        [newPlanId]
+      );
+
+      if (!membresia) {
+        throw new Error('No se encontró el plan seleccionado');
+      }
+
+      const duracionDias = Number(membresia.duracion_dias) || 30;
+
+      // Calcular nuevas fechas
+      const fechaInicio = new Date();
+      const fechaFin = new Date(fechaInicio);
+      fechaFin.setDate(fechaFin.getDate() + duracionDias);
+
+      console.log('Actualizando membresía con:', {
+        newPlanId,
+        fechaInicio,
+        fechaFin,
+        proveedorId,
+        id_prov_membresia: membresiaExistente.id_prov_membresia
+      });
+
+      // Actualizar la membresía del proveedor con el nuevo plan
+      console.log('Ejecutando UPDATE con valores:', [newPlanId, fechaInicio, fechaFin, membresiaExistente.id_prov_membresia]);
+      const [updateResult] = await db.query(
+        `UPDATE PROVEDOR_MEMBRESIA 
+         SET MEMBRESIA_id_memebresia = ?, 
+             fecha_inicio = ?, 
+             fecha_fin = ?, 
+             estado = 'activa'
+         WHERE id_prov_membresia = ?`,
+        [newPlanId, fechaInicio, fechaFin, membresiaExistente.id_prov_membresia]
+      );
+
+      console.log('Resultado del UPDATE:', updateResult);
+
+      if (updateResult.affectedRows === 0) {
+        throw new Error('No se pudo actualizar la membresía');
+      }
+
+      // Confirmar transacción
+      await db.query('COMMIT');
+
+      res.json({
+        success: true,
+        message: 'Plan actualizado exitosamente'
+      });
+
+    } catch (error) {
+      // Revertir transacción en caso de error
+      await db.query('ROLLBACK');
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('Error al actualizar el plan:', error);
+    res.status(500).json({
+      error: 'Error al actualizar el plan',
+      detalles: error.message
+    });
   }
 });
 

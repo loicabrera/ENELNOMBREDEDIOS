@@ -8,8 +8,10 @@ import {
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Membership = () => {
+  const navigate = useNavigate();
   const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currentPlan, setCurrentPlan] = useState(null);
@@ -179,28 +181,38 @@ const Membership = () => {
 
   const confirmPlanChange = async () => {
     try {
-      const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
-      
+      // Usar el id_provedor del plan actualmente cargado
+      const proveedorId = currentPlan?.id_provedor;
+
+      console.log('DEBUG - Valor de proveedorId obtenido del estado currentPlan:', proveedorId);
+
+      if (!proveedorId) {
+        console.error('Error: id_provedor no disponible en el estado currentPlan.');
+        setError('Error: No se pudo obtener la información del proveedor. Por favor, recargue la página.');
+        setLoading(false); 
+        return; 
+      }
+        
       if (planChangeDetails.requiresPayment) {
         // Guardar la información del cambio de plan en localStorage
         const paymentData = {
           amount: planChangeDetails.priceDifference,
           planName: planChangeDetails.newPlan.name,
           type: 'plan_change',
-          currentPlanId: planChangeDetails.currentPlan.id_membresia,
+          currentPlanId: planChangeDetails.currentPlan.id_prov_membresia,
           newPlanId: planChangeDetails.newPlan.id,
           proveedorId: proveedorId
         };
         localStorage.setItem('pending_plan_change', JSON.stringify(paymentData));
         
-        // Redirigir al formulario de pago existente
-        window.location.href = '/payment';
+        // Redirigir al formulario de pago de cambio de plan usando navigate
+        navigate('/pago-cambio-plan');
       } else {
         // Cambio de plan sin pago adicional
         const response = await axios.post('http://localhost:3000/cambiar_plan', {
           proveedorId,
           planId: planChangeDetails.newPlan.id,
-          currentPlanId: planChangeDetails.currentPlan.id_membresia,
+          currentPlanId: planChangeDetails.currentPlan.id_prov_membresia,
           type: 'downgrade'
         });
         

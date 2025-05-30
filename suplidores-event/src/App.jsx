@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
 import DetalleNegocio from './dashboardProveedor/DetalleNegocio';
 import LoginAdmin from './components/LoginAdmin';
+import PaymentContainerPlanChange from './components/PaymentContainerPlanChange';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -43,7 +44,7 @@ import Navbar from "./components/Navbar";
 import PaymentContainer from './components/PaymentContainer';
 import PaymentContainerNuevoNegocio from './components/PaymentContainerNuevoNegocio';
 import Confirmacion from './components/Confirmacion';
-
+import ConfirmacionNuevoNegocio from './components/ConfirmacionNuevoNegocio';
 // Nuevo componente Layout más flexible
 function Layout({ children }) {
   return (
@@ -135,7 +136,18 @@ function App() {
         <Route
           path="/pago"
           element={
-            <Layout><PaymentContainer /></Layout>
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <Layout><PaymentContainer /></Layout>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/pago-cambio-plan"
+          element={
+            <ProtectedRoute allowedRoles={['proveedor']}>
+              <Layout><PaymentContainerPlanChange /></Layout>
+            </ProtectedRoute>
           }
         />
 
@@ -178,6 +190,24 @@ function App() {
             <ProtectedRoute allowedRoles={['proveedor']}>
               <Layout><EditarServicio /></Layout>
             </ProtectedRoute>
+          }
+        />
+
+<Route
+          path="/pago-nuevo-negocio"
+          element={
+            <Layout>
+              <PaymentContainerNuevoNegocio />
+            </Layout>
+          }
+        />
+
+        <Route
+          path="/confirmacion-nuevo-negocio"
+          element={
+            <Layout>
+              <ConfirmacionNuevoNegocio />
+            </Layout>
           }
         />
 

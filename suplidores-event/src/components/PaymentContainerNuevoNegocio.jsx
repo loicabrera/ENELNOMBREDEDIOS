@@ -10,7 +10,7 @@ const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
 
 const PaymentContainerNuevoNegocio = () => {
   const location = useLocation();
-  const { amount, planName, isNewBusiness } = location.state || {};
+  const { amount, planName } = location.state || {};
 
   if (!amount || !planName) {
     return (
@@ -29,7 +29,7 @@ const PaymentContainerNuevoNegocio = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
         <Elements stripe={stripePromise}>
-          <PaymentFormNuevoNegocio amount={amount} planName={planName} isNewBusiness={isNewBusiness} />
+          <PaymentFormNuevoNegocio amount={amount} planName={planName} />
         </Elements>
       </div>
     </div>
