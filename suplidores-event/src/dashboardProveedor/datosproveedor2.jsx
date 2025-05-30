@@ -199,7 +199,8 @@ const DatosProveedor = () => {
               amount: planInfo.monto,
               planName: planInfo.nombre,
               isNewBusiness: true,
-              businessName: formData.nombre_empresa
+              businessName: formData.nombre_empresa,
+              proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
             } 
           });
         }
@@ -234,7 +235,8 @@ const DatosProveedor = () => {
             amount: planInfo.monto,
             planName: planInfo.nombre,
             isNewBusiness: true,
-            businessName: formData.nombre_empresa
+            businessName: formData.nombre_empresa,
+            proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
           } 
         });
       }
@@ -249,21 +251,13 @@ const DatosProveedor = () => {
   const handleConfirmPayment = () => {
     const plan = location.state?.plan;
     const planInfo = planes[plan];
-
-    // Asignar el ID de membresía según el plan
-    let membresiaId = 1;
-    if (plan === 'basico') membresiaId = 1;
-    else if (plan === 'destacado') membresiaId = 2;
-    else if (plan === 'premium') membresiaId = 3;
-    localStorage.setItem('MEMBRESIA_id_membresia', membresiaId);
-
-    // Redirigir a la página de pago con el monto correcto
-    navigate('/pago', { 
+    navigate('/pago-nuevo-negocio', { 
       state: { 
         amount: planInfo.monto,
         planName: planInfo.nombre,
         isNewBusiness: true,
-        businessName: formData.nombre_empresa
+        businessName: formData.nombre_empresa,
+        proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
       } 
     });
   };
