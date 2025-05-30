@@ -105,7 +105,7 @@ const HistorialPagos = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 ml-0 sm:ml-16 md:ml-64">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 ml-0 sm:ml-0 md:ml-50">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" role="status">
           <span className="sr-only">Cargando...</span>
         </div>
@@ -114,7 +114,7 @@ const HistorialPagos = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 ml-0 sm:ml-16 md:ml-64">
+    <div className="min-h-screen bg-gray-50 ml-0 sm:ml-0 md:ml-54">
       <div className="h-full flex flex-col">
         {/* Header Section */}
         <div className="bg-white shadow-sm p-4">

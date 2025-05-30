@@ -590,7 +590,7 @@ app.post('/api/productos', async (req, res) => {
   // 3. Si no ha alcanzado el límite, crear el producto
   try {
     const [result] = await db.query(
-      'INSERT INTO productos (nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria) VALUES (?, ?, ?, ?, ?, ?)',
+      'INSERT INTO productos (nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, NOW())',
       [nombre, descripcion, precio, tipo_producto, provedor_negocio_id_provedor, categoria || null]
     );
     res.json({ id_producto: result.insertId });
@@ -774,7 +774,7 @@ app.post('/api/servicios', async (req, res) => {
   // 3. Si no ha alcanzado el límite, crear el servicio
   try {
     const [result] = await db.query(
-      'INSERT INTO SERVICIO (nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO SERVICIO (nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor, fecha_creacion) VALUES (?, ?, ?, ?, ?, NOW())',
       [nombre, descripcion, tipo_servicio, precio, provedor_negocio_id_provedor]
     );
     res.json({ id_servicio: result.insertId });

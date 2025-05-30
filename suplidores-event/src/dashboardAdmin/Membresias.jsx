@@ -78,8 +78,8 @@ const Membresias = () => {
   );
 
   return (
-    <div className="ml-64 p-6">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Gestión de Membresías</h1>
+    <div className="ml-54 p-0">
+      <h1 className="text-2xl font-bold text-gray-900 mt-10 ml-28">Gestión de Membresías</h1>
 
       {selectedProvider && (
         <div className="mb-6 p-4 bg-blue-50 rounded-md">
@@ -104,7 +104,7 @@ const Membresias = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Membresías Activas</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 ml-10">Membresías Activas</h2>
           {membresias.activas.map((membresia) => (
             <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="activa" />
           ))}

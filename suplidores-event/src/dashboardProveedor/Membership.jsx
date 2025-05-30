@@ -18,6 +18,8 @@ const Membership = () => {
   const [error, setError] = useState(null);
   const [showPlanSelector, setShowPlanSelector] = useState(false);
   const [alerta, setAlerta] = useState(null);
+  const [showPlanChangeModal, setShowPlanChangeModal] = useState(false);
+  const [planChangeDetails, setPlanChangeDetails] = useState(null);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -157,19 +159,67 @@ const Membership = () => {
 
   const handlePlanChange = async (newPlan) => {
     try {
-      const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
-      const response = await axios.post('http://localhost:3000/cambiar_plan', {
-        proveedorId,
-        planId: newPlan.id
-      });
+      const currentPlanPrice = parseFloat(currentPlan.precio);
+      const newPlanPrice = parseFloat(newPlan.price.replace('RD$', '').replace(',', ''));
       
-      if (response.data.success) {
-        // Actualizar los datos de la membresía
-        const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${proveedorId}`);
-        setCurrentPlan(membresiaResponse.data);
+      const planChangeInfo = {
+        currentPlan: currentPlan,
+        newPlan: newPlan,
+        priceDifference: newPlanPrice - currentPlanPrice,
+        requiresPayment: newPlanPrice > currentPlanPrice
+      };
+
+      setPlanChangeDetails(planChangeInfo);
+      setShowPlanSelector(false);
+      setShowPlanChangeModal(true);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const confirmPlanChange = async () => {
+    try {
+      const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
+      
+      if (planChangeDetails.requiresPayment) {
+        // Guardar la información del cambio de plan en localStorage
+        const paymentData = {
+          amount: planChangeDetails.priceDifference,
+          planName: planChangeDetails.newPlan.name,
+          type: 'plan_change',
+          currentPlanId: planChangeDetails.currentPlan.id_membresia,
+          newPlanId: planChangeDetails.newPlan.id,
+          proveedorId: proveedorId
+        };
+        localStorage.setItem('pending_plan_change', JSON.stringify(paymentData));
+        
+        // Redirigir al formulario de pago existente
+        window.location.href = '/payment';
+      } else {
+        // Cambio de plan sin pago adicional
+        const response = await axios.post('http://localhost:3000/cambiar_plan', {
+          proveedorId,
+          planId: planChangeDetails.newPlan.id,
+          currentPlanId: planChangeDetails.currentPlan.id_membresia,
+          type: 'downgrade'
+        });
+        
+        if (response.data.success) {
+          const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${proveedorId}`);
+          setCurrentPlan(membresiaResponse.data);
+          setShowPlanChangeModal(false);
+          setAlerta({
+            tipo: 'success',
+            mensaje: 'Plan cambiado exitosamente. El nuevo precio se aplicará en tu próxima renovación.'
+          });
+        }
       }
     } catch (err) {
       setError(err.message);
+      setAlerta({
+        tipo: 'error',
+        mensaje: 'Error al cambiar el plan'
+      });
     }
   };
 
@@ -405,35 +455,47 @@ const Membership = () => {
 
       {/* Modal de selección de planes */}
       {showPlanSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full">
-            <h3 className="text-xl font-bold mb-4">Selecciona un nuevo plan</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 overflow-y-auto">
+          <div className="w-full min-h-screen sm:min-h-0 sm:h-auto bg-white sm:rounded-lg p-4 sm:p-6 max-w-6xl mx-auto my-0 sm:my-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Selecciona un nuevo plan</h3>
+              <button
+                onClick={() => setShowPlanSelector(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {availablePlans.map((plan) => (
                 <div 
                   key={plan.id}
-                  className={`border ${currentPlan?.id_membresia === plan.id ? 'border-2 border-blue-600' : 'border-gray-200'} rounded-lg p-6 relative`}
+                  className={`border ${currentPlan?.id_membresia === plan.id ? 'border-2 border-blue-600' : 'border-gray-200'} rounded-lg p-4 relative flex flex-col h-full`}
                 >
                   {currentPlan?.id_membresia === plan.id && (
                     <div className="absolute top-0 right-0 bg-blue-600 text-white px-3 py-1 rounded-bl-lg text-sm">
                       Actual
                     </div>
                   )}
-                  <h4 className="text-lg font-semibold">{plan.name}</h4>
-                  <div className="mt-2">
-                    <span className="text-2xl font-bold">{plan.price}</span>
-                    <span className="text-gray-600">/{plan.period}</span>
+                  <div className="flex-grow">
+                    <h4 className="text-lg font-semibold">{plan.name}</h4>
+                    <div className="mt-2">
+                      <span className="text-2xl font-bold">{plan.price}</span>
+                      <span className="text-gray-600">/{plan.period}</span>
+                    </div>
+                    <ul className="mt-3 space-y-1.5">
+                      {plan.features.map((feature, index) => (
+                        <li key={index} className="flex items-start text-gray-600 text-sm">
+                          <CheckCircleIcon className="w-4 h-4 mr-2 text-green-500 flex-shrink-0 mt-0.5" />
+                          <span className="line-clamp-2">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <ul className="mt-4 space-y-2">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-gray-600">
-                        <CheckCircleIcon className="w-5 h-5 mr-2 text-green-500" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
                   <button 
-                    className={`w-full mt-4 px-4 py-2 rounded-lg ${
+                    className={`w-full mt-3 px-4 py-2 rounded-lg ${
                       currentPlan?.id_membresia === plan.id
                         ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'border border-blue-600 text-blue-600 hover:bg-blue-50'
@@ -449,13 +511,82 @@ const Membership = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setShowPlanSelector(false)}
                 className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
               >
                 Cancelar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de cambio de plan */}
+      {showPlanChangeModal && planChangeDetails && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 overflow-y-auto">
+          <div className="w-full min-h-screen sm:min-h-0 sm:h-auto bg-white sm:rounded-lg p-4 sm:p-6 max-w-2xl mx-auto my-0 sm:my-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold">Confirmar cambio de plan</h3>
+              <button
+                onClick={() => setShowPlanChangeModal(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-semibold mb-2">Detalles del cambio</h4>
+                <div className="space-y-2">
+                  <p>Plan actual: <span className="font-medium">{planChangeDetails.currentPlan.nombre_pla}</span></p>
+                  <p>Nuevo plan: <span className="font-medium">{planChangeDetails.newPlan.name}</span></p>
+                  <p>Diferencia de precio: <span className="font-medium">RD${Math.abs(planChangeDetails.priceDifference).toLocaleString()}</span></p>
+                </div>
+              </div>
+
+              {planChangeDetails.requiresPayment ? (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-800 mb-2">Pago requerido</h4>
+                  <p className="text-blue-700">
+                    Para cambiar a este plan, necesitas pagar la diferencia de RD${planChangeDetails.priceDifference.toLocaleString()}.
+                    Serás redirigido al formulario de pago seguro.
+                  </p>
+                  <p className="text-blue-700 mt-2">
+                    El cambio de plan se aplicará inmediatamente después del pago exitoso.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-yellow-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-yellow-800 mb-2">Información importante</h4>
+                  <p className="text-yellow-700">
+                    Al cambiar a un plan de menor costo, no se realizará ningún reembolso.
+                    El nuevo precio se aplicará en tu próxima renovación mensual.
+                  </p>
+                  <p className="text-yellow-700 mt-2">
+                    Tu plan actual seguirá activo hasta la fecha de renovación.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={() => setShowPlanChangeModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={confirmPlanChange}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  {planChangeDetails.requiresPayment ? 'Proceder al pago' : 'Confirmar cambio'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

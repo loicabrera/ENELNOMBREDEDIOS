@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Clock, X } from 'lucide-react';
 
 const Publicaciones = () => {
   const [publicaciones, setPublicaciones] = useState([]);
@@ -9,38 +9,77 @@ const Publicaciones = () => {
   const [busqueda, setBusqueda] = useState('');
   const [modalAbierto, setModalAbierto] = useState(false);
   const [publicacionSeleccionada, setPublicacionSeleccionada] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch('http://localhost:3000/api/productos-todos').then(r => r.json()),
-      fetch('http://localhost:3000/api/servicios').then(r => r.json()),
-      fetch('http://localhost:3000/proveedores').then(r => r.json())
-    ]).then(([productos, servicios, proveedores]) => {
-      const pubs = [
-        ...productos.map(p => ({
-          id: p.id_productos,
-          titulo: p.nombre,
-          proveedor: proveedores.find(pr => pr.id_provedor === p.provedor_negocio_id_provedor)?.nombre_empresa || 'Desconocido',
-          categoria: p.categoria || p.tipo_producto || 'Sin categoría',
-          fecha: p.fecha_creacion || p.createdAt || '',
-          estado: p.estado || 'aprobado',
-          descripcion: p.descripcion,
-          tipo: 'Producto'
-        })),
-        ...servicios.map(s => ({
-          id: s.id_servicio,
-          titulo: s.nombre,
-          proveedor: proveedores.find(pr => pr.id_provedor === s.provedor_negocio_id_provedor)?.nombre_empresa || 'Desconocido',
-          categoria: s.tipo_servicio || 'Sin categoría',
-          fecha: s.fecha_creacion || s.createdAt || '',
-          estado: s.estado || 'aprobado',
-          descripcion: s.descripcion,
-          tipo: 'Servicio'
-        }))
-      ];
-      setPublicaciones(pubs);
-      setProveedores(proveedores);
-    });
+    const fetchData = async () => {
+      try {
+        // Intentar obtener productos
+        const productosResponse = await fetch('http://localhost:3000/api/productos-todos');
+        if (!productosResponse.ok) {
+          throw new Error(`Error al obtener productos: ${productosResponse.status}`);
+        }
+        const productos = await productosResponse.json();
+        console.log('Productos recibidos:', productos);
+
+        // Intentar obtener servicios
+        const serviciosResponse = await fetch('http://localhost:3000/api/servicios');
+        if (!serviciosResponse.ok) {
+          throw new Error(`Error al obtener servicios: ${serviciosResponse.status}`);
+        }
+        const servicios = await serviciosResponse.json();
+        console.log('Servicios recibidos:', servicios);
+
+        // Intentar obtener proveedores
+        const proveedoresResponse = await fetch('http://localhost:3000/proveedores');
+        if (!proveedoresResponse.ok) {
+          throw new Error(`Error al obtener proveedores: ${proveedoresResponse.status}`);
+        }
+        const proveedores = await proveedoresResponse.json();
+        console.log('Proveedores recibidos:', proveedores);
+        if (proveedores.length > 0) {
+          console.log('Estructura del primer proveedor:', proveedores[0]);
+        }
+
+        const pubs = [
+          ...productos.map(p => {
+            const proveedorAsociado = proveedores.find(pr => pr.id_provedor === p.provedor_negocio_id_provedor);
+            return {
+              id: p.id_productos,
+              titulo: p.nombre,
+              proveedor: proveedorAsociado?.nombre_empresa || 'Desconocido',
+              categoria: p.categoria || p.tipo_producto || 'Sin categoría',
+              fecha: proveedorAsociado?.fecha_creacion || '',
+              estado: p.estado || 'aprobado',
+              descripcion: p.descripcion,
+              tipo: 'Producto'
+            };
+          }),
+          ...servicios.map(s => {
+             const proveedorAsociado = proveedores.find(pr => pr.id_provedor === s.provedor_negocio_id_provedor);
+             return {
+              id: s.id_servicio,
+              titulo: s.nombre,
+              proveedor: proveedorAsociado?.nombre_empresa || 'Desconocido',
+              categoria: s.tipo_servicio || 'Sin categoría',
+              fecha: proveedorAsociado?.fecha_creacion || '',
+              estado: s.estado || 'aprobado',
+              descripcion: s.descripcion,
+              tipo: 'Servicio'
+            };
+          })
+        ];
+
+        setPublicaciones(pubs);
+        setProveedores(proveedores);
+        setError(null);
+      } catch (err) {
+        console.error('Error al cargar los datos:', err);
+        setError(err.message);
+      }
+    };
+
+    fetchData();
   }, []);
 
   const getEstadoIcon = (estado) => {
@@ -79,12 +118,29 @@ const Publicaciones = () => {
     return cumpleEstado && cumpleCategoria && cumpleBusqueda;
   });
 
+  const handleVerPublicacion = (publicacion) => {
+    setPublicacionSeleccionada(publicacion);
+    setModalAbierto(true);
+  };
+
+  const cerrarModal = () => {
+    setModalAbierto(false);
+    setPublicacionSeleccionada(null);
+  };
+
   return (
     <div className="p-6 w-full">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Gestión de Publicaciones</h1>
         <p className="text-gray-600">Administra y revisa las publicaciones de los proveedores</p>
       </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      )}
 
       {/* Filtros y búsqueda */}
       <div className="bg-white p-4 rounded-lg shadow mb-6">
@@ -134,6 +190,7 @@ const Publicaciones = () => {
               <th className="px-2 py-3 w-1/6 truncate">Título</th>
               <th className="px-2 py-3 w-1/6 truncate">Proveedor</th>
               <th className="px-2 py-3 w-1/6 truncate">Categoría</th>
+              <th className="px-2 py-3 w-1/6 truncate">Fecha</th>
               <th className="px-2 py-3 w-1/6 truncate">Estado</th>
               <th className="px-2 py-3 w-1/12 truncate">Tipo</th>
               <th className="px-2 py-3 w-1/6 truncate">Acciones</th>
@@ -153,6 +210,15 @@ const Publicaciones = () => {
                   <div className="text-sm text-gray-900 truncate">{pub.categoria}</div>
                 </td>
                 <td className="px-2 py-2 w-1/6 truncate">
+                  <div className="text-sm text-gray-900 truncate">
+                    {pub.fecha ? new Date(pub.fecha).toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    }) : 'No disponible'}
+                  </div>
+                </td>
+                <td className="px-2 py-2 w-1/6 truncate">
                   <div className="flex items-center">
                     {getEstadoIcon(pub.estado)}
                     <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getEstadoColor(pub.estado)}`}>
@@ -164,7 +230,12 @@ const Publicaciones = () => {
                   <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">{pub.tipo}</span>
                 </td>
                 <td className="px-2 py-2 w-1/6 truncate text-sm font-medium">
-                  <button className="text-blue-600 hover:text-blue-900 mr-3" onClick={() => { setPublicacionSeleccionada(pub); setModalAbierto(true); }}>Ver</button>
+                  <button 
+                    onClick={() => handleVerPublicacion(pub)}
+                    className="text-blue-600 hover:text-blue-900 mr-3"
+                  >
+                    Ver
+                  </button>
                   {pub.estado === 'pendiente' && (
                     <>
                       <button className="text-green-600 hover:text-green-900 mr-3">Aprobar</button>
@@ -180,21 +251,73 @@ const Publicaciones = () => {
 
       {/* Modal de detalles */}
       {modalAbierto && publicacionSeleccionada && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl"
-              onClick={() => setModalAbierto(false)}
-            >
-              &times;
-            </button>
-            <h2 className="text-xl font-bold mb-4">Detalles de la Publicación</h2>
-            <div className="mb-2"><span className="font-semibold">Título:</span> {publicacionSeleccionada.titulo}</div>
-            <div className="mb-2"><span className="font-semibold">Proveedor:</span> {publicacionSeleccionada.proveedor}</div>
-            <div className="mb-2"><span className="font-semibold">Categoría:</span> {publicacionSeleccionada.categoria}</div>
-            <div className="mb-2"><span className="font-semibold">Estado:</span> {publicacionSeleccionada.estado}</div>
-            <div className="mb-2"><span className="font-semibold">Tipo:</span> {publicacionSeleccionada.tipo}</div>
-            <div className="mb-2"><span className="font-semibold">Descripción:</span> {publicacionSeleccionada.descripcion}</div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {publicacionSeleccionada.titulo}
+              </h2>
+              <button
+                onClick={cerrarModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Proveedor</h3>
+                <p className="mt-1 text-gray-900">{publicacionSeleccionada.proveedor}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Categoría</h3>
+                <p className="mt-1 text-gray-900">{publicacionSeleccionada.categoria}</p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Tipo</h3>
+                <p className="mt-1">
+                  <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">
+                    {publicacionSeleccionada.tipo}
+                  </span>
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Estado</h3>
+                <div className="mt-1 flex items-center">
+                  {getEstadoIcon(publicacionSeleccionada.estado)}
+                  <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getEstadoColor(publicacionSeleccionada.estado)}`}>
+                    {publicacionSeleccionada.estado.charAt(0).toUpperCase() + publicacionSeleccionada.estado.slice(1)}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Fecha de creación</h3>
+                <p className="mt-1 text-gray-900">
+                  {publicacionSeleccionada.fecha ? new Date(publicacionSeleccionada.fecha).toLocaleDateString() : 'No disponible'}
+                </p>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Descripción</h3>
+                <p className="mt-1 text-gray-900 whitespace-pre-wrap">
+                  {publicacionSeleccionada.descripcion || 'No hay descripción disponible'}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={cerrarModal}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}
