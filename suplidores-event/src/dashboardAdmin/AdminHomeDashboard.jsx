@@ -42,7 +42,7 @@ export default function AdminHomeDashboard() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 p-4 ml-0 sm:ml-16 md:ml-64">
+    <div className="min-h-screen w-full bg-gray-50 p-8 ml-0 sm:ml-0 md:ml-50">
       <main className="w-full h-full mx-auto">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-800">
           Resumen General
