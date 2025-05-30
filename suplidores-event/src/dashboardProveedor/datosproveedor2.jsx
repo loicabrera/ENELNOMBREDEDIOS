@@ -194,14 +194,16 @@ const DatosProveedor = () => {
           setShowConfirmation(true);
         } else {
           // Es un negocio adicional, ir al pago directamente
+          const paymentData = {
+            amount: planInfo.monto,
+            planName: planInfo.nombre,
+            isNewBusiness: true,
+            businessName: formData.nombre_empresa,
+            proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
+          };
+          console.log('Redirigiendo con datos:', paymentData);
           navigate('/pago-nuevo-negocio', { 
-            state: { 
-              amount: planInfo.monto,
-              planName: planInfo.nombre,
-              isNewBusiness: true,
-              businessName: formData.nombre_empresa,
-              proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
-            } 
+            state: paymentData
           });
         }
       }
@@ -230,14 +232,16 @@ const DatosProveedor = () => {
         const plan = location.state?.plan;
         const planInfo = planes[plan];
         // Siempre ir al pago sin mostrar el modal
+        const paymentData = {
+          amount: planInfo.monto,
+          planName: planInfo.nombre,
+          isNewBusiness: true,
+          businessName: formData.nombre_empresa,
+          proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
+        };
+        console.log('Redirigiendo con datos:', paymentData);
         navigate('/pago-nuevo-negocio', { 
-          state: { 
-            amount: planInfo.monto,
-            planName: planInfo.nombre,
-            isNewBusiness: true,
-            businessName: formData.nombre_empresa,
-            proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
-          } 
+          state: paymentData
         });
       }
     } catch (error) {
