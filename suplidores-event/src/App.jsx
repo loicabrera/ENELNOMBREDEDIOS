@@ -60,6 +60,17 @@ function Layout({ children }) {
   );
 }
 
+// Nuevo layout sin Navbar
+function SimpleLayout({ children }) {
+  return (
+    <div className="min-h-screen">
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
+  );
+}
+
 function AdminLayout() {
   return (
     <div className="flex">
@@ -155,7 +166,7 @@ function App() {
           path="/pago-nuevo-negocio"
           element={
             <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><PaymentContainerNuevoNegocio /></Layout>
+              <SimpleLayout><PaymentContainerNuevoNegocio /></SimpleLayout>
             </ProtectedRoute>
           }
         />
@@ -171,7 +182,7 @@ function App() {
         <Route
           path="/datosproveedor2"
           element={
-            <Layout><DatosProveedor2 /></Layout>
+            <SimpleLayout><DatosProveedor2 /></SimpleLayout>
           }
         />
 
@@ -190,15 +201,6 @@ function App() {
             <ProtectedRoute allowedRoles={['proveedor']}>
               <Layout><EditarServicio /></Layout>
             </ProtectedRoute>
-          }
-        />
-
-<Route
-          path="/pago-nuevo-negocio"
-          element={
-            <Layout>
-              <PaymentContainerNuevoNegocio />
-            </Layout>
           }
         />
 

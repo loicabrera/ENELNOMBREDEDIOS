@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 // Paleta de colores pastel
 const colors = {
@@ -281,6 +282,17 @@ const DatosProveedor = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Botón de volver */}
+      <div className="max-w-5xl mx-auto pt-6 px-4">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-[#012e33] hover:text-[#fbaccb] transition-colors"
+        >
+          <ArrowLeft size={20} />
+          <span>Volver</span>
+        </button>
+      </div>
+
       {/* Contenedor principal */}
       <div className="max-w-5xl mx-auto">
         {/* Contenido principal */}
