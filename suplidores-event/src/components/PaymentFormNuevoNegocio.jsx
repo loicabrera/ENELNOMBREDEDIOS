@@ -3,7 +3,7 @@ import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
-const PaymentFormNuevoNegocio = ({ amount, planName }) => {
+const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();

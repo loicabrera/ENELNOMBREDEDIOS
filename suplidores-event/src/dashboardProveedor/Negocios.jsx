@@ -49,7 +49,8 @@ const Negocios = () => {
     navigate('/datosproveedor2', {
       state: {
         id_persona: user.PERSONA_id_persona,
-        plan: 'basico'
+        plan: 'basico',
+        isNewBusiness: true
       }
     });
   };
