@@ -72,6 +72,32 @@ const HomeProveedor = () => {
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
   if (!proveedor) return <div className="p-8 text-center">No se encontró tu perfil de proveedor</div>;
 
+  // --- Banner de alerta de membresía ---
+  let banner = null;
+  if (membresia && membresia.fecha_fin) {
+    const fechaFin = new Date(membresia.fecha_fin);
+    const hoy = new Date();
+    const diffTime = fechaFin.getTime() - hoy.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (membresia.estado && membresia.estado.toLowerCase() === 'vencida' || diffDays < 0) {
+      banner = (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+          <strong className="font-bold">¡Membresía vencida!</strong>
+          <span className="block sm:inline ml-2">Tu membresía ha vencido. Renueva para seguir disfrutando de los beneficios.</span>
+          <Link to="/dashboard-proveedor/membresia" className="ml-4 underline text-red-800 font-semibold">Renovar ahora</Link>
+        </div>
+      );
+    } else if (diffDays <= 7) {
+      banner = (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded relative mb-6" role="alert">
+          <strong className="font-bold">¡Atención!</strong>
+          <span className="block sm:inline ml-2">Tu membresía vence en {diffDays} día{diffDays !== 1 ? 's' : ''}. Renueva a tiempo para no perder acceso a tus beneficios.</span>
+          <Link to="/dashboard-proveedor/membresia" className="ml-4 underline text-yellow-900 font-semibold">Renovar ahora</Link>
+        </div>
+      );
+    }
+  }
+
   const keyIndicators = [
     {
       title: "Productos Publicados",
@@ -136,6 +162,9 @@ const HomeProveedor = () => {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Banner de membresía */}
+      {banner}
+
       {/* Profile Summary Card */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center space-x-4">

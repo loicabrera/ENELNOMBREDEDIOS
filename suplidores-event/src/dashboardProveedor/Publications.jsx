@@ -49,6 +49,8 @@ const Publications = () => {
   const [selectedPublication, setSelectedPublication] = useState(null);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [currentImageIdx, setCurrentImageIdx] = useState(0);
+  const [membresia, setMembresia] = useState(null);
+  const [loadingMembresia, setLoadingMembresia] = useState(true);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -70,19 +72,48 @@ const Publications = () => {
         }
         setProveedor(prov);
         if (prov) {
+          // Obtener membresía
+          fetch(`http://localhost:3000/membresia/${prov.id_provedor}`)
+            .then(res => res.json())
+            .then(membresiaData => {
+              setMembresia(membresiaData);
+              setLoadingMembresia(false);
+            })
+            .catch(() => setLoadingMembresia(false));
           // Obtener límite de fotos para productos
           fetch(`http://localhost:3000/api/limite-fotos?provedor_negocio_id_provedor=${prov.id_provedor}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.limite_fotos) {
-                setLimiteFotosProducto(data.limite_fotos);
-                setLimiteFotosServicio(data.limite_fotos);
+            .then(res => {
+              if (!res.ok) {
+                if (res.status === 404) {
+                  // No tienes membresía activa, ignora el límite
+                  return { limite_fotos: 0 };
+                }
+                throw new Error('Error al obtener el límite de fotos');
               }
+              return res.json();
+            })
+            .then(data => {
+              setLimiteFotosProducto(data.limite_fotos || 0);
+              setLimiteFotosServicio(data.limite_fotos || 0);
+            })
+            .catch(() => {
+              setLimiteFotosProducto(0);
+              setLimiteFotosServicio(0);
             });
           // Obtener productos del proveedor
           fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
-            .then(res => res.json())
-            .then(setProductos);
+            .then(res => {
+              if (!res.ok) {
+                if (res.status === 403) {
+                  setProductos([]);
+                  return [];
+                }
+                throw new Error('Error al obtener productos');
+              }
+              return res.json();
+            })
+            .then(setProductos)
+            .catch(() => setProductos([]));
           // Obtener servicios del proveedor
           fetch(`http://localhost:3000/api/servicios`)
             .then(res => res.json())
@@ -863,6 +894,21 @@ const Publications = () => {
       </form>
     );
   };
+
+  if (loadingMembresia) {
+    return <div className="p-8 text-center">Cargando membresía...</div>;
+  }
+  if (membresia && membresia.estado && membresia.estado.toLowerCase() === 'vencida') {
+    return (
+      <div className="p-8 text-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6" role="alert">
+          <strong className="font-bold">¡Membresía vencida!</strong>
+          <span className="block sm:inline ml-2">No puedes publicar productos ni servicios hasta renovar tu membresía.</span>
+          <a href="/dashboard-proveedor/membresia" className="ml-4 underline text-red-800 font-semibold">Renovar ahora</a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white w-full">
