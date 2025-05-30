@@ -102,7 +102,7 @@ export default function DashboardLayout() {
     <div className="min-h-screen bg-[#fbcbdb] flex flex-col">
       <div className="flex flex-1">
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-64' : 'w-16'}`}>
+        <div className={`fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 w-16 ${isSidebarOpen ? 'md:w-64' : 'md:w-16'}`}>
           <div className="flex flex-col h-full">
             {/* Menu button */}
             <div className="p-4 border-b border-gray-200">
@@ -165,7 +165,7 @@ export default function DashboardLayout() {
         </div>
 
         {/* Main content */}
-        <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}>
+        <div className={`flex-1 transition-all duration-300 ml-0 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-16'}`}>
           <main className="flex-1">
             <div className="py-6">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
