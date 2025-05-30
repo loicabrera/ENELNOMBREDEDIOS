@@ -195,7 +195,7 @@ const Negocios = () => {
               <div className="mt-6">
                 <button
                   onClick={() => handleNegocioClick(negocio)}
-                  className="w-full px-4 py-2 bg-[#012e33] text-white rounded-lg hover:bg-[#fbaccb] hover:text-[#012e33] transition-colors duration-300"
+                  className="w-full px-4 py-2 bg-[#012e33] text-black rounded-lg hover:bg-[#fbaccb] hover:text-[#012e33] transition-colors duration-300"
                 >
                   Seleccionar Negocio
                 </button>

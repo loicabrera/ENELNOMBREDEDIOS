@@ -113,6 +113,7 @@ const Membership = () => {
   ];
 
   const getStatusBadge = (estado) => {
+    if (!estado) return null;
     switch (estado) {
       case 'activa':
         return (
@@ -142,20 +143,44 @@ const Membership = () => {
 
   const handleRenewal = async () => {
     try {
-      const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
-      const response = await axios.post('http://localhost:3000/renovar_membresia', {
-        proveedorId,
-        planId: currentPlan.id_membresia
-      });
-      
-      if (response.data.success) {
-        setShowRenewalModal(false);
-        // Actualizar los datos de la membresía
-        const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${proveedorId}`);
-        setCurrentPlan(membresiaResponse.data);
+      // Obtener datos necesarios
+      const proveedorId = currentPlan?.id_provedor || localStorage.getItem('provedor_negocio_id_provedor');
+      const membresiaBaseId = currentPlan?.MEMBRESIA_id_memebresia;
+      const membresiaId = currentPlan?.id_prov_membresia || currentPlan?.id_membresia;
+      const personaId = localStorage.getItem('PERSONA_id_persona');
+      const monto = currentPlan?.precio;
+      console.log('DEBUG handleRenewal:', { proveedorId, membresiaId, membresiaBaseId, personaId, monto, currentPlan });
+      if (!proveedorId || !membresiaId || !personaId || !monto || !membresiaBaseId) {
+        setError('No se encontró la información necesaria para renovar la membresía.');
+        return;
       }
+      // Llamar al backend para registrar el pago y renovar la membresía
+      const response = await fetch('http://localhost:3000/registrar_pago', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          monto: monto,
+          fecha_pago: new Date().toISOString(),
+          monto_pago: monto,
+          MEMBRESIA_id_membresia: membresiaBaseId,
+          provedor_negocio_id_provedor: proveedorId,
+          PERSONA_id_persona: personaId,
+          esRegistroInicial: false
+        })
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.error || 'Error al renovar la membresía');
+        return;
+      }
+      setShowRenewalModal(false);
+      // Actualizar los datos de la membresía
+      const membresiaResponse = await fetch(`http://localhost:3000/membresia/${proveedorId}`);
+      const membresiaData = await membresiaResponse.json();
+      setCurrentPlan(membresiaData);
+      setAlerta({ tipo: 'success', mensaje: '¡Membresía renovada exitosamente!' });
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Error al renovar la membresía');
     }
   };
 
