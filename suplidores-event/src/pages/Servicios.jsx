@@ -15,11 +15,22 @@ const Servicios = () => {
     fetch('http://localhost:3000/api/servicios')
       .then(res => res.json())
       .then(async data => {
-        setServicios(data);
+        // Filtrar servicios de negocios activos
+        const serviciosFiltrados = await Promise.all(
+          data.map(async (servicio) => {
+            const membresiaRes = await fetch(`http://localhost:3000/membresia/${servicio.provedor_negocio_id_provedor}`);
+            const membresiaData = await membresiaRes.json();
+            return membresiaData.estado !== 'inactiva' ? servicio : null;
+          })
+        );
+        
+        const serviciosActivos = serviciosFiltrados.filter(s => s !== null);
+        setServicios(serviciosActivos);
+
         // Obtener imágenes para cada servicio
         const imagenesObj = {};
         await Promise.all(
-          data.map(async (servicio) => {
+          serviciosActivos.map(async (servicio) => {
             const resImg = await fetch(`http://localhost:3000/api/imagenes_servicio/por-servicio/${servicio.id_servicio}`);
             if (resImg.ok) {
               const imgs = await resImg.json();

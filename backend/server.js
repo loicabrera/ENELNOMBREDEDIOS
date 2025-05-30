@@ -1262,14 +1262,19 @@ app.delete('/api/productos/:id', async (req, res) => {
 // Cambiar estado de membresía (activar/inactivar)
 app.put('/api/membresias/:id/estado', async (req, res) => {
   const { id } = req.params;
-  const { estado } = req.body; // 'activa', 'inactiva', 'vencida'
+  const { estado, razon } = req.body; // 'activa', 'inactiva', 'vencida'
   if (!['activa', 'inactiva', 'vencida'].includes(estado)) {
     return res.status(400).json({ error: 'Estado no válido' });
   }
   try {
+    // Si se está inactivando, requerimos una razón
+    if (estado === 'inactiva' && !razon) {
+      return res.status(400).json({ error: 'Se requiere una razón para inactivar la membresía' });
+    }
+
     const [result] = await conexion.query(
-      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
-      { replacements: [estado, id] }
+      'UPDATE PROVEDOR_MEMBRESIA SET estado = ?, razon_inactivacion = ? WHERE id_prov_membresia = ?',
+      { replacements: [estado, razon || null, id] }
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Membresía no encontrada' });
