@@ -116,7 +116,7 @@ const AdminProveedor = () => {
     };
 
     return (
-      <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-6 pl-64 ml-4 border-l border-gray-200 shadow-lg">
+      <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-6 pl-50 ml-0 border-l border-gray-200 shadow-lg">
         {/* Tabs */}
         <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight">Panel de Proveedores</h2>
         {/* Resumen en tarjetas */}
