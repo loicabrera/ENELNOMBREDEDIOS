@@ -1,0 +1,3 @@
+const response = await fetch('/create-payment-intent', {
+  // ... existing code ...
+}); 

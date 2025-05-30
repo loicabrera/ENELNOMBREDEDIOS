@@ -165,9 +165,9 @@ function App() {
         <Route
           path="/pago-nuevo-negocio"
           element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <SimpleLayout><PaymentContainerNuevoNegocio /></SimpleLayout>
-            </ProtectedRoute>
+            <SimpleLayout>
+              <PaymentContainerNuevoNegocio />
+            </SimpleLayout>
           }
         />
 

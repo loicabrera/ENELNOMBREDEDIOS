@@ -145,7 +145,7 @@ const DatosPersonas = () => {
       navigate('/datosproveedor', {
         state: {
           id_persona: data.persona.id_persona,
-          plan: location.state?.plan
+          plan: location.state.plan
         }
       });
     } catch (error) {
