@@ -49,6 +49,28 @@ const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName
       if (result.error) {
         setError(result.error);
       } else {
+        // === ACTIVAR MEMBRESÍA DEL NUEVO NEGOCIO ===
+        // Determinar el ID de membresía según el plan
+        let membresiaId = 1;
+        if (planName.toLowerCase().includes('destacado')) membresiaId = 2;
+        else if (planName.toLowerCase().includes('premium')) membresiaId = 3;
+        // Obtener el ID de persona
+        const personaId = localStorage.getItem('PERSONA_id_persona');
+        // Llamar al backend para registrar el pago y activar la membresía
+        const pagoResponse = await fetch('http://localhost:3000/registrar_pago', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            monto: amount,
+            fecha_pago: new Date().toISOString(),
+            monto_pago: amount,
+            MEMBRESIA_id_membresia: membresiaId,
+            provedor_negocio_id_provedor: proveedorId,
+            PERSONA_id_persona: personaId,
+            esRegistroInicial: false
+          })
+        });
+        // Puedes manejar la respuesta si quieres mostrar un mensaje de éxito/error
         setSucceeded(true);
         navigate('/confirmacion-nuevo-negocio', {
           state: {

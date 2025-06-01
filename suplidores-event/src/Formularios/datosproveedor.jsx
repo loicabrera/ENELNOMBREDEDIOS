@@ -142,6 +142,17 @@ const DatosProveedor = () => {
         localStorage.setItem('provedor_negocio_id_provedor', data.proveedor.id_provedor);
       }
 
+      // === Guardar usuario automáticamente para sesión ===
+      // El usuario debe tener rol, expiresAt y PERSONA_id_persona
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 24); // 24 horas de sesión
+      localStorage.setItem('user', JSON.stringify({
+        rol: 'proveedor',
+        expiresAt: expiresAt.toISOString(),
+        PERSONA_id_persona: personaId
+      }));
+      // === Fin guardar usuario ===
+
       return true;
     } catch (error) {
       console.error('Error al crear proveedor:', error);

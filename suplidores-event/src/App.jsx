@@ -185,6 +185,12 @@ function App() {
             <SimpleLayout><DatosProveedor /></SimpleLayout>
           }
         />
+        <Route
+          path="/datosproveedor2"
+          element={
+            <SimpleLayout><DatosProveedor2 /></SimpleLayout>
+          }
+        />
 
         {/* Rutas protegidas para edición */}
         <Route
