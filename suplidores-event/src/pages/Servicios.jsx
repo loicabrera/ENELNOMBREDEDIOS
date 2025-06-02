@@ -61,7 +61,7 @@ const Servicios = () => {
         <select
           value={filtroTipo}
           onChange={(e) => setFiltroTipo(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db]"
+          className="px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db]"
         >
           <option value="">Todas las categorías</option>
           <option value="Comida y Bebidas">Comida y Bebidas</option>

@@ -45,12 +45,15 @@ import PaymentContainer from './components/PaymentContainer';
 import PaymentContainerNuevoNegocio from './components/PaymentContainerNuevoNegocio';
 import Confirmacion from './components/Confirmacion';
 import ConfirmacionNuevoNegocio from './components/ConfirmacionNuevoNegocio';
+import { useSidebar } from '../src/context/SidebarContext';
+
 // Nuevo componente Layout más flexible
 function Layout({ children }) {
+  const { open } = useSidebar();
   return (
     <div className="min-h-screen flex">
       <Navbar />
-      <div className="flex-1 transition-all duration-300 ml-16 lg:ml-48">
+      <div className={`flex-1 transition-all duration-300 ${open ? 'ml-48' : 'ml-16'}`}>
         <main className="flex-1">
           {children}
         </main>

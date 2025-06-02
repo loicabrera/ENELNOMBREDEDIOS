@@ -2,7 +2,8 @@ import React from 'react';
 
 const Footer = ({ sidebarOpen }) => {
   return (
-    <footer className={`w-full bg-[#f8f9fa] border-t border-gray-200 py-6 mt-12 transition-all duration-300 ${sidebarOpen ? 'pl-64' : 'pl-16'}`}>
+    <footer className={`w-full bg-[#f8f9fa] border-t border-gray-200 py-6 mt-12 transition-all duration-300 
+      ${sidebarOpen ? 'md:pl-64' : 'md:pl-16'}`}>
       <div className="max-w-7xl mx-auto px-4 flex flex-col items-center justify-center">
         <p className="text-gray-500 text-sm text-center">
           &copy; {new Date().getFullYear()} Todos los derechos reservados.

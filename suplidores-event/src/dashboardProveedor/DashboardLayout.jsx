@@ -9,7 +9,8 @@ import {
   BellIcon,
   ArrowRightOnRectangleIcon,
   BuildingStorefrontIcon,
-  Bars3Icon
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import Footer from './Footer';
@@ -22,7 +23,6 @@ const navigation = [
   { name: 'Notificaciones', href: '/dashboard-proveedor/notificaciones', icon: BellIcon },
 ];
 
-
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
@@ -30,7 +30,24 @@ function classNames(...classes) {
 export default function DashboardLayout() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsSidebarOpen(false);
+      } else {
+        setIsSidebarOpen(true);
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const checkNotificaciones = async () => {
@@ -85,9 +102,7 @@ export default function DashboardLayout() {
       }
     };
 
-    // Ejecutar inmediatamente
     checkNotificaciones();
-    // Verificar cada 10 segundos (reducido de 30 para mejor respuesta)
     const interval = setInterval(checkNotificaciones, 10000);
     return () => clearInterval(interval);
   }, [location.pathname]);
@@ -101,18 +116,35 @@ export default function DashboardLayout() {
   return (
     <div className="min-h-screen bg-[#fbcbdb] flex flex-col">
       <div className="flex flex-1">
+        {/* Mobile Header */}
+        {isMobile && (
+          <header className="fixed top-0 left-0 right-0 h-16 flex items-center px-4 z-50">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 rounded-lg hover:bg-[#fbcbdb]/50 hover:text-[#012e33] transition-colors"
+            >
+              {isSidebarOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+            </button>
+          </header>
+        )}
+
         {/* Sidebar */}
-        <div className={`fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 w-16 ${isSidebarOpen ? 'md:w-64' : 'md:w-16'}`}>
+        <div className={`fixed inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col transition-all duration-300 z-40
+          ${isMobile 
+            ? (isSidebarOpen ? 'w-64' : '-translate-x-full') 
+            : (isSidebarOpen ? 'w-64' : 'w-16')}`}>
           <div className="flex flex-col h-full">
-            {/* Menu button */}
-            <div className="p-4 border-b border-gray-200">
-              <button
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                className="p-2 rounded-lg hover:bg-[#fbcbdb] hover:text-[#012e33] transition-colors"
-              >
-                <Bars3Icon className="h-6 w-6" />
-              </button>
-            </div>
+            {/* Menu button - only visible on desktop */}
+            {!isMobile && (
+              <div className="p-4">
+                <button
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="p-2 rounded-lg hover:bg-[#fbcbdb] hover:text-[#012e33] transition-colors"
+                >
+                  <Bars3Icon className="h-6 w-6" />
+                </button>
+              </div>
+            )}
 
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-4">
@@ -164,8 +196,19 @@ export default function DashboardLayout() {
           </div>
         </div>
 
+        {/* Mobile overlay */}
+        {isMobile && isSidebarOpen && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 z-30"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
         {/* Main content */}
-        <div className={`flex-1 transition-all duration-300 ml-0 ${isSidebarOpen ? 'md:ml-64' : 'md:ml-16'}`}>
+        <div className={`flex-1 transition-all duration-300 
+          ${isMobile 
+            ? 'ml-0' 
+            : (isSidebarOpen ? 'md:ml-64' : 'md:ml-16')}`}>
           <main className="flex-1">
             <div className="py-6">
               <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
