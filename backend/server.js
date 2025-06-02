@@ -457,6 +457,7 @@ app.post('/registrar_pago', async (req, res) => {
     const duracionDias = Number(membresia.duracion_dias) || 30;
 
     // Crear la membresía en PROVEDOR_MEMBRESIA
+    console.log('Insertando membresía para negocio:', provedor_negocio_id_provedor);
     const fechaInicio = new Date(fecha_pago);
     const fechaFin = new Date(fechaInicio);
     fechaFin.setDate(fechaFin.getDate() + duracionDias); // Suma los días reales del plan
