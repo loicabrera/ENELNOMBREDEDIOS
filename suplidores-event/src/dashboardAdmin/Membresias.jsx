@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 const Membresias = () => {
-  const [membresias, setMembresias] = useState({ activas: [], proximasVencer: [], vencidas: [] });
+  const [membresias, setMembresias] = useState({ activas: [], proximasVencer: [], vencidas: [], inactivas: [] });
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [selectedMembresia, setSelectedMembresia] = useState(null);
@@ -166,7 +166,7 @@ const Membresias = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4 ml-10">Membresías Activas</h2>
           {membresias.activas.map((membresia) => (
@@ -186,6 +186,17 @@ const Membresias = () => {
           {membresias.vencidas.map((membresia) => (
             <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="vencida" />
           ))}
+        </div>
+
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Inactivas</h2>
+          {membresias.inactivas && membresias.inactivas.length > 0 ? (
+            membresias.inactivas.map((membresia) => (
+              <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="inactiva" />
+            ))
+          ) : (
+            <p className="text-gray-500">No hay membresías inactivas</p>
+          )}
         </div>
       </div>
     </div>

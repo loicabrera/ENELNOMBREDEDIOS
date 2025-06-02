@@ -1,4 +1,3 @@
-
 import { DataTypes } from 'sequelize';
 import conexion from '../db.js';
 
@@ -14,7 +13,8 @@ export const Membresia = conexion.define('PROVEDOR_MEMBRESIA', {
   fecha_pago: DataTypes.DATE,
   MEMBRESIA_id_membresia: DataTypes.INTEGER,
   id_provedor: DataTypes.INTEGER,
-  estado: DataTypes.STRING
+  estado: DataTypes.STRING,
+  razon_inactivacion: DataTypes.STRING
 }, {
   tableName: 'PROVEDOR_MEMBRESIA',
   timestamps: false

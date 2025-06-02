@@ -1274,26 +1274,22 @@ app.delete('/api/productos/:id', async (req, res) => {
 // Cambiar estado de membresía (activar/inactivar)
 app.put('/api/membresias/:id/estado', async (req, res) => {
   const { id } = req.params;
-  const { estado, razon } = req.body; // 'activa', 'inactiva', 'vencida'
+  const { estado } = req.body; // 'activa', 'inactiva', 'vencida'
   if (!['activa', 'inactiva', 'vencida'].includes(estado)) {
     return res.status(400).json({ error: 'Estado no válido' });
   }
   try {
-    // Si se está inactivando, requerimos una razón
-    if (estado === 'inactiva' && !razon) {
-      return res.status(400).json({ error: 'Se requiere una razón para inactivar la membresía' });
-    }
-
     const [result] = await conexion.query(
-      'UPDATE PROVEDOR_MEMBRESIA SET estado = ?, razon_inactivacion = ? WHERE id_prov_membresia = ?',
-      { replacements: [estado, razon || null, id] }
+      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+      { replacements: [estado, id] }
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Membresía no encontrada' });
     }
     res.json({ message: `Membresía actualizada a ${estado}` });
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el estado de la membresía' });
+    console.error('Error al actualizar el estado de la membresía:', error);
+    res.status(500).json({ error: 'Error al actualizar el estado de la membresía', details: error.message });
   }
 });
 
@@ -1303,25 +1299,59 @@ app.get('/api/membresias/admin', async (req, res) => {
     const [rows] = await conexion.query(`
       SELECT pm.*, m.nombre_pla, p.nombre_empresa, per.nombre, per.apellido
       FROM PROVEDOR_MEMBRESIA pm
+      JOIN (
+        SELECT id_provedor, MAX(fecha_fin) AS max_fecha_fin
+        FROM PROVEDOR_MEMBRESIA
+        GROUP BY id_provedor
+      ) ult ON pm.id_provedor = ult.id_provedor AND pm.fecha_fin = ult.max_fecha_fin
       JOIN MEMBRESIA m ON pm.MEMBRESIA_id_memebresia = m.id_memebresia
       JOIN provedor_negocio p ON pm.id_provedor = p.id_provedor
       JOIN PERSONA per ON p.PERSONA_id_persona = per.id_persona
       ORDER BY pm.fecha_fin DESC
     `);
     const hoy = new Date();
-    const activas = [], proximasVencer = [], vencidas = [];
+    // Solo la membresía más reciente por proveedor
+    const ultimaPorProveedor = new Map();
     for (const m of rows) {
-      const fechaFin = new Date(m.fecha_fin);
-      const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-      if (m.estado === 'activa' && diasRestantes > 7) {
-        activas.push(m);
-      } else if (m.estado === 'activa' && diasRestantes > 0 && diasRestantes <= 7) {
-        proximasVencer.push(m);
-      } else {
-        vencidas.push(m);
+      if (!ultimaPorProveedor.has(m.id_provedor)) {
+        ultimaPorProveedor.set(m.id_provedor, m);
       }
     }
-    res.json({ activas, proximasVencer, vencidas });
+    const activas = [], proximasVencer = [], vencidas = [], inactivas = [];
+    for (const m of ultimaPorProveedor.values()) {
+      const fechaFin = new Date(m.fecha_fin);
+      const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
+      // Normalizo el estado a minúsculas y corrijo 'activo' a 'activa'
+      let estadoActual = (m.estado || '').toLowerCase();
+      let estadoOriginal = (m.estado || '').toLowerCase();
+      if (estadoActual === 'activo') estadoActual = 'activa';
+      let estadoCalculado = estadoActual;
+      if (estadoActual === 'inactiva' || estadoActual === 'inactivo') {
+        inactivas.push(m);
+        continue;
+      }
+      if (diasRestantes > 7) {
+        estadoCalculado = 'activa';
+        activas.push(m);
+      } else if (diasRestantes > 0) {
+        estadoCalculado = 'por vencer';
+        proximasVencer.push(m);
+      } else {
+        estadoCalculado = 'vencida';
+        vencidas.push(m);
+      }
+      // Si el estado en la base no coincide (comparando minúsculas), actualizarlo
+      if (estadoOriginal !== estadoCalculado) {
+        console.log(`Actualizando estado de id_prov_membresia=${m.id_prov_membresia} de '${estadoOriginal}' a '${estadoCalculado}'`);
+        await conexion.query(
+          'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+          { replacements: [estadoCalculado, m.id_prov_membresia] }
+        );
+        m.estado = estadoCalculado;
+        console.log(`Estado actualizado para id_prov_membresia=${m.id_prov_membresia}`);
+      }
+    }
+    res.json({ activas, proximasVencer, vencidas, inactivas });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener membresías' });
   }
