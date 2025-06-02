@@ -24,7 +24,8 @@ const PORT = process.env.PORT || 3000;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://spectacular-recreation-production.up.railway.app'
+    'https://spectacular-recreation-production.up.railway.app',
+    'https://enelnombrededios-production.up.railway.app'
   ], // URLs de tus frontends permitidos
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -35,7 +36,8 @@ app.use(cors({
 app.use((req, res, next) => {
   const allowedOrigins = [
     'http://localhost:5173',
-    'https://spectacular-recreation-production.up.railway.app'
+    'https://spectacular-recreation-production.up.railway.app',
+    'https://enelnombrededios-production.up.railway.app'
   ];
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
