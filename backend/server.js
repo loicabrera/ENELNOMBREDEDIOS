@@ -1302,11 +1302,18 @@ app.get('/api/membresias/admin', async (req, res) => {
       JOIN MEMBRESIA m ON pm.MEMBRESIA_id_memebresia = m.id_memebresia
       JOIN provedor_negocio p ON pm.id_provedor = p.id_provedor
       JOIN PERSONA per ON p.PERSONA_id_persona = per.id_persona
-      ORDER BY pm.fecha_fin DESC
+      ORDER BY pm.id_provedor, pm.fecha_fin DESC
     `);
     const hoy = new Date();
-    const activas = [], proximasVencer = [], vencidas = [], inactivas = [];
+    // Solo la membresía más reciente por proveedor
+    const ultimaPorProveedor = new Map();
     for (const m of rows) {
+      if (!ultimaPorProveedor.has(m.id_provedor)) {
+        ultimaPorProveedor.set(m.id_provedor, m);
+      }
+    }
+    const activas = [], proximasVencer = [], vencidas = [], inactivas = [];
+    for (const m of ultimaPorProveedor.values()) {
       const fechaFin = new Date(m.fecha_fin);
       const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
       let estadoActual = (m.estado || '').toLowerCase();
