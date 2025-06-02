@@ -17,6 +17,7 @@ import DatosProveedor2 from './dashboardProveedor/datosproveedor2';
 import DetalleNegocio from './dashboardProveedor/DetalleNegocio';
 import LoginAdmin from './components/LoginAdmin';
 import PaymentContainerPlanChange from './components/PaymentContainerPlanChange';
+import FooterAdmin from './dashboardAdmin/FooterAdmin';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -75,12 +76,16 @@ function SimpleLayout({ children }) {
 }
 
 function AdminLayout() {
+  const { open } = useSidebar();
   return (
-    <div className="flex">
-      <SidebarAdmin />
-      <div className="flex-1 ml-64">
-        <Outlet />
+    <div className="flex flex-col min-h-screen">
+      <div className="flex flex-1">
+        <SidebarAdmin />
+        <div className={`flex-1 transition-all duration-300 ${open ? 'ml-64' : 'ml-20'}`}>
+          <Outlet />
+        </div>
       </div>
+      <FooterAdmin />
     </div>
   );
 }

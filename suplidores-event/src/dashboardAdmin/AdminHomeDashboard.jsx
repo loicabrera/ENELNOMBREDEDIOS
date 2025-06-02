@@ -42,14 +42,14 @@ export default function AdminHomeDashboard() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 p-8 ml-0 sm:ml-0 md:ml-50">
-      <main className="w-full h-full mx-auto">
+    <div className="min-h-screen w-full bg-gray-50 p-4 sm:p-6 md:p-8">
+      <main className="w-full h-full mx-auto max-w-7xl">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-gray-800">
           Resumen General
         </h1>
 
         {/* Tarjetas de resumen principales */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 h-[calc(100vh-8rem)]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div 
             role="article"
             tabIndex="0"

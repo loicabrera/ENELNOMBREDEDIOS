@@ -116,11 +116,9 @@ const AdminProveedor = () => {
     };
 
     return (
-      <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-6 pl-50 ml-0 border-l border-gray-200 shadow-lg">
-        {/* Tabs */}
-        <h2 className="text-3xl font-bold text-center mb-10 text-gray-800 tracking-tight">Panel de Proveedores</h2>
-        {/* Resumen en tarjetas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 w-full max-w-6xl mb-12 mx-auto">
+      <div className="flex-1 min-h-screen flex flex-col bg-gray-50 p-4 sm:p-6 md:p-8 border-l border-gray-200 shadow-lg">
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-gray-800 tracking-tight">Panel de Proveedores</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 w-full max-w-7xl mb-12 mx-auto">
           <div className="bg-white rounded-2xl shadow p-8 flex flex-col items-center border border-gray-100">
             <div className="text-gray-500 text-base mb-2 font-medium">Total Proveedores</div>
             <div className="text-5xl font-extrabold text-blue-700">{proveedores.length}</div>

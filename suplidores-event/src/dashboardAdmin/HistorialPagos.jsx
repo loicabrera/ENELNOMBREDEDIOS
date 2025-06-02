@@ -105,7 +105,7 @@ const HistorialPagos = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 ml-0 sm:ml-0 md:ml-50">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500" role="status">
           <span className="sr-only">Cargando...</span>
         </div>
@@ -114,8 +114,8 @@ const HistorialPagos = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 ml-0 sm:ml-0 md:ml-54">
-      <div className="h-full flex flex-col">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 md:p-8">
+      <div className="h-full flex flex-col w-full max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="bg-white shadow-sm p-4">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -162,95 +162,97 @@ const HistorialPagos = () => {
         {/* Table Section */}
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50 sticky top-0">
-                <tr>
-                  <th 
-                    scope="col" 
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => requestSort('fecha_pago')}
-                    role="button"
-                    tabIndex="0"
-                    aria-label="Ordenar por fecha"
-                  >
-                    <div className="flex items-center gap-2">
-                      Fecha
-                      {sortConfig.key === 'fecha_pago' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => requestSort('monto')}
-                    role="button"
-                    tabIndex="0"
-                    aria-label="Ordenar por monto"
-                  >
-                    <div className="flex items-center gap-2">
-                      Monto
-                      {sortConfig.key === 'monto' && (
-                        sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
-                      )}
-                    </div>
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Proveedor
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Persona
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Método
-                  </th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Estado
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredPagos.map((pago) => {
-                  const estado = calcularEstado(pago.fecha_pago);
-                  return (
-                    <tr 
-                      key={pago.id_pago}
-                      className="hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50 sticky top-0">
+                  <tr>
+                    <th 
+                      scope="col" 
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => requestSort('fecha_pago')}
+                      role="button"
                       tabIndex="0"
-                      onFocus={() => setFocusedRow(pago.id_pago)}
-                      onBlur={() => setFocusedRow(null)}
+                      aria-label="Ordenar por fecha"
                     >
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {new Date(pago.fecha_pago).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                        ${pago.monto}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {pago.proveedor?.nombre_empresa || 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                        {pago.proveedor?.persona
-                          ? `${pago.proveedor.persona.nombre} ${pago.proveedor.persona.apellido}`
-                          : 'N/A'}
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
-                        Stripe
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full
-                          ${estado === 'Pagado' ? 'bg-green-100 text-green-800' : 
-                            estado === 'En período de gracia' ? 'bg-yellow-100 text-yellow-800' : 
-                            'bg-red-100 text-red-800'}`}
-                        >
-                          {estado}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      <div className="flex items-center gap-2">
+                        Fecha
+                        {sortConfig.key === 'fecha_pago' && (
+                          sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+                        )}
+                      </div>
+                    </th>
+                    <th 
+                      scope="col" 
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                      onClick={() => requestSort('monto')}
+                      role="button"
+                      tabIndex="0"
+                      aria-label="Ordenar por monto"
+                    >
+                      <div className="flex items-center gap-2">
+                        Monto
+                        {sortConfig.key === 'monto' && (
+                          sortConfig.direction === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+                        )}
+                      </div>
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Proveedor
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Persona
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Método
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredPagos.map((pago) => {
+                    const estado = calcularEstado(pago.fecha_pago);
+                    return (
+                      <tr 
+                        key={pago.id_pago}
+                        className="hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
+                        tabIndex="0"
+                        onFocus={() => setFocusedRow(pago.id_pago)}
+                        onBlur={() => setFocusedRow(null)}
+                      >
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {new Date(pago.fecha_pago).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          ${pago.monto}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {pago.proveedor?.nombre_empresa || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          {pago.proveedor?.persona
+                            ? `${pago.proveedor.persona.nombre} ${pago.proveedor.persona.apellido}`
+                            : 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                          Stripe
+                        </td>
+                        <td className="px-4 py-3 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full
+                            ${estado === 'Pagado' ? 'bg-green-100 text-green-800' : 
+                              estado === 'En período de gracia' ? 'bg-yellow-100 text-yellow-800' : 
+                              'bg-red-100 text-red-800'}`}
+                          >
+                            {estado}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
