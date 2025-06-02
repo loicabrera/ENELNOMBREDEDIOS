@@ -1299,56 +1299,28 @@ app.get('/api/membresias/admin', async (req, res) => {
     const [rows] = await conexion.query(`
       SELECT pm.*, m.nombre_pla, p.nombre_empresa, per.nombre, per.apellido
       FROM PROVEDOR_MEMBRESIA pm
-      JOIN (
-        SELECT id_provedor, MAX(fecha_fin) AS max_fecha_fin
-        FROM PROVEDOR_MEMBRESIA
-        GROUP BY id_provedor
-      ) ult ON pm.id_provedor = ult.id_provedor AND pm.fecha_fin = ult.max_fecha_fin
       JOIN MEMBRESIA m ON pm.MEMBRESIA_id_memebresia = m.id_memebresia
       JOIN provedor_negocio p ON pm.id_provedor = p.id_provedor
       JOIN PERSONA per ON p.PERSONA_id_persona = per.id_persona
       ORDER BY pm.fecha_fin DESC
     `);
     const hoy = new Date();
-    // Solo la membresía más reciente por proveedor
-    const ultimaPorProveedor = new Map();
-    for (const m of rows) {
-      if (!ultimaPorProveedor.has(m.id_provedor)) {
-        ultimaPorProveedor.set(m.id_provedor, m);
-      }
-    }
     const activas = [], proximasVencer = [], vencidas = [], inactivas = [];
-    for (const m of ultimaPorProveedor.values()) {
+    for (const m of rows) {
       const fechaFin = new Date(m.fecha_fin);
       const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-      // Normalizo el estado a minúsculas y corrijo 'activo' a 'activa'
       let estadoActual = (m.estado || '').toLowerCase();
-      let estadoOriginal = (m.estado || '').toLowerCase();
       if (estadoActual === 'activo') estadoActual = 'activa';
-      let estadoCalculado = estadoActual;
       if (estadoActual === 'inactiva' || estadoActual === 'inactivo') {
         inactivas.push(m);
         continue;
       }
       if (diasRestantes > 7) {
-        estadoCalculado = 'activa';
         activas.push(m);
       } else if (diasRestantes > 0) {
-        estadoCalculado = 'por vencer';
         proximasVencer.push(m);
       } else {
-        estadoCalculado = 'vencida';
         vencidas.push(m);
-      }
-      // Si el estado en la base no coincide (comparando minúsculas), actualizarlo
-      if (estadoOriginal !== estadoCalculado) {
-        console.log(`Actualizando estado de id_prov_membresia=${m.id_prov_membresia} de '${estadoOriginal}' a '${estadoCalculado}'`);
-        await conexion.query(
-          'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
-          { replacements: [estadoCalculado, m.id_prov_membresia] }
-        );
-        m.estado = estadoCalculado;
-        console.log(`Estado actualizado para id_prov_membresia=${m.id_prov_membresia}`);
       }
     }
     res.json({ activas, proximasVencer, vencidas, inactivas });
