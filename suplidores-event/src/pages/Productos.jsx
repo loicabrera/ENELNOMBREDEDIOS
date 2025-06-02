@@ -41,13 +41,13 @@ const Productos = () => {
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
 
   return (
-    <div className="max-w-6xl mx-auto p-8">
-      <h2 className="text-3xl font-bold mb-8 text-center" style={{ color: '#cbb4db' }}>Productos disponibles</h2>
-      <div className="flex flex-wrap gap-4 mb-8">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 md:p-8">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-center" style={{ color: '#cbb4db' }}>Productos disponibles</h2>
+      <div className="flex flex-wrap gap-4 mb-6 sm:mb-8">
         <select
           value={filtroTipo}
           onChange={(e) => setFiltroTipo(e.target.value)}
-          className="px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db]"
+          className="w-full sm:w-auto px-4 py-2 rounded-lg border border-gray-300 bg-white focus:ring-2 focus:ring-[#cbb4db] focus:border-[#cbb4db]"
         >
           <option value="">Todas las categorías</option>
           <option value="Floristería">Floristería (Flores, Arreglos, Ramos)</option>
@@ -63,7 +63,7 @@ const Productos = () => {
       {productosFiltrados.length === 0 ? (
         <div className="text-gray-600">No hay productos publicados.</div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {productosFiltrados.map(producto => {
             const imagenes = imagenesProductos[producto.id_productos] || [];
             const imagenReal = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
@@ -77,11 +77,11 @@ const Productos = () => {
                   <img
                     src={imagenReal}
                     alt={producto.nombre}
-                    className="w-full h-48 object-cover bg-gray-100"
+                    className="w-full h-40 sm:h-48 object-cover bg-gray-100"
                   />
                 )}
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-xl font-semibold mb-2" style={{ color: '#cbb4db' }}>{producto.nombre}</h3>
+                <div className="p-4 sm:p-6 flex flex-col flex-1">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-2" style={{ color: '#cbb4db' }}>{producto.nombre}</h3>
                 </div>
               </div>
             );
