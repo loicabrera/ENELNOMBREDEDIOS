@@ -21,7 +21,7 @@ const PaymentForm = ({ amount, planName }) => {
 
     try {
       // Crear el PaymentIntent en el backend
-      const response = await fetch('http://localhost:3000/create-payment-intent', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +59,7 @@ const PaymentForm = ({ amount, planName }) => {
         }
 
         // Llamar al backend para registrar el pago y obtener credenciales
-        const pagoResponse = await fetch('http://localhost:3000/registrar_pago', {
+        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

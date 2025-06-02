@@ -33,7 +33,7 @@ const Profile = () => {
     const negocioActivoId = localStorage.getItem('negocio_activo');
 
     // Fetch proveedores
-    fetch('http://localhost:3000/proveedores')
+    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
       .then(res => res.json())
       .then(data => {
         let proveedorLogueado;
@@ -47,7 +47,7 @@ const Profile = () => {
         setProveedor(proveedorLogueado);
         if (proveedorLogueado) {
           // Fetch persona
-          fetch('http://localhost:3000/persona')
+          fetch('https://spectacular-recreation-production.up.railway.app/persona')
             .then(res => res.json())
             .then(personas => {
               const personaLogueada = personas.find(
@@ -76,7 +76,7 @@ const Profile = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (!user) return;
     const user_name = user.user_name; // Asegúrate de guardar el user_name en localStorage al hacer login
-    const res = await fetch('http://localhost:3000/api/cambiar-password', {
+    const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/cambiar-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ user_name, oldPassword, newPassword })

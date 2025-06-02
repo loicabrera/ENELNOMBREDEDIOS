@@ -20,9 +20,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de CORS más permisiva para desarrollo
+// Configuración de CORS más permisiva para desarrollo y producción
 app.use(cors({
-  origin: 'http://localhost:5173', // URL de tu frontend
+  origin: [
+    'http://localhost:5173',
+    'https://spectacular-recreation-production.up.railway.app',
+    'https://enelnombrededios-production.up.railway.app'
+  ], // URLs de tus frontends permitidos
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
@@ -30,7 +34,15 @@ app.use(cors({
 
 // Middleware para manejar errores de CORS
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'https://spectacular-recreation-production.up.railway.app',
+    'https://enelnombrededios-production.up.railway.app'
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -445,6 +457,7 @@ app.post('/registrar_pago', async (req, res) => {
     const duracionDias = Number(membresia.duracion_dias) || 30;
 
     // Crear la membresía en PROVEDOR_MEMBRESIA
+    console.log('Insertando membresía para negocio:', provedor_negocio_id_provedor);
     const fechaInicio = new Date(fecha_pago);
     const fechaFin = new Date(fechaInicio);
     fechaFin.setDate(fechaFin.getDate() + duracionDias); // Suma los días reales del plan
@@ -1262,26 +1275,22 @@ app.delete('/api/productos/:id', async (req, res) => {
 // Cambiar estado de membresía (activar/inactivar)
 app.put('/api/membresias/:id/estado', async (req, res) => {
   const { id } = req.params;
-  const { estado, razon } = req.body; // 'activa', 'inactiva', 'vencida'
+  const { estado } = req.body; // 'activa', 'inactiva', 'vencida'
   if (!['activa', 'inactiva', 'vencida'].includes(estado)) {
     return res.status(400).json({ error: 'Estado no válido' });
   }
   try {
-    // Si se está inactivando, requerimos una razón
-    if (estado === 'inactiva' && !razon) {
-      return res.status(400).json({ error: 'Se requiere una razón para inactivar la membresía' });
-    }
-
     const [result] = await conexion.query(
-      'UPDATE PROVEDOR_MEMBRESIA SET estado = ?, razon_inactivacion = ? WHERE id_prov_membresia = ?',
-      { replacements: [estado, razon || null, id] }
+      'UPDATE PROVEDOR_MEMBRESIA SET estado = ? WHERE id_prov_membresia = ?',
+      { replacements: [estado, id] }
     );
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Membresía no encontrada' });
     }
     res.json({ message: `Membresía actualizada a ${estado}` });
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar el estado de la membresía' });
+    console.error('Error al actualizar el estado de la membresía:', error);
+    res.status(500).json({ error: 'Error al actualizar el estado de la membresía', details: error.message });
   }
 });
 
@@ -1294,22 +1303,35 @@ app.get('/api/membresias/admin', async (req, res) => {
       JOIN MEMBRESIA m ON pm.MEMBRESIA_id_memebresia = m.id_memebresia
       JOIN provedor_negocio p ON pm.id_provedor = p.id_provedor
       JOIN PERSONA per ON p.PERSONA_id_persona = per.id_persona
-      ORDER BY pm.fecha_fin DESC
+      ORDER BY pm.id_provedor, pm.fecha_fin DESC
     `);
     const hoy = new Date();
-    const activas = [], proximasVencer = [], vencidas = [];
+    // Solo la membresía más reciente por proveedor
+    const ultimaPorProveedor = new Map();
     for (const m of rows) {
+      if (!ultimaPorProveedor.has(m.id_provedor)) {
+        ultimaPorProveedor.set(m.id_provedor, m);
+      }
+    }
+    const activas = [], proximasVencer = [], vencidas = [], inactivas = [];
+    for (const m of ultimaPorProveedor.values()) {
       const fechaFin = new Date(m.fecha_fin);
       const diasRestantes = Math.ceil((fechaFin - hoy) / (1000 * 60 * 60 * 24));
-      if (m.estado === 'activa' && diasRestantes > 7) {
+      let estadoActual = (m.estado || '').toLowerCase();
+      if (estadoActual === 'activo') estadoActual = 'activa';
+      if (estadoActual === 'inactiva' || estadoActual === 'inactivo') {
+        inactivas.push(m);
+        continue;
+      }
+      if (diasRestantes > 7) {
         activas.push(m);
-      } else if (m.estado === 'activa' && diasRestantes > 0 && diasRestantes <= 7) {
+      } else if (diasRestantes > 0) {
         proximasVencer.push(m);
       } else {
         vencidas.push(m);
       }
     }
-    res.json({ activas, proximasVencer, vencidas });
+    res.json({ activas, proximasVencer, vencidas, inactivas });
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener membresías' });
   }

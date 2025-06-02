@@ -120,7 +120,7 @@ const DatosProveedor = () => {
         p_e_r_s_o_n_a_id_persona: personaId
       });
 
-      const response = await fetch('http://localhost:3000/crear_proveedores', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/crear_proveedores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -141,17 +141,6 @@ const DatosProveedor = () => {
       if (data.proveedor && data.proveedor.id_provedor) {
         localStorage.setItem('provedor_negocio_id_provedor', data.proveedor.id_provedor);
       }
-
-      // === Guardar usuario automáticamente para sesión ===
-      // El usuario debe tener rol, expiresAt y PERSONA_id_persona
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 24); // 24 horas de sesión
-      localStorage.setItem('user', JSON.stringify({
-        rol: 'proveedor',
-        expiresAt: expiresAt.toISOString(),
-        PERSONA_id_persona: personaId
-      }));
-      // === Fin guardar usuario ===
 
       return true;
     } catch (error) {

@@ -31,7 +31,7 @@ const Membership = () => {
     }
     // Obtener el negocio activo
     const negocioActivoId = localStorage.getItem('negocio_activo');
-    fetch('http://localhost:3000/proveedores')
+    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
       .then(res => res.json())
       .then(data => {
         let prov;
@@ -47,12 +47,12 @@ const Membership = () => {
           return;
         }
         // Obtener la membresía actual del proveedor
-        fetch(`http://localhost:3000/membresia/${prov.id_provedor}`)
+        fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${prov.id_provedor}`)
           .then(res => res.json())
           .then(membresiaData => {
             setCurrentPlan(membresiaData);
             // Obtener el historial de pagos
-            fetch(`http://localhost:3000/pagos/${prov.id_provedor}`)
+            fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${prov.id_provedor}`)
               .then(res => res.json())
               .then(pagosData => {
                 setPaymentHistory(pagosData);
@@ -155,7 +155,7 @@ const Membership = () => {
         return;
       }
       // Llamar al backend para registrar el pago y renovar la membresía
-      const response = await fetch('http://localhost:3000/registrar_pago', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -175,7 +175,7 @@ const Membership = () => {
       }
       setShowRenewalModal(false);
       // Actualizar los datos de la membresía
-      const membresiaResponse = await fetch(`http://localhost:3000/membresia/${proveedorId}`);
+      const membresiaResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`);
       const membresiaData = await membresiaResponse.json();
       setCurrentPlan(membresiaData);
       setAlerta({ tipo: 'success', mensaje: '¡Membresía renovada exitosamente!' });
@@ -234,7 +234,7 @@ const Membership = () => {
         navigate('/pago-cambio-plan');
       } else {
         // Cambio de plan sin pago adicional
-        const response = await axios.post('http://localhost:3000/cambiar_plan', {
+        const response = await axios.post('https://spectacular-recreation-production.up.railway.app/cambiar_plan', {
           proveedorId,
           planId: planChangeDetails.newPlan.id,
           currentPlanId: planChangeDetails.currentPlan.id_prov_membresia,
@@ -242,7 +242,7 @@ const Membership = () => {
         });
         
         if (response.data.success) {
-          const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${proveedorId}`);
+          const membresiaResponse = await axios.get(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`);
           setCurrentPlan(membresiaResponse.data);
           setShowPlanChangeModal(false);
           setAlerta({
@@ -265,13 +265,13 @@ const Membership = () => {
     try {
       const idMembresia = currentPlan?.id_prov_membresia;
       if (!idMembresia) return;
-      await axios.put(`http://localhost:3000/api/membresias/${idMembresia}/estado`, { estado: nuevoEstado });
+      await axios.put(`https://spectacular-recreation-production.up.railway.app/api/membresias/${idMembresia}/estado`, { estado: nuevoEstado });
       setAlerta({
         tipo: 'success',
         mensaje: `Membresía ${nuevoEstado === 'activa' ? 'activada' : 'inactivada'} correctamente` 
       });
       // Actualizar los datos de la membresía
-      const membresiaResponse = await axios.get(`http://localhost:3000/membresia/${currentPlan.id_provedor}`);
+      const membresiaResponse = await axios.get(`https://spectacular-recreation-production.up.railway.app/membresia/${currentPlan.id_provedor}`);
       setCurrentPlan(membresiaResponse.data);
     } catch (err) {
       setAlerta({ tipo: 'error', mensaje: 'Error al cambiar el estado de la membresía' });

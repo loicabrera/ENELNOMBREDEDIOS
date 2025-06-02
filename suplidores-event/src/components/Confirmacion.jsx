@@ -33,7 +33,7 @@ const Confirmacion = () => {
     // Generar credenciales
     const generarCredenciales = async () => {
       try {
-        const response = await fetch('http://localhost:3000/generar_credenciales', {
+        const response = await fetch('https://spectacular-recreation-production.up.railway.app/generar_credenciales', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,15 @@ const Confirmacion = () => {
 
               <div className="mt-6">
                 <button
-                  onClick={() => navigate('/login')}
+                  onClick={() => {
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('negocio_activo');
+                    localStorage.removeItem('provedor_negocio_id_provedor');
+                    localStorage.removeItem('MEMBRESIA_id_membresia');
+                    localStorage.removeItem('PERSONA_id_persona');
+                    // Puedes agregar más claves si tu app guarda otras de sesión
+                    navigate('/login');
+                  }}
                   className="w-full py-3 px-4 rounded-xl font-semibold transition duration-300 text-[#012e33] shadow-lg bg-[#cbb4db] hover:bg-[#fbaccb] hover:scale-[1.02] active:scale-100"
                 >
                   Ir a iniciar sesión

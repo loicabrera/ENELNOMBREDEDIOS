@@ -15,18 +15,18 @@ const DetalleProducto = () => {
 
   useEffect(() => {
     // Obtener datos del producto
-    fetch('http://localhost:3000/api/productos-todos')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/productos-todos')
       .then(res => res.json())
       .then(async productos => {
         const prod = productos.find(p => p.id_productos === Number(id));
         setProducto(prod);
         // Obtener imágenes
-        const resImg = await fetch(`http://localhost:3000/api/imagenes_productos/por-producto/${id}`);
+        const resImg = await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/por-producto/${id}`);
         const imgs = resImg.ok ? await resImg.json() : [];
         setImagenes(imgs);
         // Obtener proveedor
         if (prod && prod.provedor_negocio_id_provedor) {
-          const resProv = await fetch(`http://localhost:3000/proveedores`);
+          const resProv = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores`);
           const proveedores = resProv.ok ? await resProv.json() : [];
           const prov = proveedores.find(p => p.id_provedor === prod.provedor_negocio_id_provedor);
           setProveedor(prov);
@@ -56,7 +56,7 @@ const DetalleProducto = () => {
       return;
     }
     try {
-      const res = await fetch('http://localhost:3000/usuarios', {
+      const res = await fetch('https://spectacular-recreation-production.up.railway.app/usuarios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,7 +80,7 @@ const DetalleProducto = () => {
   if (error || !producto) return <div className="p-8 text-center text-red-600">{error || 'Producto no encontrado'}</div>;
 
   // Carrusel: obtener la imagen actual
-  const imagenActual = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_productos/${imagenes[currentImageIdx]?.id_imagenes}` : null;
+  const imagenActual = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${imagenes[currentImageIdx]?.id_imagenes}` : null;
 
   const handlePrevImage = () => {
     setCurrentImageIdx((prev) => (prev === 0 ? imagenes.length - 1 : prev - 1));
@@ -147,7 +147,7 @@ const DetalleProducto = () => {
                 {imagenes.map((img, idx) => (
                   <img
                     key={img.id_imagenes}
-                    src={`http://localhost:3000/api/imagenes_productos/${img.id_imagenes}`}
+                    src={`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${img.id_imagenes}`}
                     alt={`Miniatura ${idx + 1}`}
                     className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
                     onClick={() => handleSelectImage(idx)}

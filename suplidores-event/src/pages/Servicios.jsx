@@ -12,13 +12,13 @@ const Servicios = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/servicios')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/servicios')
       .then(res => res.json())
       .then(async data => {
         // Filtrar servicios de negocios activos
         const serviciosFiltrados = await Promise.all(
           data.map(async (servicio) => {
-            const membresiaRes = await fetch(`http://localhost:3000/membresia/${servicio.provedor_negocio_id_provedor}`);
+            const membresiaRes = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${servicio.provedor_negocio_id_provedor}`);
             const membresiaData = await membresiaRes.json();
             return membresiaData.estado !== 'inactiva' ? servicio : null;
           })
@@ -31,7 +31,7 @@ const Servicios = () => {
         const imagenesObj = {};
         await Promise.all(
           serviciosActivos.map(async (servicio) => {
-            const resImg = await fetch(`http://localhost:3000/api/imagenes_servicio/por-servicio/${servicio.id_servicio}`);
+            const resImg = await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/por-servicio/${servicio.id_servicio}`);
             if (resImg.ok) {
               const imgs = await resImg.json();
               imagenesObj[servicio.id_servicio] = imgs;
@@ -83,7 +83,7 @@ const Servicios = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {serviciosFiltrados.map(servicio => {
             const imagenes = imagenesServicios[servicio.id_servicio] || [];
-            const imagenReal = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_servicio/${imagenes[0].id_imagenes}` : null;
+            const imagenReal = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/${imagenes[0].id_imagenes}` : null;
             return (
               <div
                 key={servicio.id_servicio}

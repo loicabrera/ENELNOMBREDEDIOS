@@ -14,7 +14,7 @@ const EditarProducto = () => {
   const [limiteFotos, setLimiteFotos] = useState(8);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/productos-todos')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/productos-todos')
       .then(res => res.json())
       .then(productos => {
         const prod = productos.find(p => p.id_productos === Number(id));
@@ -37,7 +37,7 @@ const EditarProducto = () => {
         setLoading(false);
       });
     // Cargar imágenes actuales
-    fetch(`http://localhost:3000/api/imagenes_productos/por-producto/${id}`)
+    fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/por-producto/${id}`)
       .then(res => res.json())
       .then(setImagenes);
     // Cargar límite de fotos
@@ -67,7 +67,7 @@ const EditarProducto = () => {
     e.preventDefault();
     try {
       // 1. Actualizar datos del producto
-      const res = await fetch(`http://localhost:3000/api/productos/${id}`, {
+      const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/productos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -78,14 +78,14 @@ const EditarProducto = () => {
       }
       // 2. Eliminar imágenes marcadas
       for (let imgId of imagenesEliminadas) {
-        await fetch(`http://localhost:3000/api/imagenes_productos/${imgId}`, { method: 'DELETE' });
+        await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${imgId}`, { method: 'DELETE' });
       }
       // 3. Subir nuevas imágenes
       for (let img of imagenesNuevas) {
         const formData = new FormData();
         formData.append('imagen', img);
         formData.append('productos_id_productos', id);
-        await fetch('http://localhost:3000/api/imagenes_productos', {
+        await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
           method: 'POST',
           body: formData
         });
@@ -169,7 +169,7 @@ const EditarProducto = () => {
               {imagenes.map(img => (
                 <div key={img.id_imagenes} className="relative group">
                   <img
-                    src={`http://localhost:3000/api/imagenes_productos/${img.id_imagenes}`}
+                    src={`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${img.id_imagenes}`}
                     alt="Imagen producto"
                     className="w-24 h-24 object-cover rounded-lg border"
                   />

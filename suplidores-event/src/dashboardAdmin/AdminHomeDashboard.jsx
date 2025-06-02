@@ -9,7 +9,7 @@ export default function AdminHomeDashboard() {
   const [loadingMembresias, setLoadingMembresias] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:3000/proveedores')
+    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
       .then(res => res.json())
       .then(data => {
         setProveedores(data);
@@ -19,7 +19,7 @@ export default function AdminHomeDashboard() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/membresias/resumen')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/resumen')
       .then(res => res.json())
       .then(data => {
         console.log('Membresías recibidas:', data);

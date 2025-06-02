@@ -10,14 +10,14 @@ const Productos = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/productos-todos')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/productos-todos')
       .then(res => res.json())
       .then(async data => {
         setProductos(data);
         const imagenesObj = {};
         await Promise.all(
           data.map(async (producto) => {
-            const resImg = await fetch(`http://localhost:3000/api/imagenes_productos/por-producto/${producto.id_productos}`);
+            const resImg = await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/por-producto/${producto.id_productos}`);
             if (resImg.ok) {
               const imgs = await resImg.json();
               imagenesObj[producto.id_productos] = imgs;
@@ -66,7 +66,7 @@ const Productos = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {productosFiltrados.map(producto => {
             const imagenes = imagenesProductos[producto.id_productos] || [];
-            const imagenReal = imagenes.length > 0 ? `http://localhost:3000/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
+            const imagenReal = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
             return (
               <div
                 key={producto.id_productos}

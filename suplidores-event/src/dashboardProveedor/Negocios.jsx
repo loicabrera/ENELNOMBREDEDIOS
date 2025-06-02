@@ -22,14 +22,14 @@ const Negocios = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:3000/proveedores');
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores');
       const data = await response.json();
       const negociosFiltrados = data.filter(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
       
       // Obtener el estado de membresía para cada negocio
       const negociosConEstado = await Promise.all(
         negociosFiltrados.map(async (negocio) => {
-          const membresiaRes = await fetch(`http://localhost:3000/membresia/${negocio.id_provedor}`);
+          const membresiaRes = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${negocio.id_provedor}`);
           const membresiaData = await membresiaRes.json();
           return {
             ...negocio,
@@ -86,7 +86,7 @@ const Negocios = () => {
   const handleEliminarNegocio = async (idNegocio) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este negocio? Esta acción no se puede deshacer.')) return;
     try {
-      const res = await fetch(`http://localhost:3000/proveedores/${idNegocio}`, {
+      const res = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${idNegocio}`, {
         method: 'DELETE'
       });
       if (res.ok) {

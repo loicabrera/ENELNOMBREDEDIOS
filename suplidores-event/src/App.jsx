@@ -155,9 +155,7 @@ function App() {
         <Route
           path="/pago"
           element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><PaymentContainer /></Layout>
-            </ProtectedRoute>
+            <Layout><PaymentContainer /></Layout>
           }
         />
 

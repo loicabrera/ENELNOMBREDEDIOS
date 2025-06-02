@@ -24,7 +24,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
     try {
       // Verificar que el servidor esté disponible
       try {
-        const serverCheck = await fetch('http://localhost:3000');
+        const serverCheck = await fetch('https://spectacular-recreation-production.up.railway.app');
         if (!serverCheck.ok) {
           throw new Error('El servidor no está respondiendo correctamente');
         }
@@ -33,7 +33,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
       }
 
       // Crear el PaymentIntent en el backend
-      const response = await fetch('http://localhost:3000/create-payment-intent', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -63,8 +63,12 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Obtener el ID de persona desde localStorage
-        const personaId = localStorage.getItem('PERSONA_id_persona');
+        // Obtener el ID de persona desde localStorage o desde el usuario autenticado
+        let personaId = localStorage.getItem('PERSONA_id_persona');
+        if (!personaId) {
+          const user = JSON.parse(localStorage.getItem('user'));
+          personaId = user?.PERSONA_id_p || user?.PERSONA_id_persona || null;
+        }
         const pendingPlanChange = JSON.parse(localStorage.getItem('pending_plan_change'));
 
         if (!personaId || !pendingPlanChange) {
@@ -83,7 +87,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
         console.log('Enviando datos de pago:', paymentData);
 
         // Llamar al backend para registrar el pago y actualizar el plan
-        const pagoResponse = await fetch('http://localhost:3000/registrar_pago_cambio_plan', {
+        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago_cambio_plan', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',

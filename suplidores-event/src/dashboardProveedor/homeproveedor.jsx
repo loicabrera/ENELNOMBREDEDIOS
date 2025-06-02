@@ -28,7 +28,7 @@ const HomeProveedor = () => {
     // Obtener el negocio activo
     const negocioActivoId = localStorage.getItem('negocio_activo');
 
-    fetch('http://localhost:3000/proveedores')
+    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
       .then(res => res.json())
       .then(data => {
         let proveedorLogueado;
@@ -43,9 +43,9 @@ const HomeProveedor = () => {
           setProveedor(proveedorLogueado);
           // Fetch productos y servicios publicados
           Promise.all([
-            fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedorLogueado.id_provedor}`).then(r => r.json()),
-            fetch('http://localhost:3000/api/servicios').then(r => r.json()),
-            fetch(`http://localhost:3000/membresia/${proveedorLogueado.id_provedor}`).then(r => r.json())
+            fetch(`https://spectacular-recreation-production.up.railway.app/api/productos?provedor_negocio_id_provedor=${proveedorLogueado.id_provedor}`).then(r => r.json()),
+            fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(r => r.json()),
+            fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorLogueado.id_provedor}`).then(r => r.json())
           ]).then(([productos, servicios, membresiaData]) => {
             const misServicios = servicios.filter(s => s.provedor_negocio_id_provedor === proveedorLogueado.id_provedor);
             setPublicaciones({
