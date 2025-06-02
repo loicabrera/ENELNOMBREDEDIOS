@@ -42,7 +42,7 @@ const LoginProveedor = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/login_proveedor', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/login_proveedor', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
