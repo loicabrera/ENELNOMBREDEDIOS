@@ -63,8 +63,12 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
       }
 
       if (paymentIntent.status === 'succeeded') {
-        // Obtener el ID de persona desde localStorage
-        const personaId = localStorage.getItem('PERSONA_id_persona');
+        // Obtener el ID de persona desde localStorage o desde el usuario autenticado
+        let personaId = localStorage.getItem('PERSONA_id_persona');
+        if (!personaId) {
+          const user = JSON.parse(localStorage.getItem('user'));
+          personaId = user?.PERSONA_id_p || user?.PERSONA_id_persona || null;
+        }
         const pendingPlanChange = JSON.parse(localStorage.getItem('pending_plan_change'));
 
         if (!personaId || !pendingPlanChange) {
