@@ -33,7 +33,7 @@ const Confirmacion = () => {
     // Generar credenciales
     const generarCredenciales = async () => {
       try {
-        const response = await fetch('http://localhost:3000/generar_credenciales', {
+        const response = await fetch('https://spectacular-recreation-production.up.railway.app/generar_credenciales', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

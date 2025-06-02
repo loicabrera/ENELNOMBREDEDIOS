@@ -8,7 +8,7 @@ const Membresias = () => {
   const [razonInactivacion, setRazonInactivacion] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/membresias/admin')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/admin')
       .then(res => res.json())
       .then(data => {
         setMembresias(data);
@@ -29,7 +29,7 @@ const Membresias = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:3000/api/membresias/${selectedMembresia.id_prov_membresia}/estado`, {
+      const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/membresias/${selectedMembresia.id_prov_membresia}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -41,7 +41,7 @@ const Membresias = () => {
       if (!res.ok) throw new Error('Error al cambiar el estado');
       
       // Actualizar la lista de membresías
-      const updatedData = await fetch('http://localhost:3000/api/membresias/admin').then(res => res.json());
+      const updatedData = await fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/admin').then(res => res.json());
       setMembresias(updatedData);
       
       // Cerrar el modal y limpiar el estado
@@ -55,7 +55,7 @@ const Membresias = () => {
 
   const cambiarEstadoMembresia = async (id, nuevoEstado) => {
     try {
-      const res = await fetch(`http://localhost:3000/api/membresias/${id}/estado`, {
+      const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/membresias/${id}/estado`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ estado: nuevoEstado })
@@ -63,7 +63,7 @@ const Membresias = () => {
       if (!res.ok) throw new Error('Error al cambiar el estado');
       
       // Actualizar la lista de membresías
-      const updatedData = await fetch('http://localhost:3000/api/membresias/admin').then(res => res.json());
+      const updatedData = await fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/admin').then(res => res.json());
       setMembresias(updatedData);
     } catch (error) {
       alert('No se pudo cambiar el estado de la membresía');

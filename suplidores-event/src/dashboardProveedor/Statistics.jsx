@@ -77,7 +77,7 @@ const Statistics = () => {
     }
     // Obtener el negocio activo
     const negocioActivoId = localStorage.getItem('negocio_activo');
-    fetch('http://localhost:3000/proveedores')
+    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
       .then(res => res.json())
       .then(data => {
         let prov;

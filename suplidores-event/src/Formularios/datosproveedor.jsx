@@ -120,7 +120,7 @@ const DatosProveedor = () => {
         p_e_r_s_o_n_a_id_persona: personaId
       });
 
-      const response = await fetch('http://localhost:3000/crear_proveedores', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/crear_proveedores', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

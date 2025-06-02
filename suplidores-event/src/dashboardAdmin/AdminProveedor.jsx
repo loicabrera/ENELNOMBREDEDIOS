@@ -16,7 +16,7 @@ const AdminProveedor = () => {
     const [proveedoresPorMes, setProveedoresPorMes] = useState({ labels: [], data: [] });
 
     useEffect(() => {
-      fetch('http://localhost:3000/proveedores')
+      fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
         .then(res => res.json())
         .then(data => {
           setProveedores(data);
@@ -54,12 +54,12 @@ const AdminProveedor = () => {
             data: Object.values(meses)
           });
         });
-      fetch('http://localhost:3000/api/membresias/resumen')
+      fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/resumen')
         .then(res => res.json())
         .then(data => setMembresias(data));
       Promise.all([
-        fetch('http://localhost:3000/api/productos-todos').then(r => r.json()),
-        fetch('http://localhost:3000/api/servicios').then(r => r.json())
+        fetch('https://spectacular-recreation-production.up.railway.app/api/productos-todos').then(r => r.json()),
+        fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(r => r.json())
       ]).then(([productos, servicios]) => {
         const pubs = [...productos.map(p => ({...p, tipo: 'Producto'})), ...servicios.map(s => ({...s, tipo: 'Servicio'}))];
         setPublicaciones(pubs);
@@ -71,7 +71,7 @@ const AdminProveedor = () => {
         setCategorias(catCount);
       });
       const hoy = new Date().toISOString().slice(0, 10);
-      fetch('http://localhost:3000/usuarios')
+      fetch('https://spectacular-recreation-production.up.railway.app/usuarios')
         .then(res => res.json())
         .then(data => {
           const hoyCount = data.filter(m => m.fecha && m.fecha.startsWith(hoy)).length;

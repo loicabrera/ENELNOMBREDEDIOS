@@ -14,7 +14,7 @@ const Notifications = () => {
         }
         // Obtener el negocio activo
         const negocioActivoId = localStorage.getItem('negocio_activo');
-        const resProveedor = await fetch(`http://localhost:3000/proveedores`);
+        const resProveedor = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores`);
         if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
         const proveedores = await resProveedor.json();
         let proveedor;
@@ -27,7 +27,7 @@ const Notifications = () => {
         if (!proveedor) throw new Error('No se encontró el proveedor');
         const idProveedor = proveedor.id_provedor;
         // 2. Obtener los mensajes de ese proveedor
-        const response = await fetch(`http://localhost:3000/usuarios?provedor_negocio_id_provedor=${idProveedor}`);
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/usuarios?provedor_negocio_id_provedor=${idProveedor}`);
         if (!response.ok) {
           throw new Error('Error al obtener los mensajes');
         }

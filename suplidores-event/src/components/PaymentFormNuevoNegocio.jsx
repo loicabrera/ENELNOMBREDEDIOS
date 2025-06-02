@@ -30,7 +30,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName
         return;
       }
 
-      const response = await fetch('http://localhost:3000/create-payment-intent', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName
         // Obtener el ID de persona
         const personaId = localStorage.getItem('PERSONA_id_persona');
         // Llamar al backend para registrar el pago y activar la membresía
-        const pagoResponse = await fetch('http://localhost:3000/registrar_pago', {
+        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

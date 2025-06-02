@@ -10,7 +10,7 @@ const HistorialPagos = () => {
   const [focusedRow, setFocusedRow] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:3000/pagos')
+    fetch('https://spectacular-recreation-production.up.railway.app/pagos')
       .then(res => res.json())
       .then(data => {
         setPagos(data);

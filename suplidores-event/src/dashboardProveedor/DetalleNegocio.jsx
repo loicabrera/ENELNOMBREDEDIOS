@@ -8,7 +8,7 @@ const DetalleNegocio = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:3000/proveedores/${id}`)
+    fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${id}`)
       .then(res => {
         if (!res.ok) throw new Error('No se encontró el negocio');
         return res.json();

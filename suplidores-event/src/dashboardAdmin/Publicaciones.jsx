@@ -15,7 +15,7 @@ const Publicaciones = () => {
     const fetchData = async () => {
       try {
         // Intentar obtener productos
-        const productosResponse = await fetch('http://localhost:3000/api/productos-todos');
+        const productosResponse = await fetch('https://spectacular-recreation-production.up.railway.app/api/productos-todos');
         if (!productosResponse.ok) {
           throw new Error(`Error al obtener productos: ${productosResponse.status}`);
         }
@@ -23,7 +23,7 @@ const Publicaciones = () => {
         console.log('Productos recibidos:', productos);
 
         // Intentar obtener servicios
-        const serviciosResponse = await fetch('http://localhost:3000/api/servicios');
+        const serviciosResponse = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios');
         if (!serviciosResponse.ok) {
           throw new Error(`Error al obtener servicios: ${serviciosResponse.status}`);
         }
@@ -31,7 +31,7 @@ const Publicaciones = () => {
         console.log('Servicios recibidos:', servicios);
 
         // Intentar obtener proveedores
-        const proveedoresResponse = await fetch('http://localhost:3000/proveedores');
+        const proveedoresResponse = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores');
         if (!proveedoresResponse.ok) {
           throw new Error(`Error al obtener proveedores: ${proveedoresResponse.status}`);
         }

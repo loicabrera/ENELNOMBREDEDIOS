@@ -124,7 +124,7 @@ const DatosPersonas = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/crear_persona', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/crear_persona', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

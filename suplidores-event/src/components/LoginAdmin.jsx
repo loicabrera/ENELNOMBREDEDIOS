@@ -48,7 +48,7 @@ const LoginAdmin = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:3000/login_admin', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/login_admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

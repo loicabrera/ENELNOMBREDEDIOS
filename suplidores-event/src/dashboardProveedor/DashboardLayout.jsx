@@ -45,7 +45,7 @@ export default function DashboardLayout() {
         const negocioActivoId = localStorage.getItem('negocio_activo');
         console.log('Negocio activo ID:', negocioActivoId);
         
-        const resProveedor = await fetch('http://localhost:3000/proveedores');
+        const resProveedor = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores');
         if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
         const proveedores = await resProveedor.json();
         
@@ -63,7 +63,7 @@ export default function DashboardLayout() {
 
         console.log('Verificando notificaciones para proveedor:', proveedor.id_provedor);
         // Verificar notificaciones no leídas
-        const res = await fetch(`http://localhost:3000/api/notificaciones/nuevas?proveedor_id=${proveedor.id_provedor}`);
+        const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/notificaciones/nuevas?proveedor_id=${proveedor.id_provedor}`);
         if (!res.ok) throw new Error('Error al verificar notificaciones');
         const data = await res.json();
         console.log('Respuesta de notificaciones:', data);
@@ -72,7 +72,7 @@ export default function DashboardLayout() {
         // Si estamos en la página de notificaciones, marcar como leídas
         if (location.pathname === '/dashboard-proveedor/notificaciones') {
           console.log('Marcando notificaciones como leídas');
-          await fetch('http://localhost:3000/api/notificaciones/leer', {
+          await fetch('https://spectacular-recreation-production.up.railway.app/api/notificaciones/leer', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ proveedor_id: proveedor.id_provedor })

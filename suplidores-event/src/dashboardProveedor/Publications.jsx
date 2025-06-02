@@ -60,7 +60,7 @@ const Publications = () => {
     }
     // Obtener el negocio activo
     const negocioActivoId = localStorage.getItem('negocio_activo');
-    fetch('http://localhost:3000/proveedores')
+    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
       .then(res => res.json())
       .then(data => {
         let prov;
@@ -73,7 +73,7 @@ const Publications = () => {
         setProveedor(prov);
         if (prov) {
           // Obtener membresía
-          fetch(`http://localhost:3000/membresia/${prov.id_provedor}`)
+          fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${prov.id_provedor}`)
             .then(res => res.json())
             .then(membresiaData => {
               setMembresia(membresiaData);
@@ -81,7 +81,7 @@ const Publications = () => {
             })
             .catch(() => setLoadingMembresia(false));
           // Obtener límite de fotos para productos
-          fetch(`http://localhost:3000/api/limite-fotos?provedor_negocio_id_provedor=${prov.id_provedor}`)
+          fetch(`https://spectacular-recreation-production.up.railway.app/api/limite-fotos?provedor_negocio_id_provedor=${prov.id_provedor}`)
             .then(res => {
               if (!res.ok) {
                 if (res.status === 404) {
@@ -101,7 +101,7 @@ const Publications = () => {
               setLimiteFotosServicio(0);
             });
           // Obtener productos del proveedor
-          fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
+          fetch(`https://spectacular-recreation-production.up.railway.app/api/productos?provedor_negocio_id_provedor=${prov.id_provedor}`)
             .then(res => {
               if (!res.ok) {
                 if (res.status === 403) {
@@ -115,14 +115,14 @@ const Publications = () => {
             .then(setProductos)
             .catch(() => setProductos([]));
           // Obtener servicios del proveedor
-          fetch(`http://localhost:3000/api/servicios`)
+          fetch(`https://spectacular-recreation-production.up.railway.app/api/servicios`)
             .then(res => res.json())
             .then(servs => {
               const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === prov.id_provedor);
               setServicios(misServicios);
               // Por cada servicio, obtener sus imágenes
               misServicios.forEach(servicio => {
-                fetch(`http://localhost:3000/api/imagenes_servicio/por-servicio/${servicio.id_servicio}`)
+                fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/por-servicio/${servicio.id_servicio}`)
                   .then(res => res.json())
                   .then(imgs => {
                     setImagenesServicios(prev => ({
@@ -195,7 +195,7 @@ const Publications = () => {
   const handleCrearProducto = async (nuevoProducto) => {
     if (!proveedor) return;
     // Crear producto
-    const res = await fetch('http://localhost:3000/api/productos', {
+    const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/productos', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -210,7 +210,7 @@ const Publications = () => {
         const formData = new FormData();
         formData.append('imagen', img);
         formData.append('productos_id_productos', data.id_producto);
-        await fetch('http://localhost:3000/api/imagenes_productos', {
+        await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
           method: 'POST',
           body: formData
         });
@@ -226,7 +226,7 @@ const Publications = () => {
         imagenes: []
       });
       // Recargar productos
-      fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
+      fetch(`https://spectacular-recreation-production.up.railway.app/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
         .then(res => res.json())
         .then(setProductos);
     }
@@ -267,7 +267,7 @@ const Publications = () => {
     }
     try {
       // 1. Crear el servicio
-      const res = await fetch('http://localhost:3000/api/servicios', {
+      const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -289,7 +289,7 @@ const Publications = () => {
           const formData = new FormData();
           formData.append('imagen', img);
           formData.append('SERVICIO_id_servicio', data.id_servicio);
-          await fetch('http://localhost:3000/api/imagenes_servicio', {
+          await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
             method: 'POST',
             body: formData
           });
@@ -304,7 +304,7 @@ const Publications = () => {
           imagenes: []
         });
         // Recargar la lista de servicios
-        const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+        const servs = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(res => res.json());
         const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
         setServicios(misServicios);
       }
@@ -324,14 +324,14 @@ const Publications = () => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:3000/api/servicios/${id}`, {
+      const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/servicios/${id}`, {
         method: 'DELETE'
       });
       if (!res.ok) {
         throw new Error('Error al eliminar el servicio');
       }
       // Actualizar la lista de servicios
-      const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+      const servs = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(res => res.json());
       const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
       setServicios(misServicios);
       alert('Servicio eliminado exitosamente');
@@ -355,7 +355,7 @@ const Publications = () => {
     
     if (pub.tipo === 'Producto') {
       try {
-        const res = await fetch(`http://localhost:3000/api/imagenes_productos/por-producto/${pub.id_productos}`);
+        const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/por-producto/${pub.id_productos}`);
         const imgs = await res.json();
         setImagenes(prev => ({
           ...prev,
@@ -381,17 +381,17 @@ const Publications = () => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar esta publicación?')) return;
     try {
       if (pub.tipo === 'Producto') {
-        const res = await fetch(`http://localhost:3000/api/productos/${pub.id_productos}`, { method: 'DELETE' });
+        const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/productos/${pub.id_productos}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Error al eliminar el producto');
         // Actualizar productos
-        fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
+        fetch(`https://spectacular-recreation-production.up.railway.app/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`)
           .then(res => res.json())
           .then(setProductos);
       } else {
-        const res = await fetch(`http://localhost:3000/api/servicios/${pub.id_servicio}`, { method: 'DELETE' });
+        const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/servicios/${pub.id_servicio}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Error al eliminar el servicio');
         // Actualizar servicios
-        const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+        const servs = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(res => res.json());
         const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
         setServicios(misServicios);
       }
@@ -453,7 +453,7 @@ const Publications = () => {
 
       try {
         // Crear el servicio
-        const res = await fetch('http://localhost:3000/api/servicios', {
+        const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -472,7 +472,7 @@ const Publications = () => {
             const formDataImg = new FormData();
             formDataImg.append('imagen', img);
             formDataImg.append('SERVICIO_id_servicio', data.id_servicio);
-            await fetch('http://localhost:3000/api/imagenes_servicio', {
+            await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
               method: 'POST',
               body: formDataImg
             });
@@ -481,7 +481,7 @@ const Publications = () => {
           alert('Servicio creado con éxito');
           setTipoVendedor('selector');
           // Recargar servicios
-          const servs = await fetch('http://localhost:3000/api/servicios').then(res => res.json());
+          const servs = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(res => res.json());
           const misServicios = servs.filter(s => s.provedor_negocio_id_provedor === proveedor.id_provedor);
           setServicios(misServicios);
         }
@@ -689,7 +689,7 @@ const Publications = () => {
 
       try {
         // Crear el producto
-        const res = await fetch('http://localhost:3000/api/productos', {
+        const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/productos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -709,7 +709,7 @@ const Publications = () => {
             const formDataImg = new FormData();
             formDataImg.append('imagen', img);
             formDataImg.append('productos_id_productos', data.id_producto);
-            await fetch('http://localhost:3000/api/imagenes_productos', {
+            await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
               method: 'POST',
               body: formDataImg
             });
@@ -718,7 +718,7 @@ const Publications = () => {
           alert('Producto creado con éxito');
           setTipoVendedor('selector');
           // Recargar productos
-          const prods = await fetch(`http://localhost:3000/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`).then(res => res.json());
+          const prods = await fetch(`https://spectacular-recreation-production.up.railway.app/api/productos?provedor_negocio_id_provedor=${proveedor.id_provedor}`).then(res => res.json());
           setProductos(prods);
         }
       } catch (error) {

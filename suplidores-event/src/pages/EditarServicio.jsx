@@ -14,7 +14,7 @@ const EditarServicio = () => {
   const [limiteFotos, setLimiteFotos] = useState(8);
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/servicios')
+    fetch('https://spectacular-recreation-production.up.railway.app/api/servicios')
       .then(res => res.json())
       .then(servicios => {
         const serv = servicios.find(s => s.id_servicio === Number(id));
@@ -37,7 +37,7 @@ const EditarServicio = () => {
         setLoading(false);
       });
     // Cargar imágenes actuales
-    fetch(`http://localhost:3000/api/imagenes_servicio/por-servicio/${id}`)
+    fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/por-servicio/${id}`)
       .then(res => res.json())
       .then(setImagenes);
     // Cargar límite de fotos (opcional)
@@ -65,7 +65,7 @@ const EditarServicio = () => {
     e.preventDefault();
     try {
       // 1. Actualizar datos del servicio
-      const res = await fetch(`http://localhost:3000/api/servicios/${id}`, {
+      const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/servicios/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -76,14 +76,14 @@ const EditarServicio = () => {
       }
       // 2. Eliminar imágenes marcadas
       for (let imgId of imagenesEliminadas) {
-        await fetch(`http://localhost:3000/api/imagenes_servicio/${imgId}`, { method: 'DELETE' });
+        await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/${imgId}`, { method: 'DELETE' });
       }
       // 3. Subir nuevas imágenes
       for (let img of imagenesNuevas) {
         const formData = new FormData();
         formData.append('imagen', img);
         formData.append('SERVICIO_id_servicio', id);
-        await fetch('http://localhost:3000/api/imagenes_servicio', {
+        await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
           method: 'POST',
           body: formData
         });
@@ -170,7 +170,7 @@ const EditarServicio = () => {
               {imagenes.map(img => (
                 <div key={img.id_imagenes} className="relative group">
                   <img
-                    src={`http://localhost:3000/api/imagenes_servicio/${img.id_imagenes}`}
+                    src={`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/${img.id_imagenes}`}
                     alt="Imagen servicio"
                     className="w-24 h-24 object-cover rounded-lg border"
                   />

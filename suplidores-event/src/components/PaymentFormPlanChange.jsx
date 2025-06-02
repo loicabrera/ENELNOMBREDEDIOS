@@ -24,7 +24,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
     try {
       // Verificar que el servidor esté disponible
       try {
-        const serverCheck = await fetch('http://localhost:3000');
+        const serverCheck = await fetch('https://spectacular-recreation-production.up.railway.app');
         if (!serverCheck.ok) {
           throw new Error('El servidor no está respondiendo correctamente');
         }
@@ -33,7 +33,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
       }
 
       // Crear el PaymentIntent en el backend
-      const response = await fetch('http://localhost:3000/create-payment-intent', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
         console.log('Enviando datos de pago:', paymentData);
 
         // Llamar al backend para registrar el pago y actualizar el plan
-        const pagoResponse = await fetch('http://localhost:3000/registrar_pago_cambio_plan', {
+        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago_cambio_plan', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
