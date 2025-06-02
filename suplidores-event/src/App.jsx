@@ -147,18 +147,14 @@ function App() {
         <Route
           path="/pago"
           element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><PaymentContainer /></Layout>
-            </ProtectedRoute>
+            <Layout><PaymentContainer /></Layout>
           }
         />
 
         <Route
           path="/pago-cambio-plan"
           element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><PaymentContainerPlanChange /></Layout>
-            </ProtectedRoute>
+            <Layout><PaymentContainerPlanChange /></Layout>
           }
         />
 
