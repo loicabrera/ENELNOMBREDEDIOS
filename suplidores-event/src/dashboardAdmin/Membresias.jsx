@@ -6,6 +6,7 @@ const Membresias = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedMembresia, setSelectedMembresia] = useState(null);
   const [razonInactivacion, setRazonInactivacion] = useState('');
+  const [conteoVencidasResumen, setConteoVencidasResumen] = useState(0);
 
   useEffect(() => {
     fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/admin')
@@ -15,6 +16,13 @@ const Membresias = () => {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/resumen')
+      .then(res => res.json())
+      .then(data => {
+        setConteoVencidasResumen(data.vencidas);
+      })
+      .catch(error => console.error('Error fetching resumen:', error));
   }, []);
 
   const handleInactivarClick = (membresia) => {
@@ -168,29 +176,49 @@ const Membresias = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 ml-10">Membresías Activas</h2>
-          {membresias.activas.map((membresia) => (
-            <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="activa" />
-          ))}
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Vencidas ({conteoVencidasResumen})</h2>
+          {loading ? (
+            <p className="text-gray-500">Cargando membresías vencidas...</p>
+          ) : membresias.vencidas && membresias.vencidas.length > 0 ? (
+            membresias.vencidas.map((membresia) => (
+              <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="vencida" />
+            ))
+          ) : (
+            <p className="text-gray-500">No hay membresías vencidas.</p>
+          )}
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Próximas a Vencer</h2>
-          {membresias.proximasVencer.map((membresia) => (
-            <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="proxima" />
-          ))}
+          <h2 className="text-xl font-semibold text-gray-900 mb-4 ml-10">Membresías Activas ({membresias.activas.length})</h2>
+          {loading ? (
+            <p className="text-gray-500">Cargando membresías activas...</p>
+          ) : membresias.activas && membresias.activas.length > 0 ? (
+            membresias.activas.map((membresia) => (
+              <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="activa" />
+            ))
+          ) : (
+            <p className="text-gray-500">No hay membresías activas.</p>
+          )}
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Vencidas</h2>
-          {membresias.vencidas.map((membresia) => (
-            <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="vencida" />
-          ))}
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">Próximas a Vencer ({membresias.proximasVencer.length})</h2>
+          {loading ? (
+            <p className="text-gray-500">Cargando membresías próximas a vencer...</p>
+          ) : membresias.proximasVencer && membresias.proximasVencer.length > 0 ? (
+            membresias.proximasVencer.map((membresia) => (
+              <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="proxima" />
+            ))
+          ) : (
+            <p className="text-gray-500">No hay membresías próximas a vencer.</p>
+          )}
         </div>
 
         <div>
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Inactivas</h2>
-          {membresias.inactivas && membresias.inactivas.length > 0 ? (
+          {loading ? (
+            <p className="text-gray-500">Cargando membresías inactivas...</p>
+          ) : membresias.inactivas && membresias.inactivas.length > 0 ? (
             membresias.inactivas.map((membresia) => (
               <MembresiaCard key={membresia.id_prov_membresia} membresia={membresia} tipo="inactiva" />
             ))

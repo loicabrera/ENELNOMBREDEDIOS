@@ -10,6 +10,8 @@ const Publicaciones = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [publicacionSeleccionada, setPublicacionSeleccionada] = useState(null);
   const [error, setError] = useState(null);
+  const [showFieldModal, setShowFieldModal] = useState(false);
+  const [fieldModalContent, setFieldModalContent] = useState({ title: '', content: '' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -128,6 +130,16 @@ const Publicaciones = () => {
     setPublicacionSeleccionada(null);
   };
 
+  const handleFieldClick = (title, content) => {
+    setFieldModalContent({ title, content });
+    setShowFieldModal(true);
+  };
+
+  const cerrarFieldModal = () => {
+    setShowFieldModal(false);
+    setFieldModalContent({ title: '', content: '' });
+  };
+
   return (
     <div className="p-4 sm:p-6 md:p-8 w-full max-w-7xl mx-auto">
       <div className="mb-6">
@@ -159,7 +171,7 @@ const Publicaciones = () => {
           </div>
           <div className="flex gap-4">
             <select
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
             >
@@ -169,7 +181,7 @@ const Publicaciones = () => {
               <option value="rechazado">Rechazados</option>
             </select>
             <select
-              className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={filtroCategoria}
               onChange={(e) => setFiltroCategoria(e.target.value)}
             >
@@ -184,42 +196,63 @@ const Publicaciones = () => {
 
       {/* Lista de publicaciones */}
       <div className="bg-white rounded-lg shadow">
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-fixed divide-y divide-gray-200 text-sm">
+        <div>
+          <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-2 py-3 w-1/6 truncate">Título</th>
-                <th className="px-2 py-3 w-1/6 truncate">Proveedor</th>
-                <th className="px-2 py-3 w-1/6 truncate">Categoría</th>
-                <th className="px-2 py-3 w-1/6 truncate">Fecha</th>
-                <th className="px-2 py-3 w-1/6 truncate">Estado</th>
-                <th className="px-2 py-3 w-1/12 truncate">Tipo</th>
-                <th className="px-2 py-3 w-1/6 truncate">Acciones</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="truncate">Título</p>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="truncate">Proveedor</p>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="truncate">Categoría</p>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="truncate">Estado</p>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="truncate">Tipo</p>
+                </th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <p className="truncate">Acciones</p>
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {publicacionesFiltradas.map((pub) => (
-                <tr key={pub.tipo + '-' + pub.id}>
-                  <td className="px-2 py-2 w-1/6 truncate">
-                    <div className="text-sm font-medium text-gray-900 truncate">{pub.titulo}</div>
-                    <div className="text-sm text-gray-500 truncate">{pub.descripcion}</div>
-                  </td>
-                  <td className="px-2 py-2 w-1/6 truncate">
-                    <div className="text-sm text-gray-900 truncate">{pub.proveedor}</div>
-                  </td>
-                  <td className="px-2 py-2 w-1/6 truncate">
-                    <div className="text-sm text-gray-900 truncate">{pub.categoria}</div>
-                  </td>
-                  <td className="px-2 py-2 w-1/6 truncate">
-                    <div className="text-sm text-gray-900 truncate">
-                      {pub.fecha ? new Date(pub.fecha).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      }) : 'No disponible'}
+                <tr key={pub.tipo + '-' + pub.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-2">
+                    <div className="flex items-center">
+                      <p 
+                        className="text-sm font-medium text-gray-900 truncate max-w-[200px] cursor-pointer hover:underline"
+                        title={pub.titulo}
+                        onClick={() => handleFieldClick('Título', pub.titulo)}
+                      >
+                        {pub.titulo.length > 10 ? pub.titulo.substring(0, 10) + '...' : pub.titulo}
+                      </p>
                     </div>
                   </td>
-                  <td className="px-2 py-2 w-1/6 truncate">
+                  <td className="px-4 py-2">
+                    <p 
+                      className="text-sm text-gray-900 truncate max-w-[150px] cursor-pointer hover:underline"
+                      title={pub.proveedor}
+                      onClick={() => handleFieldClick('Proveedor', pub.proveedor)}
+                    >
+                      {pub.proveedor.length > 10 ? pub.proveedor.substring(0, 10) + '...' : pub.proveedor}
+                    </p>
+                  </td>
+                  <td className="px-4 py-2">
+                    <p 
+                      className="text-sm text-gray-900 truncate max-w-[150px] cursor-pointer hover:underline"
+                      title={pub.categoria}
+                      onClick={() => handleFieldClick('Categoría', pub.categoria)}
+                    >
+                      {pub.categoria.length > 10 ? pub.categoria.substring(0, 10) + '...' : pub.categoria}
+                    </p>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center">
                       {getEstadoIcon(pub.estado)}
                       <span className={`ml-2 px-2 py-1 text-xs font-semibold rounded-full ${getEstadoColor(pub.estado)}`}>
@@ -227,22 +260,35 @@ const Publicaciones = () => {
                       </span>
                     </div>
                   </td>
-                  <td className="px-2 py-2 w-1/12 truncate">
+                  <td className="px-6 py-4">
                     <span className="text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-800">{pub.tipo}</span>
                   </td>
-                  <td className="px-2 py-2 w-1/6 truncate text-sm font-medium">
-                    <button 
-                      onClick={() => handleVerPublicacion(pub)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      Ver
-                    </button>
-                    {pub.estado === 'pendiente' && (
-                      <>
-                        <button className="text-green-600 hover:text-green-900 mr-3">Aprobar</button>
-                        <button className="text-red-600 hover:text-red-900">Rechazar</button>
-                      </>
-                    )}
+                  <td className="px-6 py-4">
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => handleVerPublicacion(pub)}
+                        className="text-blue-600 hover:text-blue-900 transition-colors"
+                        title="Ver detalles"
+                      >
+                        Ver
+                      </button>
+                      {pub.estado === 'pendiente' && (
+                        <>
+                          <button 
+                            className="text-green-600 hover:text-green-900 transition-colors"
+                            title="Aprobar publicación"
+                          >
+                            Aprobar
+                          </button>
+                          <button 
+                            className="text-red-600 hover:text-red-900 transition-colors"
+                            title="Rechazar publicación"
+                          >
+                            Rechazar
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -315,6 +361,32 @@ const Publicaciones = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={cerrarModal}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* New Modal for individual field details */}
+      {showFieldModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-gray-900">{fieldModalContent.title}</h3>
+              <button
+                onClick={cerrarFieldModal}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <p className="text-gray-700 whitespace-pre-wrap">{fieldModalContent.content}</p>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={cerrarFieldModal}
                 className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
                 Cerrar
