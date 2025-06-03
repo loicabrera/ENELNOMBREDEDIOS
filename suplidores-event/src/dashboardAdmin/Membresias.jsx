@@ -123,8 +123,8 @@ const Membresias = () => {
   );
 
   return (
-    <div className="ml-54 p-0">
-      <h1 className="text-2xl font-bold text-gray-900 mt-10 ml-28">Gestión de Membresías</h1>
+    <div className="p-4 sm:p-6 md:p-8">
+      <h1 className="text-2xl font-bold text-gray-900 mt-4 mb-6 text-center">Gestión de Membresías</h1>
 
       {/* Modal de confirmación */}
       {showModal && (
