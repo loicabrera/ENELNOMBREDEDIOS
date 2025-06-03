@@ -96,7 +96,7 @@ function App() {
       <Routes>
         {/* Rutas públicas (sin autenticación) */}
         <Route path="/login" element={<Login />} />
-        <Route path="/LoginAdmin" element={<LoginAdmin />} />
+        <Route path="/enelnombrededios" element={<LoginAdmin />} />
         <Route path="/" element={
           <ProtectedRoute allowedRoles={['cliente', 'admin']}>
             <Layout><Home /></Layout>

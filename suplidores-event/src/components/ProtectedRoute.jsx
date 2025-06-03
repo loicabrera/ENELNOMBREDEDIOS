@@ -52,11 +52,39 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log('========================');
 
   useEffect(() => {
+    // Verificación inmediata para proveedores
+    if (user && user.rol === 'proveedor') {
+      const rutasPermitidas = ['/dashboard-proveedor', '/pago-cambio-plan'];
+      const rutaActual = location.pathname;
+      
+      // Si la ruta actual no está en las rutas permitidas
+      if (!rutasPermitidas.some(ruta => rutaActual.startsWith(ruta))) {
+        console.log('Proveedor intentando acceder a ruta no permitida:', rutaActual);
+        setRedirectPath('/dashboard-proveedor');
+        setShouldRedirect(true);
+        return;
+      }
+    }
+
+    // Verificación específica para admin
+    if (user && user.rol === 'admin') {
+      const rutasAdmin = ['/dashboardadmin', '/enelnombrededios'];
+      const rutaActual = location.pathname;
+      
+      // Si el admin intenta salir de sus rutas permitidas o acceder al login de proveedor
+      if (!rutasAdmin.some(ruta => rutaActual.startsWith(ruta)) || rutaActual === '/login') {
+        console.log('Admin intentando acceder a ruta no permitida:', rutaActual);
+        setRedirectPath('/dashboardadmin');
+        setShouldRedirect(true);
+        return;
+      }
+    }
+
     if (!user || !user.rol) {
       console.log('No hay usuario válido, redirigiendo a login');
       clearUserData();
-      if (location.pathname.includes('dashboardadmin')) {
-        setRedirectPath('/LoginAdmin');
+      if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
+        setRedirectPath('/enelnombrededios');
       } else {
         setRedirectPath('/login');
       }
@@ -64,25 +92,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       return;
     }
 
-    // Verificación específica para proveedores
-    if (user.rol === 'proveedor') {
-      if (!location.pathname.includes('dashboard-proveedor') && 
-          !location.pathname.includes('pago-cambio-plan')) {
-        console.log('Proveedor intentando acceder a ruta no permitida');
-        setRedirectPath('/dashboard-proveedor');
-        setShouldRedirect(true);
-        return;
-      }
-    }
-
     // Verificación específica para rutas de admin
-    if (location.pathname.includes('dashboardadmin')) {
+    if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
       if (user.rol !== 'admin') {
         if (user.rol === 'proveedor') {
           setRedirectPath('/dashboard-proveedor');
         } else {
           clearUserData();
-          setRedirectPath('/LoginAdmin');
+          setRedirectPath('/enelnombrededios');
         }
         setShouldRedirect(true);
         return;
@@ -92,8 +109,18 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     // Verificación específica para clientes
     if (user.rol === 'cliente') {
       if (location.pathname.includes('dashboard-proveedor') || 
-          location.pathname.includes('dashboardadmin')) {
+          location.pathname.includes('dashboardadmin') ||
+          location.pathname.includes('enelnombrededios')) {
         setRedirectPath('/');
+        setShouldRedirect(true);
+        return;
+      }
+    }
+
+    // Verificación específica para rutas de proveedor
+    if (location.pathname === '/login') {
+      if (user && user.rol === 'admin') {
+        setRedirectPath('/dashboardadmin');
         setShouldRedirect(true);
         return;
       }
@@ -104,7 +131,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       if (user.rol === 'proveedor') {
         setRedirectPath('/dashboard-proveedor');
       } else if (user.rol === 'admin') {
-        setRedirectPath('/LoginAdmin');
+        setRedirectPath('/dashboardadmin');
       } else {
         setRedirectPath('/');
       }

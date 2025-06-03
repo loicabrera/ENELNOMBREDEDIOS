@@ -24,12 +24,16 @@ const LoginAdmin = () => {
           console.log('Sesión inválida encontrada, limpiando...');
           localStorage.removeItem('user');
           localStorage.removeItem('negocio_activo');
+          // Si no es admin, mantener en la página de login de admin
+          navigate('/enelnombrededios', { replace: true });
         }
       }
     } catch (error) {
       console.error('Error al verificar sesión:', error);
       localStorage.removeItem('user');
       localStorage.removeItem('negocio_activo');
+      // En caso de error, mantener en la página de login de admin
+      navigate('/enelnombrededios', { replace: true });
     }
   }, [navigate]);
 
@@ -79,8 +83,8 @@ const LoginAdmin = () => {
 
       console.log('Usuario admin guardado:', userData);
       
-      // Forzar la redirección al dashboard de admin
-      window.location.href = '/dashboardadmin';
+      // Redirigir al dashboard de admin
+      navigate('/dashboardadmin', { replace: true });
 
     } catch (error) {
       console.error('Error:', error);
