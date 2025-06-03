@@ -116,8 +116,8 @@ const Confirmacion = () => {
                       <span className="font-medium" style={{ textTransform: 'none' }}>{credentials.password}</span>
                     </div>
                   </div>
-                  <p className="mt-4 text-sm text-[#012e33]">
-                    Por favor, guarda estas credenciales en un lugar seguro. Las necesitarás para iniciar sesión.
+                  <p className="mt-4 text-sm bg-red-100 text-red-500">
+                    Por favor, guarda estas credenciales en un lugar seguro. Las necesitarás para iniciar sesión. Puedes tomar un screenshot para guardarlas.
                   </p>
                 </div>
               ) : null}
