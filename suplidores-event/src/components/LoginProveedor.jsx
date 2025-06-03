@@ -16,16 +16,13 @@ const LoginProveedor = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user && user.rol === 'proveedor') {
       // Si hay una sesión activa de proveedor, redirigir al dashboard
-      const from = location.state?.from?.pathname || '/dashboard-proveedor';
-      // Reemplazar la entrada actual en el historial
-      window.history.replaceState(null, '', from);
-      navigate(from, { replace: true });
+      navigate('/dashboard-proveedor', { replace: true });
     } else if (user) {
       // Si hay una sesión pero no es de proveedor, limpiarla
       localStorage.removeItem('user');
       localStorage.removeItem('negocio_activo');
     }
-  }, [navigate, location]);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -64,17 +61,16 @@ const LoginProveedor = () => {
       const expiresAt = new Date();
       expiresAt.setHours(expiresAt.getHours() + 24); // La sesión expira en 24 horas
       
-      localStorage.setItem('user', JSON.stringify({
+      const userData = {
         ...data.user,
         rol: 'proveedor',
         expiresAt: expiresAt.toISOString()
-      }));
+      };
+      
+      localStorage.setItem('user', JSON.stringify(userData));
 
-      // Redirigir al dashboard del proveedor o a la página anterior si existe
-      const from = location.state?.from?.pathname || '/dashboard-proveedor';
-      // Reemplazar la entrada actual en el historial
-      window.history.replaceState(null, '', from);
-      navigate(from, { replace: true });
+      // Redirigir al dashboard del proveedor
+      navigate('/dashboard-proveedor', { replace: true });
 
     } catch (error) {
       console.error('Error:', error);
@@ -85,84 +81,60 @@ const LoginProveedor = () => {
   };
 
   return (
-    <div className="fixed inset-0 w-full h-full flex items-center justify-center" style={{ position: 'fixed' }}>
-      {/* Overlay oscuro sobre la imagen de fondo */}
-      <div
-        className="absolute inset-0 z-0"
-        style={{
-          backgroundImage: 'url(../../img/imagen_fondo_login.png)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          filter: 'blur(2px) brightness(0.7)',
-        }}
-      />
-      <div className="absolute inset-0 bg-black opacity-40 z-10" />
-      <div className="relative z-20 w-full max-w-md px-2 sm:px-4 py-12 flex flex-col items-center justify-center" style={{ minHeight: 'unset' }}>
-        <div className="bg-white bg-opacity-95 rounded-3xl shadow-2xl p-8 w-full flex flex-col items-center">
-          {/* Espacio para el logo */}
-          <div className="w-full flex justify-center items-center mb-2" style={{ minHeight: 64 }}>
-            {/* Aquí puedes poner el logo, por ejemplo: <img src=\"URL_DEL_LOGO\" alt=\"Logo\" className=\"h-12\" /> */}
-          </div>
-          <h2 className="text-2xl font-extrabold text-gray-900 mb-2 text-center">Iniciar sesión como proveedor</h2>
-          <p className="text-sm text-gray-600 mb-6 text-center">Ingresa tus credenciales para acceder a tu cuenta</p>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Iniciar sesión como proveedor
+          </h2>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
-            <div className="mb-4 p-3 bg-red-50 rounded-md border border-red-200 w-full">
-              <p className="text-red-700 text-center">{error}</p>
+            <div className="rounded-md bg-red-50 p-4">
+              <div className="text-sm text-red-700">{error}</div>
             </div>
           )}
-          <form className="space-y-5 w-full" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">Usuario</label>
-              <div className="mt-1">
-                <input
-                  id="username"
-                  name="username"
-                  type="text"
-                  required
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Tu nombre de usuario"
-                />
-              </div>
+              <label htmlFor="username" className="sr-only">Usuario</label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Usuario"
+                value={formData.username}
+                onChange={handleChange}
+              />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Tu contraseña"
-                />
-              </div>
+              <label htmlFor="password" className="sr-only">Contraseña</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                placeholder="Contraseña"
+                value={formData.password}
+                onChange={handleChange}
+              />
             </div>
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-              >
-                {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
-              </button>
-            </div>
-          </form>
-          <div className="mt-6 w-full">
-            <div className="relative mb-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">¿No tienes una cuenta?</span>
-              </div>
-            </div>
-        
           </div>
-        </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                loading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700'
+              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+            >
+              {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

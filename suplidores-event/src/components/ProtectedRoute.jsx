@@ -1,9 +1,11 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectPath, setRedirectPath] = useState(null);
   let user = null;
   
   // Función para limpiar el localStorage de manera segura
@@ -49,44 +51,82 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log('Roles permitidos:', allowedRoles);
   console.log('========================');
 
-  // Si no hay usuario válido, redirigir al login correspondiente
-  if (!user || !user.rol) {
-    console.log('No hay usuario válido, redirigiendo a login');
-    clearUserData(); // Limpiar cualquier dato corrupto
+  useEffect(() => {
+    if (!user || !user.rol) {
+      console.log('No hay usuario válido, redirigiendo a login');
+      clearUserData();
+      if (location.pathname.includes('dashboardadmin')) {
+        setRedirectPath('/LoginAdmin');
+      } else {
+        setRedirectPath('/login');
+      }
+      setShouldRedirect(true);
+      return;
+    }
+
+    // Verificación específica para proveedores
+    if (user.rol === 'proveedor') {
+      if (!location.pathname.includes('dashboard-proveedor') && 
+          !location.pathname.includes('pago-cambio-plan')) {
+        console.log('Proveedor intentando acceder a ruta no permitida');
+        setRedirectPath('/dashboard-proveedor');
+        setShouldRedirect(true);
+        return;
+      }
+    }
+
+    // Verificación específica para rutas de admin
     if (location.pathname.includes('dashboardadmin')) {
-      navigate('/LoginAdmin', { replace: true });
-      return null;
+      if (user.rol !== 'admin') {
+        if (user.rol === 'proveedor') {
+          setRedirectPath('/dashboard-proveedor');
+        } else {
+          clearUserData();
+          setRedirectPath('/LoginAdmin');
+        }
+        setShouldRedirect(true);
+        return;
+      }
     }
-    navigate('/login', { replace: true });
-    return null;
-  }
 
-  // Verificación específica para rutas de admin
-  if (location.pathname.includes('dashboardadmin')) {
-    console.log('Ruta de admin detectada');
-    if (user.rol !== 'admin') {
-      console.log('Redirigiendo a LoginAdmin - Acceso no autorizado a ruta de admin');
-      clearUserData(); // Limpiar datos si no es admin
-      navigate('/LoginAdmin', { replace: true });
-      return null;
+    // Verificación específica para clientes
+    if (user.rol === 'cliente') {
+      if (location.pathname.includes('dashboard-proveedor') || 
+          location.pathname.includes('dashboardadmin')) {
+        setRedirectPath('/');
+        setShouldRedirect(true);
+        return;
+      }
     }
-  }
 
-  // Verificación de roles permitidos
-  if (allowedRoles && !allowedRoles.includes(user.rol)) {
-    console.log('Usuario no tiene rol permitido:', user.rol);
-    clearUserData(); // Limpiar datos si el rol no está permitido
-    if (user.rol === 'admin') {
-      navigate('/LoginAdmin', { replace: true });
-      return null;
+    // Verificación de roles permitidos
+    if (allowedRoles && !allowedRoles.includes(user.rol)) {
+      if (user.rol === 'proveedor') {
+        setRedirectPath('/dashboard-proveedor');
+      } else if (user.rol === 'admin') {
+        setRedirectPath('/LoginAdmin');
+      } else {
+        setRedirectPath('/');
+      }
+      setShouldRedirect(true);
+      return;
     }
-    navigate('/login', { replace: true });
-    return null;
-  }
+
+    setShouldRedirect(false);
+  }, [location.pathname, user, allowedRoles]);
+
+  useEffect(() => {
+    if (shouldRedirect && redirectPath) {
+      navigate(redirectPath, { replace: true });
+    }
+  }, [shouldRedirect, redirectPath, navigate]);
 
   // Si todo está bien, renderizar el componente
-  console.log('Acceso permitido para usuario:', user);
-  return children;
+  if (!shouldRedirect) {
+    return children;
+  }
+
+  return null;
 };
 
 export default ProtectedRoute; 
