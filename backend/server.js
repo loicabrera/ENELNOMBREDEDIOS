@@ -14,11 +14,15 @@ import mysql from 'mysql2/promise';
 import { Usuario } from './Models/Usuario.js';
 import { Membresia } from './Models/Membresias.js';
 import { Op } from 'sequelize';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+const JWT_SECRET = process.env.JWT_SECRET || 'tu_clave_secreta_para_jwt'; // Deberías usar una clave segura y guardarla en .env
 
 // Configuración de CORS más permisiva para desarrollo y producción
 app.use(cors({
@@ -31,6 +35,9 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
 }));
+
+// Middleware para parsear cookies
+app.use(cookieParser());
 
 // Middleware para manejar errores de CORS
 app.use((req, res, next) => {
@@ -100,6 +107,24 @@ const db = mysql.createPool({
   database: dbConfig.database,
   port: dbConfig.port
 });
+
+// Middleware para verificar JWT (ejemplo)
+const authenticateJWT = (req, res, next) => {
+  const token = req.cookies.token; // Intentar obtener el token de las cookies
+
+  if (!token) {
+    return res.sendStatus(401); // Si no hay token, no autorizado
+  }
+
+  jwt.verify(token, JWT_SECRET, (err, user) => {
+    if (err) {
+      console.error('Error al verificar JWT:', err);
+      return res.sendStatus(403); // Si el token no es válido, prohibido
+    }
+    req.user = user; // Agregar los datos del usuario decodificados a la solicitud
+    next(); // Continuar con la siguiente función middleware o ruta
+  });
+};
 
 // Rutas básicas
 app.get('/', (req, res) => {
@@ -227,14 +252,19 @@ app.get('/proveedores', async (req, res) => {
   }
 });
 
-// Ruta para obtener un negocio por su id
-app.get('/proveedores/:id', async (req, res) => {
+// Ruta para obtener un negocio por su id (proteger con JWT)
+app.get('/proveedores/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
+    // Opcional: Verificar que el id del proveedor solicitado coincide con el id en el token (para proteger datos sensibles del proveedor)
+    if (req.user.provedorId && req.user.provedorId !== parseInt(id)) {
+       return res.sendStatus(403); // Prohibido si el token no corresponde a este proveedor
+    }
     const [result] = await db.query('SELECT * FROM provedor_negocio WHERE id_provedor = ?', [id]);
     if (result.length === 0) return res.status(404).json({ error: 'No encontrado' });
     res.json(result[0]);
   } catch (error) {
+    console.error('Error al obtener proveedor autenticado:', error);
     res.status(500).json({ error: 'Error al obtener el proveedor' });
   }
 });
@@ -680,7 +710,7 @@ app.post('/api/productos', async (req, res) => {
   }
 });
 
-// Ruta para login de proveedor
+// Ruta para login de proveedor (modificar para emitir JWT)
 app.post('/login_proveedor', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -695,13 +725,40 @@ app.post('/login_proveedor', async (req, res) => {
       return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
     }
 
-    // Puedes traer más datos si lo necesitas, por ejemplo el id_persona
     const user = result[0];
 
-    res.json({ message: 'Login exitoso', user });
+    // Buscar el provedor_negocio_id_provedor asociado a esta persona
+    const [proveedorResult] = await conexion.query(
+      `SELECT id_provedor FROM provedor_negocio WHERE PERSONA_id_persona = ?`,
+      { replacements: [user.PERSONA_id_persona] }
+    );
+
+    if (proveedorResult.length === 0) {
+       // Manejar caso donde no se encuentra proveedor asociado, si aplica
+       console.warn('No se encontró proveedor asociado para la persona:', user.PERSONA_id_persona);
+       // Decide si quieres permitir el login sin un proveedor asociado o no.
+       // Para este flujo, asumiremos que se necesita un proveedor asociado para el dashboard de proveedor.
+       return res.status(401).json({ error: 'No se encontró un proveedor asociado a este usuario.' });
+    }
+
+    const provedorId = proveedorResult[0].id_provedor;
+
+    // Generar JWT
+    const token = jwt.sign(
+        { userId: user.id_login, personaId: user.PERSONA_id_persona, provedorId: provedorId }, // Payload con datos relevantes
+        JWT_SECRET, // Clave secreta
+        { expiresIn: '1h' } // Opciones, ej. expiración en 1 hora
+    );
+
+    // Enviar el token en una HttpOnly cookie
+    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' }); // 'secure' solo en producción
+
+    // Enviar respuesta exitosa (puedes incluir algunos datos básicos del usuario si es necesario en el cuerpo, pero no el id sensible)
+    res.json({ message: 'Login exitoso' });
+
   } catch (error) {
-    console.error('Error en login_proveedor:', error);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    console.error('Error en login_proveedor con JWT:', error);
+    res.status(500).json({ error: 'Error interno del servidor durante el login' });
   }
 });
 
@@ -760,9 +817,13 @@ app.post('/api/imagenes_productos', uploadMemoryProductos.single('imagen'), asyn
   }
 });
 
-// Endpoint para obtener productos de un proveedor SOLO si la membresía está activa
-app.get('/api/productos', async (req, res) => {
+// Endpoint para obtener productos de un proveedor SOLO si la membresía está activa (proteger con JWT)
+app.get('/api/productos', authenticateJWT, async (req, res) => {
   const { provedor_negocio_id_provedor } = req.query;
+  // Opcional: Verificar que el provedor_negocio_id_provedor solicitado coincide con el id en el token
+  if (req.user.provedorId && req.user.provedorId !== parseInt(provedor_negocio_id_provedor)) {
+     return res.sendStatus(403); // Prohibido
+  }
   if (!provedor_negocio_id_provedor) {
     return res.status(400).json({ error: 'Falta el id del proveedor' });
   }
@@ -1137,9 +1198,13 @@ app.get('/usuarios', async (req, res) => {
   }
 });
 
-// Endpoint para obtener el límite de fotos según la membresía activa del proveedor
-app.get('/api/limite-fotos', async (req, res) => {
+// Endpoint para obtener el límite de fotos según la membresía activa del proveedor (proteger con JWT)
+app.get('/api/limite-fotos', authenticateJWT, async (req, res) => {
   const { provedor_negocio_id_provedor } = req.query;
+   // Opcional: Verificar que el provedor_negocio_id_provedor solicitado coincide con el id en el token
+  if (req.user.provedorId && req.user.provedorId !== parseInt(provedor_negocio_id_provedor)) {
+     return res.sendStatus(403); // Prohibido
+  }
   if (!provedor_negocio_id_provedor) {
     return res.status(400).json({ error: 'Falta el id del proveedor' });
   }
@@ -1217,9 +1282,13 @@ app.put('/api/servicios/:id', async (req, res) => {
   }
 });
 
-// Endpoint para verificar notificaciones no leídas
-app.get('/api/notificaciones/nuevas', async (req, res) => {
+// Endpoint para verificar notificaciones no leídas (proteger con JWT)
+app.get('/api/notificaciones/nuevas', authenticateJWT, async (req, res) => {
   const { proveedor_id } = req.query;
+   // Opcional: Verificar que el proveedor_id solicitado coincide con el id en el token
+  if (req.user.provedorId && req.user.provedorId !== parseInt(proveedor_id)) {
+     return res.sendStatus(403); // Prohibido
+  }
   if (!proveedor_id) {
     return res.status(400).json({ error: 'Falta el ID del proveedor' });
   }
@@ -1236,9 +1305,13 @@ app.get('/api/notificaciones/nuevas', async (req, res) => {
   }
 });
 
-// Endpoint para marcar mensajes como leídos
-app.put('/api/notificaciones/leer', async (req, res) => {
+// Endpoint para marcar mensajes como leídos (proteger con JWT)
+app.put('/api/notificaciones/leer', authenticateJWT, async (req, res) => {
   const { proveedor_id } = req.body;
+  // Opcional: Verificar que el proveedor_id solicitado coincide con el id en el token
+  if (req.user.provedorId && req.user.provedorId !== parseInt(proveedor_id)) {
+     return res.sendStatus(403); // Prohibido
+  }
   if (!proveedor_id) {
     return res.status(400).json({ error: 'Falta el ID del proveedor' });
   }
@@ -1415,9 +1488,13 @@ app.post('/cambiar_plan', async (req, res) => {
   }
 });
 
-// Eliminar un negocio (proveedor) y sus datos relacionados
-app.delete('/proveedores/:id', async (req, res) => {
+// Eliminar un negocio (proveedor) y sus datos relacionados (proteger con JWT)
+app.delete('/proveedores/:id', authenticateJWT, async (req, res) => {
   const { id } = req.params;
+   // Opcional: Verificar que el id del proveedor solicitado coincide con el id en el token
+  if (req.user.provedorId && req.user.provedorId !== parseInt(id)) {
+     return res.sendStatus(403); // Prohibido
+  }
   try {
     // Eliminar membresías asociadas
     await conexion.query('DELETE FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ?', { replacements: [id] });
@@ -1435,109 +1512,21 @@ app.delete('/proveedores/:id', async (req, res) => {
   }
 });
 
-// Endpoint para registrar el pago de cambio de plan
-app.post('/registrar_pago_cambio_plan', async (req, res) => {
-  try {
-    const { monto, fecha_pago, monto_pago, newPlanId, proveedorId } = req.body;
-
-    console.log('Datos recibidos:', req.body);
-
-    // Validación detallada de datos requeridos
-    const camposFaltantes = [];
-    if (!monto) camposFaltantes.push('monto');
-    if (!fecha_pago) camposFaltantes.push('fecha_pago');
-    if (!monto_pago) camposFaltantes.push('monto_pago');
-    if (!newPlanId) camposFaltantes.push('newPlanId');
-    if (!proveedorId) camposFaltantes.push('proveedorId');
-
-    if (camposFaltantes.length > 0) {
-      console.log('Campos faltantes:', camposFaltantes);
-      return res.status(400).json({ 
-        error: `Faltan campos requeridos: ${camposFaltantes.join(', ')}`,
-        camposFaltantes 
-      });
-    }
-
-    // Iniciar transacción
-    await db.query('START TRANSACTION');
-
-    try {
-      // Primero verificar si existe una membresía para este proveedor
-      const [[membresiaExistente]] = await db.query(
-        'SELECT * FROM PROVEDOR_MEMBRESIA WHERE id_provedor = ? ORDER BY fecha_fin DESC LIMIT 1',
-        [proveedorId]
-      );
-
-      console.log('Membresía existente:', membresiaExistente);
-
-      if (!membresiaExistente) {
-        throw new Error('No se encontró una membresía para este proveedor');
-      }
-
-      // Obtener la duración del nuevo plan
-      const [[membresia]] = await db.query(
-        'SELECT duracion_dias FROM MEMBRESIA WHERE id_memebresia = ?',
-        [newPlanId]
-      );
-
-      if (!membresia) {
-        throw new Error('No se encontró el plan seleccionado');
-      }
-
-      const duracionDias = Number(membresia.duracion_dias) || 30;
-
-      // Calcular nuevas fechas
-      const fechaInicio = new Date();
-      const fechaFin = new Date(fechaInicio);
-      fechaFin.setDate(fechaFin.getDate() + duracionDias);
-
-      console.log('Actualizando membresía con:', {
-        newPlanId,
-        fechaInicio,
-        fechaFin,
-        proveedorId,
-        id_prov_membresia: membresiaExistente.id_prov_membresia
-      });
-
-      // Actualizar la membresía del proveedor con el nuevo plan
-      console.log('Ejecutando UPDATE con valores:', [newPlanId, fechaInicio, fechaFin, membresiaExistente.id_prov_membresia]);
-      const [updateResult] = await db.query(
-        `UPDATE PROVEDOR_MEMBRESIA 
-         SET MEMBRESIA_id_memebresia = ?, 
-             fecha_inicio = ?, 
-             fecha_fin = ?, 
-             estado = 'activa'
-         WHERE id_prov_membresia = ?`,
-        [newPlanId, fechaInicio, fechaFin, membresiaExistente.id_prov_membresia]
-      );
-
-      console.log('Resultado del UPDATE:', updateResult);
-
-      if (updateResult.affectedRows === 0) {
-        throw new Error('No se pudo actualizar la membresía');
-      }
-
-      // Confirmar transacción
-      await db.query('COMMIT');
-
-      res.json({
-        success: true,
-        message: 'Plan actualizado exitosamente'
-      });
-
-    } catch (error) {
-      // Revertir transacción en caso de error
-      await db.query('ROLLBACK');
-      throw error;
-    }
-
-  } catch (error) {
-    console.error('Error al actualizar el plan:', error);
-    res.status(500).json({
-      error: 'Error al actualizar el plan',
-      detalles: error.message
-    });
+// Endpoint para registrar el pago de cambio de plan (proteger con JWT)
+app.post('/registrar_pago_cambio_plan', authenticateJWT, async (req, res) => {
+  const { monto, fecha_pago, monto_pago, newPlanId, proveedorId } = req.body;
+  // Opcional: Verificar que el proveedorId solicitado coincide con el id en el token
+  if (req.user.provedorId && req.user.provedorId !== parseInt(proveedorId)) {
+     return res.sendStatus(403); // Prohibido
   }
+  // ... existing code ...
+});
+
+// Nueva ruta para verificar la autenticación del usuario mediante JWT
+app.get('/api/verify-auth', authenticateJWT, (req, res) => {
+  // Si llegamos aquí, el authenticateJWT middleware ya verificó el token y adjuntó el payload a req.user
+  // Podemos enviar de vuelta los datos no sensibles del usuario contenidos en el token
+  res.json({ isAuthenticated: true, user: { userId: req.user.userId, personaId: req.user.personaId, provedorId: req.user.provedorId } });
 });
 
 // Iniciar el servidor

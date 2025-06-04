@@ -11,20 +11,21 @@ const LoginProveedor = () => {
     password: ''
   });
 
-  // Verificar si ya hay una sesión activa
+  // Verificar si ya hay una sesión activa (NOTA: Esta lógica necesita ser actualizada para usar JWT cookies en lugar de localStorage)
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user && user.rol === 'proveedor') {
-      // Si hay una sesión activa de proveedor, redirigir al dashboard
-      const from = location.state?.from?.pathname || '/dashboard-proveedor';
-      // Reemplazar la entrada actual en el historial
-      window.history.replaceState(null, '', from);
-      navigate(from, { replace: true });
-    } else if (user) {
-      // Si hay una sesión pero no es de proveedor, limpiarla
-      localStorage.removeItem('user');
-      localStorage.removeItem('negocio_activo');
-    }
+    // const user = JSON.parse(localStorage.getItem('user'));
+    // if (user && user.rol === 'proveedor') {
+    //   // Si hay una sesión activa de proveedor, redirigir al dashboard
+    //   const from = location.state?.from?.pathname || '/dashboard-proveedor';
+    //   // Reemplazar la entrada actual en el historial
+    //   window.history.replaceState(null, '', from);
+    //   navigate(from, { replace: true });
+    // } else if (user) {
+    //   // Si hay una sesión pero no es de proveedor, limpiarla
+    //   localStorage.removeItem('user');
+    //   localStorage.removeItem('negocio_activo');
+    // }
+    // TODO: Implementar verificación de autenticación basada en JWT (ej. llamando a una ruta segura en el backend)
   }, [navigate, location]);
 
   const handleChange = (e) => {
@@ -46,29 +47,25 @@ const LoginProveedor = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // Importante: Para enviar cookies en peticiones cross-origin (aunque estemos en localhost), a veces se necesita:
+          // 'Access-Control-Allow-Credentials': 'true',
         },
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      // Aunque la respuesta del backend ahora solo devuelve { message: 'Login exitoso' }, 
+      // la cookie HttpOnly con el JWT se habrá guardado automáticamente por el navegador.
+      // No necesitamos leer el cuerpo de la respuesta para obtener el ID del proveedor aquí.
+      const data = await response.json(); // Leer la respuesta para verificar si hay errores en el cuerpo
 
       if (!response.ok) {
         throw new Error(data.error || 'Error al iniciar sesión');
       }
 
-      // Limpiar cualquier sesión existente
+      // *** ELIMINAR ALMACENAMIENTO DE DATOS SENSIBLES EN localStorage ***
       localStorage.removeItem('user');
       localStorage.removeItem('negocio_activo');
-
-      // Guardar datos del usuario en localStorage con el rol de proveedor y fecha de expiración
-      const expiresAt = new Date();
-      expiresAt.setHours(expiresAt.getHours() + 24); // La sesión expira en 24 horas
-      
-      localStorage.setItem('user', JSON.stringify({
-        ...data.user,
-        rol: 'proveedor',
-        expiresAt: expiresAt.toISOString()
-      }));
+      // data.user y el ID sensible ya NO se guardan aquí.
 
       // Redirigir al dashboard del proveedor o a la página anterior si existe
       const from = location.state?.from?.pathname || '/dashboard-proveedor';
