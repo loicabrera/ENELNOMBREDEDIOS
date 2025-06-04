@@ -1,4 +1,4 @@
-import { Route, BrowserRouter as Router, Routes, Navigate, Outlet } from "react-router-dom";
+import { Route, Routes, Navigate, Outlet } from "react-router-dom";
 import HomeProveedor from "./dashboardProveedor/homeproveedor";
 import DashboardLayout from './dashboardProveedor/DashboardLayout';
 import Profile from './dashboardProveedor/Profile';
@@ -92,179 +92,177 @@ function AdminLayout() {
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        {/* Rutas públicas (sin autenticación) */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/enelnombrededios" element={<LoginAdmin />} />
-        <Route path="/" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><Home /></Layout>
+    <Routes>
+      {/* Rutas públicas (sin autenticación) */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/enelnombrededios" element={<LoginAdmin />} />
+      <Route path="/" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><Home /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/home" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><Home /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/servicios" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><Servicios /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/productos" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><Productos /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/vende" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><Vende /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/servicios/:id" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><DetalleServicio /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/productos/:id" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><DetalleProducto /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/registro/:plan" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><DatosPersonas /></Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/registro/evento" element={
+        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+          <Layout><DatosProveedor /></Layout>
+        </ProtectedRoute>
+      } />
+
+      {/* Rutas protegidas para administradores */}
+      <Route
+        path="/dashboardadmin/*"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <AdminLayout />
           </ProtectedRoute>
-        } />
-        <Route path="/home" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><Home /></Layout>
+        }
+      >
+        <Route index element={<AdminHomeDashboard />} />
+        <Route path="proveedores" element={<AdminProveedor />} />
+        <Route path="publicaciones" element={<Publicaciones />} />
+        <Route path="membresias" element={<Membresias />} />
+        <Route path="pagos" element={<HistorialPagos />} />
+      </Route>
+
+      {/* Rutas protegidas para proveedores */}
+      <Route
+        path="/dashboard-proveedor/*"
+        element={
+          <ProtectedRoute allowedRoles={['proveedor']}>
+            <DashboardLayout />
           </ProtectedRoute>
-        } />
-        <Route path="/servicios" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><Servicios /></Layout>
+        }
+      >
+        <Route index element={<HomeProveedor />} />
+        <Route path="perfil" element={<Profile />} />
+        <Route path="negocios" element={<Negocios />} />
+        <Route path="publicaciones" element={<Publications />} />
+        <Route path="membresia" element={<Membership />} />
+        <Route path="notificaciones" element={<Notifications />} />
+        <Route path="negocios/:id" element={<DetalleNegocio />} />
+      </Route>
+
+      {/* Rutas protegidas para clientes */}
+      <Route
+        path="/perfil"
+        element={
+          <ProtectedRoute allowedRoles={['cliente']}>
+            <Layout><Perfil /></Layout>
           </ProtectedRoute>
-        } />
-        <Route path="/productos" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><Productos /></Layout>
+        }
+      />
+
+      {/* Rutas protegidas para pagos */}
+      <Route
+        path="/pago"
+        element={
+          <Layout><PaymentContainer /></Layout>
+        }
+      />
+
+      <Route
+        path="/pago-cambio-plan"
+        element={
+          <ProtectedRoute allowedRoles={['proveedor']}>
+            <Layout><PaymentContainerPlanChange /></Layout>
           </ProtectedRoute>
-        } />
-        <Route path="/vende" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><Vende /></Layout>
+        }
+      />
+
+      <Route
+        path="/pago-nuevo-negocio"
+        element={
+          <SimpleLayout>
+            <PaymentContainerNuevoNegocio />
+          </SimpleLayout>
+        }
+      />
+
+      <Route
+        path="/confirmacion"
+        element={
+          <Layout><Confirmacion /></Layout>
+        }
+      />
+
+      {/* Ruta para el formulario de datos del proveedor (accesible para todos) */}
+      <Route
+        path="/datosproveedor"
+        element={
+          <SimpleLayout><DatosProveedor /></SimpleLayout>
+        }
+      />
+      <Route
+        path="/datosproveedor2"
+        element={
+          <SimpleLayout><DatosProveedor2 /></SimpleLayout>
+        }
+      />
+
+      {/* Rutas protegidas para edición */}
+      <Route
+        path="/productos/editar/:id"
+        element={
+          <ProtectedRoute allowedRoles={['proveedor']}>
+            <Layout><EditarProducto /></Layout>
           </ProtectedRoute>
-        } />
-        <Route path="/servicios/:id" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><DetalleServicio /></Layout>
+        }
+      />
+      <Route
+        path="/servicios/editar/:id"
+        element={
+          <ProtectedRoute allowedRoles={['proveedor']}>
+            <Layout><EditarServicio /></Layout>
           </ProtectedRoute>
-        } />
-        <Route path="/productos/:id" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><DetalleProducto /></Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/registro/:plan" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><DatosPersonas /></Layout>
-          </ProtectedRoute>
-        } />
-        <Route path="/registro/evento" element={
-          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-            <Layout><DatosProveedor /></Layout>
-          </ProtectedRoute>
-        } />
+        }
+      />
 
-        {/* Rutas protegidas para administradores */}
-        <Route
-          path="/dashboardadmin/*"
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<AdminHomeDashboard />} />
-          <Route path="proveedores" element={<AdminProveedor />} />
-          <Route path="publicaciones" element={<Publicaciones />} />
-          <Route path="membresias" element={<Membresias />} />
-          <Route path="pagos" element={<HistorialPagos />} />
-        </Route>
+      <Route
+        path="/confirmacion-nuevo-negocio"
+        element={
+          <Layout>
+            <ConfirmacionNuevoNegocio />
+          </Layout>
+        }
+      />
 
-        {/* Rutas protegidas para proveedores */}
-        <Route
-          path="/dashboard-proveedor/*"
-          element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route index element={<HomeProveedor />} />
-          <Route path="perfil" element={<Profile />} />
-          <Route path="negocios" element={<Negocios />} />
-          <Route path="publicaciones" element={<Publications />} />
-          <Route path="membresia" element={<Membership />} />
-          <Route path="notificaciones" element={<Notifications />} />
-          <Route path="negocios/:id" element={<DetalleNegocio />} />
-        </Route>
-
-        {/* Rutas protegidas para clientes */}
-        <Route
-          path="/perfil"
-          element={
-            <ProtectedRoute allowedRoles={['cliente']}>
-              <Layout><Perfil /></Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Rutas protegidas para pagos */}
-        <Route
-          path="/pago"
-          element={
-            <Layout><PaymentContainer /></Layout>
-          }
-        />
-
-        <Route
-          path="/pago-cambio-plan"
-          element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><PaymentContainerPlanChange /></Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/pago-nuevo-negocio"
-          element={
-            <SimpleLayout>
-              <PaymentContainerNuevoNegocio />
-            </SimpleLayout>
-          }
-        />
-
-        <Route
-          path="/confirmacion"
-          element={
-            <Layout><Confirmacion /></Layout>
-          }
-        />
-
-        {/* Ruta para el formulario de datos del proveedor (accesible para todos) */}
-        <Route
-          path="/datosproveedor"
-          element={
-            <SimpleLayout><DatosProveedor /></SimpleLayout>
-          }
-        />
-        <Route
-          path="/datosproveedor2"
-          element={
-            <SimpleLayout><DatosProveedor2 /></SimpleLayout>
-          }
-        />
-
-        {/* Rutas protegidas para edición */}
-        <Route
-          path="/productos/editar/:id"
-          element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><EditarProducto /></Layout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/servicios/editar/:id"
-          element={
-            <ProtectedRoute allowedRoles={['proveedor']}>
-              <Layout><EditarServicio /></Layout>
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path="/confirmacion-nuevo-negocio"
-          element={
-            <Layout>
-              <ConfirmacionNuevoNegocio />
-            </Layout>
-          }
-        />
-
-        {/* Ruta por defecto */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+      {/* Ruta por defecto */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

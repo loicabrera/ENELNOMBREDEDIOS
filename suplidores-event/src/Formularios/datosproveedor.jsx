@@ -137,11 +137,6 @@ const DatosProveedor = () => {
         throw new Error(data.error || 'Error al crear el proveedor');
       }
 
-      // Guarda el ID del proveedor en localStorage
-      if (data.proveedor && data.proveedor.id_provedor) {
-        localStorage.setItem('provedor_negocio_id_provedor', data.proveedor.id_provedor);
-      }
-
       return true;
     } catch (error) {
       console.error('Error al crear proveedor:', error);
@@ -160,13 +155,6 @@ const DatosProveedor = () => {
       if (success) {
         const plan = location.state?.plan;
         const planInfo = planes[plan];
-
-        // Asignar el ID de membresía según el plan
-        let membresiaId = 1;
-        if (plan === 'basico') membresiaId = 1;
-        else if (plan === 'destacado') membresiaId = 2;
-        else if (plan === 'premium') membresiaId = 3;
-        localStorage.setItem('MEMBRESIA_id_membresia', membresiaId);
 
         // Redirigir a la página de pago con el monto correcto
         navigate('/pago', { 

@@ -30,10 +30,11 @@ app.use(cors({
     'http://localhost:5173',
     'https://spectacular-recreation-production.up.railway.app',
     'https://enelnombrededios-production.up.railway.app'
-  ], // URLs de tus frontends permitidos
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  credentials: true
+  credentials: true,
+  exposedHeaders: ['Set-Cookie']
 }));
 
 // Middleware para parsear cookies
@@ -53,6 +54,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
   res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Expose-Headers', 'Set-Cookie');
   next();
 });
 
@@ -110,18 +112,25 @@ const db = mysql.createPool({
 
 // Middleware para verificar JWT (ejemplo)
 const authenticateJWT = (req, res, next) => {
+  console.log('=== authenticateJWT Debug ===');
+  console.log('Cookies recibidas:', req.cookies);
   const token = req.cookies.token; // Intentar obtener el token de las cookies
 
+  console.log('Token extraído:', token);
+
   if (!token) {
+    console.log('No se encontró token, enviando 401.');
     return res.sendStatus(401); // Si no hay token, no autorizado
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
       console.error('Error al verificar JWT:', err);
+      console.log('Token inválido, enviando 403.');
       return res.sendStatus(403); // Si el token no es válido, prohibido
     }
     req.user = user; // Agregar los datos del usuario decodificados a la solicitud
+    console.log('Token verificado, usuario:', user);
     next(); // Continuar con la siguiente función middleware o ruta
   });
 };
@@ -734,10 +743,7 @@ app.post('/login_proveedor', async (req, res) => {
     );
 
     if (proveedorResult.length === 0) {
-       // Manejar caso donde no se encuentra proveedor asociado, si aplica
        console.warn('No se encontró proveedor asociado para la persona:', user.PERSONA_id_persona);
-       // Decide si quieres permitir el login sin un proveedor asociado o no.
-       // Para este flujo, asumiremos que se necesita un proveedor asociado para el dashboard de proveedor.
        return res.status(401).json({ error: 'No se encontró un proveedor asociado a este usuario.' });
     }
 
@@ -745,16 +751,35 @@ app.post('/login_proveedor', async (req, res) => {
 
     // Generar JWT
     const token = jwt.sign(
-        { userId: user.id_login, personaId: user.PERSONA_id_persona, provedorId: provedorId }, // Payload con datos relevantes
-        JWT_SECRET, // Clave secreta
-        { expiresIn: '1h' } // Opciones, ej. expiración en 1 hora
+        { userId: user.id_login, personaId: user.PERSONA_id_persona, provedorId: provedorId },
+        JWT_SECRET,
+        { expiresIn: '1h' }
     );
 
-    // Enviar el token en una HttpOnly cookie
-    res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' }); // 'secure' solo en producción
+    // Configurar la cookie con opciones seguras
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Secure solo en producción para pruebas locales
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // None en producción, Lax en desarrollo
+      maxAge: 3600000, // 1 hora en milisegundos
+      path: '/', // Accesible en todas las rutas
+      domain: process.env.NODE_ENV === 'production' ? '.railway.app' : undefined // Dominio Railway en producción
+    };
 
-    // Enviar respuesta exitosa (puedes incluir algunos datos básicos del usuario si es necesario en el cuerpo, pero no el id sensible)
-    res.json({ message: 'Login exitoso' });
+    console.log('Estableciendo cookie con opciones:', cookieOptions);
+
+    // Enviar el token en una HttpOnly cookie
+    res.cookie('token', token, cookieOptions);
+
+    // Enviar respuesta exitosa con datos básicos del usuario
+    res.json({ 
+      message: 'Login exitoso',
+      user: {
+        userId: user.id_login,
+        personaId: user.PERSONA_id_persona,
+        provedorId: provedorId
+      }
+    });
 
   } catch (error) {
     console.error('Error en login_proveedor con JWT:', error);
@@ -1522,11 +1547,17 @@ app.post('/registrar_pago_cambio_plan', authenticateJWT, async (req, res) => {
   // ... existing code ...
 });
 
-// Nueva ruta para verificar la autenticación del usuario mediante JWT
+// Ruta para verificar autenticación
 app.get('/api/verify-auth', authenticateJWT, (req, res) => {
-  // Si llegamos aquí, el authenticateJWT middleware ya verificó el token y adjuntó el payload a req.user
-  // Podemos enviar de vuelta los datos no sensibles del usuario contenidos en el token
-  res.json({ isAuthenticated: true, user: { userId: req.user.userId, personaId: req.user.personaId, provedorId: req.user.provedorId } });
+  // Si el middleware authenticateJWT no lanzó un error, el usuario está autenticado
+  res.json({
+    isAuthenticated: true,
+    user: {
+      userId: req.user.userId,
+      personaId: req.user.personaId,
+      provedorId: req.user.provedorId
+    }
+  });
 });
 
 // Iniciar el servidor

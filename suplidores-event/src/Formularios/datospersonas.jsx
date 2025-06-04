@@ -138,9 +138,6 @@ const DatosPersonas = () => {
         throw new Error(data.error || 'Error al crear la persona');
       }
 
-      // Guardar el ID de la persona en localStorage
-      localStorage.setItem('PERSONA_id_persona', data.persona.id_persona);
-
       // Redirigir al formulario de proveedor
       navigate('/datosproveedor', {
         state: {

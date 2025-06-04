@@ -1,159 +1,69 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useAuth } from '../context/AuthContext'; // Importar useAuth
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-  const [redirectPath, setRedirectPath] = useState(null);
-  let user = null;
-  
-  // Función para limpiar el localStorage de manera segura
-  const clearUserData = () => {
-    try {
-      localStorage.removeItem('user');
-      localStorage.removeItem('negocio_activo');
-      console.log('Datos de usuario limpiados del localStorage');
-    } catch (error) {
-      console.error('Error al limpiar localStorage:', error);
-    }
-  };
+  const { isAuthenticated, loading, user } = useAuth(); // Usar el hook useAuth para obtener el estado de autenticación
 
-  // Función para validar el usuario
-  const isValidUser = (userData) => {
-    return userData && 
-           typeof userData === 'object' && 
-           userData.rol && 
-           typeof userData.rol === 'string' &&
-           userData.expiresAt && 
-           new Date(userData.expiresAt) > new Date();
-  };
+  // Ya no necesitamos la lógica de useEffect para verificar autenticación aquí, 
+  // el AuthContext lo maneja al inicio de la aplicación.
+  // Eliminamos también la lógica de localStorage y las funciones relacionadas.
 
-  try {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      user = JSON.parse(userStr);
-      // Si el usuario no es válido o la sesión expiró, limpiar el localStorage
-      if (!isValidUser(user)) {
-        console.log('Usuario inválido o sesión expirada, limpiando...');
-        clearUserData();
-        user = null;
-      }
-    }
-  } catch (error) {
-    console.error('Error al leer/parsear usuario:', error);
-    clearUserData();
-  }
-  
   console.log('=== ProtectedRoute Debug ===');
-  console.log('Usuario en ProtectedRoute:', user);
+  console.log('Estado de autenticación (AuthContext):', { isAuthenticated, loading, user });
   console.log('Ruta actual:', location.pathname);
   console.log('Roles permitidos:', allowedRoles);
   console.log('========================');
 
-  useEffect(() => {
-    // Verificación inmediata para proveedores
-    if (user && user.rol === 'proveedor') {
-      const rutasPermitidas = ['/dashboard-proveedor', '/pago-cambio-plan'];
-      const rutaActual = location.pathname;
-      
-      // Si la ruta actual no está en las rutas permitidas
-      if (!rutasPermitidas.some(ruta => rutaActual.startsWith(ruta))) {
-        console.log('Proveedor intentando acceder a ruta no permitida:', rutaActual);
-        setRedirectPath('/dashboard-proveedor');
-        setShouldRedirect(true);
-        return;
-      }
-    }
-
-    // Verificación específica para admin
-    if (user && user.rol === 'admin') {
-      const rutasAdmin = ['/dashboardadmin', '/enelnombrededios'];
-      const rutaActual = location.pathname;
-      
-      // Si el admin intenta salir de sus rutas permitidas o acceder al login de proveedor
-      if (!rutasAdmin.some(ruta => rutaActual.startsWith(ruta)) || rutaActual === '/login') {
-        console.log('Admin intentando acceder a ruta no permitida:', rutaActual);
-        setRedirectPath('/dashboardadmin');
-        setShouldRedirect(true);
-        return;
-      }
-    }
-
-    if (!user || !user.rol) {
-      console.log('No hay usuario válido, redirigiendo a login');
-      clearUserData();
-      if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
-        setRedirectPath('/enelnombrededios');
-      } else {
-        setRedirectPath('/login');
-      }
-      setShouldRedirect(true);
-      return;
-    }
-
-    // Verificación específica para rutas de admin
-    if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
-      if (user.rol !== 'admin') {
-        if (user.rol === 'proveedor') {
-          setRedirectPath('/dashboard-proveedor');
-        } else {
-          clearUserData();
-          setRedirectPath('/enelnombrededios');
-        }
-        setShouldRedirect(true);
-        return;
-      }
-    }
-
-    // Verificación específica para clientes
-    if (user.rol === 'cliente') {
-      if (location.pathname.includes('dashboard-proveedor') || 
-          location.pathname.includes('dashboardadmin') ||
-          location.pathname.includes('enelnombrededios')) {
-        setRedirectPath('/');
-        setShouldRedirect(true);
-        return;
-      }
-    }
-
-    // Verificación específica para rutas de proveedor
-    if (location.pathname === '/login') {
-      if (user && user.rol === 'admin') {
-        setRedirectPath('/dashboardadmin');
-        setShouldRedirect(true);
-        return;
-      }
-    }
-
-    // Verificación de roles permitidos
-    if (allowedRoles && !allowedRoles.includes(user.rol)) {
-      if (user.rol === 'proveedor') {
-        setRedirectPath('/dashboard-proveedor');
-      } else if (user.rol === 'admin') {
-        setRedirectPath('/dashboardadmin');
-      } else {
-        setRedirectPath('/');
-      }
-      setShouldRedirect(true);
-      return;
-    }
-
-    setShouldRedirect(false);
-  }, [location.pathname, user, allowedRoles]);
-
-  useEffect(() => {
-    if (shouldRedirect && redirectPath) {
-      navigate(redirectPath, { replace: true });
-    }
-  }, [shouldRedirect, redirectPath, navigate]);
-
-  // Si todo está bien, renderizar el componente
-  if (!shouldRedirect) {
-    return children;
+  // Mientras carga la verificación, puedes mostrar un spinner o un mensaje
+  if (loading) {
+    return <div>Cargando autenticación...</div>; // O un spinner más elaborado
   }
 
-  return null;
+  // Determinar el rol del usuario autenticado (si existe)
+  const userRole = user?.provedorId ? 'proveedor' : user?.adminId ? 'admin' : null; // Ajusta la lógica del rol según la estructura de tu 'user' object del contexto
+
+  // Lógica de redirección basada en el estado del contexto y roles
+  if (!isAuthenticated || userRole === null) {
+    console.log('Usuario no autenticado o rol desconocido, redirigiendo a login.');
+    // Redirigir al login correspondiente si no está autenticado o el rol es desconocido
+     if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
+       return <Navigate to="/enelnombrededios" state={{ from: location }} replace />; // Redirigir al login de admin
+     } else {
+       return <Navigate to="/login" state={{ from: location }} replace />; // Redirigir al login de proveedor/general
+     }
+  }
+
+  // Si está autenticado, verificar roles y rutas
+  const requiresAdmin = location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios');
+  const requiresProveedor = allowedRoles && allowedRoles.includes('proveedor');
+
+  if (isAuthenticated) {
+      if (requiresAdmin && userRole !== 'admin') {
+          console.log('Acceso denegado: Se requiere rol de admin.');
+          // Redirigir a login de admin o a una página de acceso denegado
+           return <Navigate to="/enelnombrededios" state={{ from: location }} replace />;
+      } else if (requiresProveedor && userRole !== 'proveedor') {
+           console.log('Acceso denegado: Se requiere rol de proveedor.');
+           // Redirigir a login de proveedor o a una página de acceso denegado
+           return <Navigate to="/login" state={{ from: location }} replace />;
+       } else if (location.pathname === '/login' || location.pathname === '/enelnombrededios') {
+           // Si está autenticado y intenta ir a la página de login, redirigir a su dashboard
+            if(userRole === 'admin') return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
+            if(userRole === 'proveedor') return <Navigate to="/dashboard-proveedor" state={{ from: location }} replace />;
+            // Si hay otros roles o no se puede determinar el rol, puedes redirigir a una página por defecto
+            return <Navigate to="/" state={{ from: location }} replace />;
+       } else {
+         // Usuario autenticado con el rol correcto para la ruta o ruta no requiere rol específico (pero sí autenticación)
+         console.log('Acceso permitido.');
+         return children; // Renderizar los componentes hijos
+       }
+  }
+
+   // Si por alguna razón llegamos aquí (no debería pasar con la lógica anterior), redirigir al login por defecto
+   return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default ProtectedRoute; 
