@@ -46,7 +46,7 @@ import PaymentContainer from './components/PaymentContainer';
 import PaymentContainerNuevoNegocio from './components/PaymentContainerNuevoNegocio';
 import Confirmacion from './components/Confirmacion';
 import ConfirmacionNuevoNegocio from './components/ConfirmacionNuevoNegocio';
-import { useSidebar } from '../src/context/SidebarContext';
+import { useSidebar } from './context/SidebarContext';
 
 // Nuevo componente Layout más flexible
 function Layout({ children }) {

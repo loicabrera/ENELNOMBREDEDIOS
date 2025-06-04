@@ -8,10 +8,14 @@ import {
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { Link, Outlet } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 
 const Membership = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [currentPlan, setCurrentPlan] = useState(null);
@@ -22,71 +26,55 @@ const Membership = () => {
   const [alerta, setAlerta] = useState(null);
   const [showPlanChangeModal, setShowPlanChangeModal] = useState(false);
   const [planChangeDetails, setPlanChangeDetails] = useState(null);
+  const [pendingPlanChange, setPendingPlanChange] = useState(null);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
-      window.location.href = '/login';
-      return;
-    }
-    // Obtener el negocio activo
-    const negocioActivoId = localStorage.getItem('negocio_activo');
-    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
-      .then(res => res.json())
-      .then(data => {
-        let prov;
-        if (negocioActivoId) {
-          prov = data.find(p => p.id_provedor === Number(negocioActivoId));
-        }
-        if (!prov) {
-          prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
-        }
-        if (!prov) {
-          setError('No se encontró el proveedor');
-          setLoading(false);
+    const fetchMembershipData = async () => {
+      try {
+        if (!isAuthenticated || !user || !user.provedorId) {
+          console.log('Usuario no autenticado o sin provedorId en contexto, redirigiendo a login.');
+          navigate('/login');
           return;
         }
-        // Obtener la membresía actual del proveedor
-        fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${prov.id_provedor}`)
-          .then(res => res.json())
-          .then(membresiaData => {
-            setCurrentPlan(membresiaData);
-            // Obtener el historial de pagos
-            fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${prov.id_provedor}`)
-              .then(res => {
-                if (!res.ok) {
-                  throw new Error('Error al obtener el historial de pagos');
-                }
-                return res.json();
-              })
-              .then(pagosData => {
-                console.log('Historial de pagos recibido:', pagosData);
-                if (Array.isArray(pagosData)) {
-                  setPaymentHistory(pagosData);
-                } else {
-                  console.error('Formato de datos de pagos inválido:', pagosData);
-                  setPaymentHistory([]);
-                }
-                setLoading(false);
-              })
-              .catch(err => {
-                console.error('Error al obtener el historial de pagos:', err);
-                setPaymentHistory([]);
-                setLoading(false);
-              });
+
+        const proveedorId = user.provedorId;
+
+        const membresiaResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`, { credentials: 'include' });
+        const membresiaData = await membresiaResponse.json();
+        setCurrentPlan(membresiaData);
+
+        fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${proveedorId}`)
+          .then(res => {
+            if (!res.ok) {
+              throw new Error('Error al obtener el historial de pagos');
+            }
+            return res.json();
+          })
+          .then(pagosData => {
+            console.log('Historial de pagos recibido:', pagosData);
+            if (Array.isArray(pagosData)) {
+              setPaymentHistory(pagosData);
+            } else {
+              console.error('Formato de datos de pagos inválido:', pagosData);
+              setPaymentHistory([]);
+            }
+            setLoading(false);
           })
           .catch(err => {
-            console.error('Error al obtener la membresía:', err);
-            setError('Error al obtener la información de la membresía');
+            console.error('Error al obtener el historial de pagos:', err);
+            setPaymentHistory([]);
             setLoading(false);
           });
-      })
-      .catch(err => {
-        console.error('Error al obtener datos del proveedor:', err);
-        setError('Error al obtener los datos del proveedor');
+      } catch (err) {
+        console.error('Error al obtener datos de membresía:', err);
+        setError('Error al obtener la información de la membresía');
         setLoading(false);
-      });
-  }, []);
+      }
+    };
+
+    fetchMembershipData();
+  }, [navigate, isAuthenticated, user]);
 
   const availablePlans = [
     {
@@ -165,13 +153,12 @@ const Membership = () => {
 
   const handleRenewal = async () => {
     try {
-      // Obtener datos necesarios
-      const proveedorId = currentPlan?.id_provedor || localStorage.getItem('provedor_negocio_id_provedor');
+      const proveedorId = currentPlan?.id_provedor || user?.provedorId;
       const membresiaBaseId = currentPlan?.MEMBRESIA_id_memebresia;
       const membresiaId = currentPlan?.id_prov_membresia || currentPlan?.id_membresia;
-      const personaId = localStorage.getItem('PERSONA_id_persona');
+      const personaId = user?.personaId;
       const monto = currentPlan?.precio;
-      const tipoPago = localStorage.getItem('pending_plan_change') ? 'cambio_plan' : 'renovacion';
+      const tipoPago = pendingPlanChange ? 'cambio_plan' : 'renovacion';
       
       console.log('DEBUG handleRenewal:', { proveedorId, membresiaId, membresiaBaseId, personaId, monto, currentPlan, tipoPago });
       
@@ -180,7 +167,6 @@ const Membership = () => {
         return;
       }
 
-      // Preparar los datos del pago
       const paymentData = {
         monto: monto,
         fecha_pago: new Date().toISOString(),
@@ -193,19 +179,17 @@ const Membership = () => {
         esRegistroInicial: false
       };
 
-      // Si es un cambio de plan, agregar la información adicional
-      if (tipoPago === 'cambio_plan') {
-        const pendingChange = JSON.parse(localStorage.getItem('pending_plan_change'));
+      if (tipoPago === 'cambio_plan' && pendingPlanChange) {
         paymentData.plan_anterior = currentPlan?.nombre_pla;
-        paymentData.plan_nuevo = pendingChange.planName;
-        paymentData.diferencia_precio = pendingChange.amount;
+        paymentData.plan_nuevo = pendingPlanChange.planName;
+        paymentData.diferencia_precio = pendingPlanChange.amount;
       }
 
-      // Llamar al backend para registrar el pago
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(paymentData)
+        body: JSON.stringify(paymentData),
+        credentials: 'include'
       });
 
       if (!response.ok) {
@@ -214,18 +198,17 @@ const Membership = () => {
         return;
       }
 
-      // Si es un cambio de plan, actualizar el plan en la base de datos
-      if (tipoPago === 'cambio_plan') {
-        const pendingChange = JSON.parse(localStorage.getItem('pending_plan_change'));
+      if (tipoPago === 'cambio_plan' && pendingPlanChange) {
         const planResponse = await fetch('https://spectacular-recreation-production.up.railway.app/cambiar_plan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             proveedorId,
-            planId: pendingChange.newPlanId,
-            currentPlanId: pendingChange.currentPlanId,
+            planId: pendingPlanChange.newPlanId,
+            currentPlanId: pendingPlanChange.currentPlanId,
             type: 'upgrade'
-          })
+          }),
+          credentials: 'include'
         });
 
         if (!planResponse.ok) {
@@ -234,19 +217,16 @@ const Membership = () => {
           return;
         }
 
-        // Limpiar el cambio de plan pendiente
-        localStorage.removeItem('pending_plan_change');
+        setPendingPlanChange(null);
       }
 
       setShowRenewalModal(false);
       
-      // Actualizar los datos de la membresía
-      const membresiaResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`);
+      const membresiaResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`, { credentials: 'include' });
       const membresiaData = await membresiaResponse.json();
       setCurrentPlan(membresiaData);
 
-      // Actualizar el historial de pagos
-      const pagosResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${proveedorId}`);
+      const pagosResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${proveedorId}`, { credentials: 'include' });
       const pagosData = await pagosResponse.json();
       setPaymentHistory(pagosData);
 
@@ -279,20 +259,18 @@ const Membership = () => {
 
   const confirmPlanChange = async () => {
     try {
-      // Usar el id_provedor del plan actualmente cargado
-      const proveedorId = currentPlan?.id_provedor;
+      const proveedorId = user?.provedorId;
 
-      console.log('DEBUG - Valor de proveedorId obtenido del estado currentPlan:', proveedorId);
+      console.log('DEBUG - Valor de proveedorId obtenido del contexto:', proveedorId);
 
       if (!proveedorId) {
-        console.error('Error: id_provedor no disponible en el estado currentPlan.');
-        setError('Error: No se pudo obtener la información del proveedor. Por favor, recargue la página.');
-        setLoading(false); 
-        return; 
+        console.error('Error: provedorId no disponible en el contexto.');
+        setError('Error: No se pudo obtener la información del proveedor. Por favor, inicie sesión nuevamente.');
+        setLoading(false);
+        return;
       }
         
       if (planChangeDetails.requiresPayment) {
-        // Guardar la información del cambio de plan en localStorage
         const paymentData = {
           amount: planChangeDetails.priceDifference,
           planName: planChangeDetails.newPlan.name,
@@ -301,21 +279,19 @@ const Membership = () => {
           newPlanId: planChangeDetails.newPlan.id,
           proveedorId: proveedorId
         };
-        localStorage.setItem('pending_plan_change', JSON.stringify(paymentData));
+        setPendingPlanChange(paymentData);
         
-        // Redirigir al formulario de pago de cambio de plan usando navigate
-        navigate('/pago-cambio-plan');
+        navigate('/pago-cambio-plan', { state: paymentData });
       } else {
-        // Cambio de plan sin pago adicional
         const response = await axios.post('https://spectacular-recreation-production.up.railway.app/cambiar_plan', {
           proveedorId,
           planId: planChangeDetails.newPlan.id,
           currentPlanId: planChangeDetails.currentPlan.id_prov_membresia,
           type: 'downgrade'
-        });
+        }, { credentials: 'include' });
         
         if (response.data.success) {
-          const membresiaResponse = await axios.get(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`);
+          const membresiaResponse = await axios.get(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`, { credentials: 'include' });
           setCurrentPlan(membresiaResponse.data);
           setShowPlanChangeModal(false);
           setAlerta({
@@ -333,7 +309,6 @@ const Membership = () => {
     }
   };
 
-  // Cambiar estado de membresía (activar/inactivar)
   const handleChangeEstado = async (nuevoEstado) => {
     try {
       const idMembresia = currentPlan?.id_prov_membresia;
@@ -343,7 +318,6 @@ const Membership = () => {
         tipo: 'success',
         mensaje: `Membresía ${nuevoEstado === 'activa' ? 'activada' : 'inactivada'} correctamente` 
       });
-      // Actualizar los datos de la membresía
       const membresiaResponse = await axios.get(`https://spectacular-recreation-production.up.railway.app/membresia/${currentPlan.id_provedor}`);
       setCurrentPlan(membresiaResponse.data);
     } catch (err) {
@@ -351,7 +325,6 @@ const Membership = () => {
     }
   };
 
-  // Función para formatear el estado del pago
   const getPaymentStatusBadge = (status) => {
     switch (status?.toLowerCase()) {
       case 'completado':
@@ -405,11 +378,9 @@ const Membership = () => {
 
   return (
     <div className="space-y-6">
-      {/* ALERTA */}
       {alerta && (
         <div className={`p-4 mb-4 rounded ${alerta.tipo === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{alerta.mensaje}</div>
       )}
-      {/* Current Plan */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex justify-between items-start">
           <div>
@@ -474,7 +445,6 @@ const Membership = () => {
                 <CreditCardIcon className="w-5 h-5 mr-2" />
                 Cambiar Plan
               </button>
-              {/* Botones para activar/inactivar membresía */}
               {currentPlan?.estado === 'activa' ? (
                 <button
                   type="button"
@@ -499,7 +469,6 @@ const Membership = () => {
         </div>
       </div>
 
-      {/* Payment History */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-semibold mb-4">Historial de Pagos</h3>
         <div className="overflow-x-auto">
@@ -562,7 +531,6 @@ const Membership = () => {
         </div>
       </div>
 
-      {/* Renewal Modal */}
       {showRenewalModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
@@ -604,7 +572,6 @@ const Membership = () => {
         </div>
       )}
 
-      {/* Modal de selección de planes */}
       {showPlanSelector && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 overflow-y-auto">
           <div className="w-full min-h-screen sm:min-h-0 sm:h-auto bg-white sm:rounded-lg p-4 sm:p-6 max-w-6xl mx-auto my-0 sm:my-4">
@@ -674,7 +641,6 @@ const Membership = () => {
         </div>
       )}
 
-      {/* Modal de cambio de plan */}
       {showPlanChangeModal && planChangeDetails && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center z-50 overflow-y-auto">
           <div className="w-full min-h-screen sm:min-h-0 sm:h-auto bg-white sm:rounded-lg p-4 sm:p-6 max-w-2xl mx-auto my-0 sm:my-4">

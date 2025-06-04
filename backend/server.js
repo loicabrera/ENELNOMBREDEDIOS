@@ -763,7 +763,7 @@ app.post('/login_proveedor', async (req, res) => {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // None en producción, Lax en desarrollo
       maxAge: 3600000, // 1 hora en milisegundos
       path: '/', // Accesible en todas las rutas
-      domain: process.env.NODE_ENV === 'production' ? '.railway.app' : undefined // Dominio Railway en producción
+      domain: process.env.NODE_ENV === 'production' ? '.up.railway.app' : undefined // Dominio padre en producción para compartir entre subdominios
     };
 
     console.log('Estableciendo cookie con opciones:', cookieOptions);

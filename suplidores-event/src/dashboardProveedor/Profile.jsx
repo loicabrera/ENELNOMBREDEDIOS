@@ -9,6 +9,7 @@ import {
   BuildingOfficeIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 
 const Profile = () => {
@@ -21,61 +22,49 @@ const Profile = () => {
   const [passwordMsg, setPasswordMsg] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: '' });
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
-      window.location.href = '/login';
-      return;
-    }
-
-    // Obtener el negocio activo
-    const negocioActivoId = localStorage.getItem('negocio_activo');
-
-    // Fetch proveedores
-    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
-      .then(res => res.json())
-      .then(data => {
-        let proveedorLogueado;
-        if (negocioActivoId) {
-          proveedorLogueado = data.find(p => p.id_provedor === Number(negocioActivoId));
-        }
-        // Si no hay negocio activo, usa el primero del usuario
-        if (!proveedorLogueado) {
-          proveedorLogueado = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
-        }
-        setProveedor(proveedorLogueado);
-        if (proveedorLogueado) {
-          // Fetch persona
-          fetch('https://spectacular-recreation-production.up.railway.app/persona')
-            .then(res => res.json())
-            .then(personas => {
-              const personaLogueada = personas.find(
-                per => per.id_persona === proveedorLogueado.PERSONA_id_persona
-              );
-              setPersona(personaLogueada);
-              setLoading(false);
-            })
-            .catch(error => {
-              console.error('Error fetching persona:', error);
-              setLoading(false);
-            });
-        } else {
+    const fetchProfileData = async () => {
+      try {
+        if (!isAuthenticated || !user || !user.provedorId || !user.personaId) {
+          console.log('Usuario no autenticado o sin provedorId/personaId en contexto, redirigiendo a login.');
           setLoading(false);
+          return;
         }
-      })
-      .catch(error => {
-        console.error('Error fetching proveedores:', error);
+
+        const proveedorId = user.provedorId;
+        const personaId = user.personaId;
+
+        const resProveedor = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${proveedorId}`, { credentials: 'include' });
+        if (!resProveedor.ok) throw new Error('Error al obtener datos del proveedor');
+        const dataProveedor = await resProveedor.json();
+        setProveedor(dataProveedor);
+
+        const resPersona = await fetch(`https://spectacular-recreation-production.up.railway.app/personas/${personaId}`, { credentials: 'include' });
+        if (!resPersona.ok) throw new Error('Error al obtener datos de la persona');
+        const dataPersona = await resPersona.json();
+        setPersona(dataPersona);
+
         setLoading(false);
-      });
-  }, []);
+
+      } catch (err) {
+        console.error('Error al cargar datos del perfil:', err);
+        setLoading(false);
+      }
+    };
+
+    fetchProfileData();
+  }, [isAuthenticated, user]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordMsg('');
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) return;
-    const user_name = user.user_name; // Asegúrate de guardar el user_name en localStorage al hacer login
+    if (!user || !user.user_name) {
+      setPasswordMsg('Error: No se encontró la información del usuario para cambiar la contraseña.');
+      return;
+    }
+    const user_name = user.user_name;
     const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/cambiar-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -10,6 +10,7 @@ import {
   BellIcon,
   UserIcon
 } from '@heroicons/react/24/outline';
+import { useAuth } from '../context/AuthContext';
 
 const HomeProveedor = () => {
   const [proveedor, setProveedor] = useState(null);
@@ -17,62 +18,48 @@ const HomeProveedor = () => {
   const [error, setError] = useState(null);
   const [publicaciones, setPublicaciones] = useState({ productos: 0, servicios: 0, limite_productos: 0, limite_servicios: 0 });
   const [membresia, setMembresia] = useState(null);
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
-      window.location.href = '/login';
-      return;
-    }
-
-    // Obtener el negocio activo
-    const negocioActivoId = localStorage.getItem('negocio_activo');
-
-    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
-      .then(res => res.json())
-      .then(data => {
-        let proveedorLogueado;
-        if (negocioActivoId) {
-          proveedorLogueado = data.find(p => p.id_provedor === Number(negocioActivoId));
-        }
-        // Si no hay negocio activo, usa el primero del usuario
-        if (!proveedorLogueado) {
-          proveedorLogueado = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
-        }
-        if (proveedorLogueado) {
-          setProveedor(proveedorLogueado);
-          // Fetch productos y servicios publicados
-          Promise.all([
-            fetch(`https://spectacular-recreation-production.up.railway.app/api/productos?provedor_negocio_id_provedor=${proveedorLogueado.id_provedor}`).then(r => r.json()),
-            fetch('https://spectacular-recreation-production.up.railway.app/api/servicios').then(r => r.json()),
-            fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorLogueado.id_provedor}`).then(r => r.json())
-          ]).then(([productos, servicios, membresiaData]) => {
-            const misServicios = servicios.filter(s => s.provedor_negocio_id_provedor === proveedorLogueado.id_provedor);
-            setPublicaciones({
-              productos: productos.length,
-              servicios: misServicios.length,
-              limite_productos: membresiaData.limite_productos,
-              limite_servicios: membresiaData.limite_servicios
-            });
-            setMembresia(membresiaData);
-            setLoading(false);
-          });
-        } else {
-          setError('No se encontró tu perfil de proveedor');
+    const fetchHomeData = async () => {
+      try {
+        if (!isAuthenticated || !user || !user.provedorId) {
+          console.log('Usuario no autenticado o sin provedorId en contexto.');
           setLoading(false);
+          return;
         }
-      })
-      .catch(err => {
-        setError('Error al cargar los datos del proveedor');
+
+        const proveedorId = user.provedorId;
+
+        const resProveedor = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${proveedorId}`, { credentials: 'include' });
+        if (!resProveedor.ok) throw new Error('Error al obtener datos del proveedor');
+        const dataProveedor = await resProveedor.json();
+        setProveedor(dataProveedor);
+
+        const resPublicaciones = await fetch(`https://spectacular-recreation-production.up.railway.app/api/publicaciones-count?provedorId=${proveedorId}`, { credentials: 'include' });
+        const dataPublicaciones = await resPublicaciones.json();
+        setPublicaciones(dataPublicaciones);
+
+        const resMembresia = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`, { credentials: 'include' });
+        const dataMembresia = await resMembresia.json();
+        setMembresia(dataMembresia);
+
         setLoading(false);
-      });
-  }, []);
+
+      } catch (err) {
+        console.error('Error al cargar datos de inicio del proveedor:', err);
+        setLoading(false);
+        setError('Error al cargar datos');
+      }
+    };
+
+    fetchHomeData();
+  }, [isAuthenticated, user]);
 
   if (loading) return <div className="p-8 text-center">Cargando...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
   if (!proveedor) return <div className="p-8 text-center">No se encontró tu perfil de proveedor</div>;
 
-  // --- Banner de alerta de membresía ---
   let banner = null;
   if (membresia && membresia.fecha_fin) {
     const fechaFin = new Date(membresia.fecha_fin);
@@ -162,10 +149,8 @@ const HomeProveedor = () => {
 
   return (
     <div className="space-y-6 p-6">
-      {/* Banner de membresía */}
       {banner}
 
-      {/* Profile Summary Card */}
       <div className="bg-white rounded-lg shadow p-6">
         <div className="flex items-center space-x-4">
          
@@ -184,7 +169,6 @@ const HomeProveedor = () => {
         </div>
       </div>
 
-      {/* Key Indicators Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {keyIndicators.map((indicator, index) => (
           <Link
@@ -207,7 +191,6 @@ const HomeProveedor = () => {
         ))}
       </div>
 
-      {/* Quick Actions Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {quickActions.map((action, index) => (
           <Link

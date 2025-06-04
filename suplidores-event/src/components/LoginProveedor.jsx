@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const LoginProveedor = () => {
   const navigate = useNavigate();
@@ -11,22 +12,19 @@ const LoginProveedor = () => {
     password: ''
   });
 
-  // Verificar si ya hay una sesión activa (NOTA: Esta lógica necesita ser actualizada para usar JWT cookies en lugar de localStorage)
+  const { login, loading: authLoading, isAuthenticated: isAuthContextAuthenticated } = useAuth();
+
   useEffect(() => {
-    // const user = JSON.parse(localStorage.getItem('user'));
-    // if (user && user.rol === 'proveedor') {
-    //   // Si hay una sesión activa de proveedor, redirigir al dashboard
-    //   const from = location.state?.from?.pathname || '/dashboard-proveedor';
-    //   // Reemplazar la entrada actual en el historial
-    //   window.history.replaceState(null, '', from);
-    //   navigate(from, { replace: true });
-    // } else if (user) {
-    //   // Si hay una sesión pero no es de proveedor, limpiarla
-    //   localStorage.removeItem('user');
-    //   localStorage.removeItem('negocio_activo');
-    // }
-    // TODO: Implementar verificación de autenticación basada en JWT (ej. llamando a una ruta segura en el backend)
-  }, [navigate, location]);
+    console.log('LoginProveedor useEffect: Estado actual de AuthContext - authLoading:', authLoading, 'isAuthenticated:', isAuthContextAuthenticated);
+    if (!authLoading && isAuthContextAuthenticated) {
+       console.log('LoginProveedor useEffect: AuthContext ya autenticado y no cargando, redirigiendo...');
+       const from = location.state?.from?.pathname || '/dashboard-proveedor';
+       navigate(from, { replace: true });
+    } else if (!authLoading && !isAuthContextAuthenticated) {
+       console.log('LoginProveedor useEffect: AuthContext terminó de cargar y NO autenticado.');
+       setLoading(false); 
+    }
+  }, [authLoading, isAuthContextAuthenticated, navigate, location]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,42 +35,19 @@ const LoginProveedor = () => {
     setError(null);
   };
 
+  console.log('Renderizando LoginProveedor y definiendo handleSubmit.');
   const handleSubmit = async (e) => {
+    console.log('handleSubmit llamado.');
     e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/login_proveedor', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(formData),
-      });
-
-      // Aunque la respuesta del backend ahora solo devuelve { message: 'Login exitoso' }, 
-      // la cookie HttpOnly con el JWT se habrá guardado automáticamente por el navegador.
-      // No necesitamos leer el cuerpo de la respuesta para obtener el ID del proveedor aquí.
-      const data = await response.json(); // Leer la respuesta para verificar si hay errores en el cuerpo
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Error al iniciar sesión');
-      }
-
-      // *** ELIMINAR ALMACENAMIENTO DE DATOS SENSIBLES EN localStorage ***
-      localStorage.removeItem('user');
-      localStorage.removeItem('negocio_activo');
-      // data.user y el ID sensible ya NO se guardan aquí.
-
-      // Redirigir al dashboard del proveedor
-      navigate('/dashboard-proveedor', { replace: true });
+      await login(formData.username, formData.password);
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error en handleSubmit de LoginProveedor:', error);
       setError(error.message);
-    } finally {
       setLoading(false);
     }
   };

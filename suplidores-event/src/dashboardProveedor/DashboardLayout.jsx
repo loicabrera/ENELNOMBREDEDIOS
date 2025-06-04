@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useState, useEffect } from 'react';
 import Footer from './Footer';
+import { useAuth } from '../context/AuthContext';
 
 const navigation = [
   { name: 'Inicio', href: '/dashboard-proveedor', icon: HomeIcon },
@@ -33,6 +34,7 @@ export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -53,47 +55,39 @@ export default function DashboardLayout() {
   useEffect(() => {
     const checkNotificaciones = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) {
-          console.log('No hay usuario en localStorage');
+        if (!isAuthenticated || !user || !user.provedorId) {
+          console.log('Usuario no autenticado o sin provedorId en contexto.');
+          setTieneNotificaciones(false);
           return;
         }
 
-        // Obtener el negocio activo
-        const negocioActivoId = localStorage.getItem('negocio_activo');
-        console.log('Negocio activo ID:', negocioActivoId);
-        
-        const resProveedor = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores');
+        const proveedorId = user.provedorId;
+        console.log('Verificando notificaciones para proveedor:', proveedorId);
+
+        const resProveedor = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores', { credentials: 'include' });
         if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
         const proveedores = await resProveedor.json();
-        
-        let proveedor;
-        if (negocioActivoId) {
-          proveedor = proveedores.find(p => p.id_provedor === Number(negocioActivoId));
-        }
-        if (!proveedor) {
-          proveedor = proveedores.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
-        }
-        if (!proveedor) {
-          console.log('No se encontró proveedor');
-          return;
+
+        const proveedorLogueado = proveedores.find(p => p.id_provedor === Number(proveedorId));
+
+        if (!proveedorLogueado) {
+           console.log('No se encontró proveedor en la lista para el id del contexto.');
+           setTieneNotificaciones(false);
+           return;
         }
 
-        console.log('Verificando notificaciones para proveedor:', proveedor.id_provedor);
-        // Verificar notificaciones no leídas
-        const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/notificaciones/nuevas?proveedor_id=${proveedor.id_provedor}`);
+        const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/notificaciones/nuevas?proveedor_id=${proveedorId}`, { credentials: 'include' });
         if (!res.ok) throw new Error('Error al verificar notificaciones');
         const data = await res.json();
         console.log('Respuesta de notificaciones:', data);
         setTieneNotificaciones(data.nuevas);
 
-        // Si estamos en la página de notificaciones, marcar como leídas
         if (location.pathname === '/dashboard-proveedor/notificaciones') {
           console.log('Marcando notificaciones como leídas');
           await fetch('https://spectacular-recreation-production.up.railway.app/api/notificaciones/leer', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ proveedor_id: proveedor.id_provedor })
+            body: JSON.stringify({ proveedor_id: proveedorId })
           });
           setTieneNotificaciones(false);
         }
@@ -109,8 +103,6 @@ export default function DashboardLayout() {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('negocio_activo');
     window.location.href = '/login';
   };
 

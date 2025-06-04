@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName, proveedorId }) => {
+const PaymentFormNuevoNegocio = ({ amount, planName }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -19,81 +21,44 @@ const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName
     }
 
     try {
-      const { error, paymentMethod } = await stripe.createPaymentMethod({
+      const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
         card: elements.getElement(CardElement),
       });
 
-      if (error) {
-        setError(error.message);
+      if (stripeError) {
+        setError(stripeError.message);
         setProcessing(false);
         return;
       }
 
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
+      const paymentData = {
+        paymentMethodId: paymentMethod.id,
+        amount: amount,
+        planName: planName,
+        personaId: user.personaId
+      };
+
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment/new-business', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          paymentMethodId: paymentMethod.id,
-          amount: amount,
-          planName: planName,
-          proveedorId: proveedorId,
-          businessName: businessName
-        }),
+        body: JSON.stringify(paymentData),
+        credentials: 'include'
       });
 
       const result = await response.json();
 
-      if (result.error) {
-        setError(result.error);
-      } else {
-        // === ACTIVAR MEMBRESÍA DEL NUEVO NEGOCIO ===
-        // Determinar el ID de membresía según el plan
-        let membresiaId = 1;
-        if (planName.toLowerCase().includes('destacado')) membresiaId = 2;
-        else if (planName.toLowerCase().includes('premium')) membresiaId = 3;
-        // Obtener el ID de persona
-        let personaId = localStorage.getItem('PERSONA_id_persona');
-        if (!personaId) {
-          const user = JSON.parse(localStorage.getItem('user'));
-          personaId = user?.PERSONA_id_p || user?.PERSONA_id_persona || null;
-        }
-        // Log para depuración
-        console.log('Enviando a /registrar_pago:', {
-          monto: amount,
-          fecha_pago: new Date().toISOString(),
-          monto_pago: amount,
-          MEMBRESIA_id_membresia: membresiaId,
-          provedor_negocio_id_provedor: proveedorId,
-          PERSONA_id_persona: personaId,
-          esRegistroInicial: false
-        });
-        // Llamar al backend para registrar el pago y activar la membresía
-        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            monto: amount,
-            fecha_pago: new Date().toISOString(),
-            monto_pago: amount,
-            MEMBRESIA_id_membresia: membresiaId,
-            provedor_negocio_id_provedor: proveedorId,
-            PERSONA_id_persona: personaId,
-            esRegistroInicial: false
-          })
-        });
-        // Puedes manejar la respuesta si quieres mostrar un mensaje de éxito/error
-        setSucceeded(true);
-        navigate('/confirmacion-nuevo-negocio', {
-          state: {
-            businessName: businessName,
-            planName: planName,
-            amount: amount,
-            success: true
+      if (result.success) {
+        navigate('/dashboard-proveedor', { 
+          state: { 
+            success: true, 
+            message: 'Pago procesado exitosamente. Tu negocio ha sido registrado.' 
           }
         });
+      } else {
+        setError(result.error || 'Error al procesar el pago');
       }
     } catch (err) {
       setError('Error al procesar el pago. Por favor, intente nuevamente.');
@@ -103,45 +68,30 @@ const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-2xl p-12 w-full max-w-5xl mx-auto">
-      <h2 className="text-4xl font-bold text-[#012e33] mb-8 text-center">Pago para Nuevo Negocio</h2>
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-center">Pago de Registro de Negocio</h2>
       
-      <div className="mb-8">
-        <div className="bg-gray-50 p-8 rounded-xl mb-6 border border-gray-200">
-          <h3 className="text-2xl font-semibold text-[#012e33] mb-6">Detalles del Pago</h3>
-          <div className="grid grid-cols-3 gap-6">
-            <div className="p-4 bg-white rounded-lg shadow-sm">
-              <p className="text-lg font-semibold text-gray-600">Negocio</p>
-              <p className="text-xl mt-2">{businessName}</p>
-            </div>
-            <div className="p-4 bg-white rounded-lg shadow-sm">
-              <p className="text-lg font-semibold text-gray-600">Plan</p>
-              <p className="text-xl mt-2">{planName}</p>
-            </div>
-            <div className="p-4 bg-white rounded-lg shadow-sm">
-              <p className="text-lg font-semibold text-gray-600">Monto</p>
-              <p className="text-xl mt-2">${amount}</p>
-            </div>
-          </div>
+      <div className="mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+          <h3 className="font-semibold mb-2">Detalles del Pago</h3>
+          <p>Plan: {planName}</p>
+          <p>Monto: RD${amount}</p>
         </div>
-      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div>
-          <label className="block text-2xl font-medium text-gray-700 mb-4">
-            Detalles de la Tarjeta
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Información de la Tarjeta
           </label>
-          <div className="border-2 border-gray-300 rounded-xl p-8 bg-white">
+          <div className="p-3 border border-gray-300 rounded-md">
             <CardElement
               options={{
                 style: {
                   base: {
-                    fontSize: '20px',
+                    fontSize: '16px',
                     color: '#424770',
                     '::placeholder': {
                       color: '#aab7c4',
                     },
-                    padding: '12px',
                   },
                   invalid: {
                     color: '#9e2146',
@@ -153,24 +103,24 @@ const PaymentFormNuevoNegocio = ({ amount, planName, isNewBusiness, businessName
         </div>
 
         {error && (
-          <div className="text-red-600 text-xl bg-red-50 p-6 rounded-lg border border-red-200">
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
             {error}
           </div>
         )}
 
         <button
           type="submit"
-          disabled={!stripe || processing || succeeded}
-          className={`w-full py-5 px-8 rounded-xl text-white text-2xl font-semibold ${
-            processing || succeeded
-              ? 'bg-gray-400'
-              : 'bg-[#012e33] hover:bg-[#fbaccb] hover:text-[#012e33]'
-          } transition-colors duration-300 shadow-lg hover:shadow-xl`}
+          disabled={!stripe || processing}
+          className={`w-full py-3 px-4 rounded-md text-white font-medium ${
+            processing || !stripe
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
-          {processing ? 'Procesando...' : 'Pagar Ahora'}
+          {processing ? 'Procesando...' : 'Pagar RD$' + amount}
         </button>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 };
 

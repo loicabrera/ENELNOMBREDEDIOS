@@ -1,199 +1,129 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, proveedorId }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
+    setProcessing(true);
 
     if (!stripe || !elements) {
-      setError('El sistema de pago no está disponible. Por favor, intente nuevamente.');
-      setLoading(false);
       return;
     }
 
     try {
-      // Verificar que el servidor esté disponible
-      try {
-        const serverCheck = await fetch('https://spectacular-recreation-production.up.railway.app');
-        if (!serverCheck.ok) {
-          throw new Error('El servidor no está respondiendo correctamente');
-        }
-      } catch (error) {
-        throw new Error('No se puede conectar con el servidor. Por favor, verifique que el servidor esté en ejecución.');
+      const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardElement),
+      });
+
+      if (stripeError) {
+        setError(stripeError.message);
+        setProcessing(false);
+        return;
       }
 
-      // Crear el PaymentIntent en el backend
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
+      const paymentData = {
+        paymentMethodId: paymentMethod.id,
+        amount: amount,
+        planName: planName,
+        currentPlanId: currentPlanId,
+        newPlanId: newPlanId,
+        proveedorId: proveedorId,
+        personaId: user.personaId
+      };
+
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment/plan-change', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          amount: Math.round(amount * 100), // Convertir a centavos
-          planName,
-        }),
+        body: JSON.stringify(paymentData),
+        credentials: 'include'
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al crear el intent de pago');
-      }
+      const result = await response.json();
 
-      const { clientSecret } = await response.json();
-
-      // Confirmar el pago con Stripe
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        },
-      });
-
-      if (stripeError) {
-        throw new Error(stripeError.message);
-      }
-
-      if (paymentIntent.status === 'succeeded') {
-        // Obtener el ID de persona desde localStorage o desde el usuario autenticado
-        let personaId = localStorage.getItem('PERSONA_id_persona');
-        if (!personaId) {
-          const user = JSON.parse(localStorage.getItem('user'));
-          personaId = user?.PERSONA_id_p || user?.PERSONA_id_persona || null;
-        }
-        const pendingPlanChange = JSON.parse(localStorage.getItem('pending_plan_change'));
-
-        if (!personaId || !pendingPlanChange) {
-          throw new Error('No se encontró la información necesaria del usuario. Por favor, inicie sesión nuevamente.');
-        }
-
-        // Preparar los datos para el pago
-        const paymentData = {
-          monto: pendingPlanChange.amount,
-          fecha_pago: new Date().toISOString(),
-          monto_pago: pendingPlanChange.amount,
-          newPlanId: pendingPlanChange.newPlanId,
-          proveedorId: pendingPlanChange.proveedorId
-        };
-
-        console.log('Enviando datos de pago:', paymentData);
-
-        // Llamar al backend para registrar el pago y actualizar el plan
-        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago_cambio_plan', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(paymentData)
+      if (result.success) {
+        navigate('/dashboard-proveedor/membresia', { 
+          state: { 
+            success: true, 
+            message: 'Pago procesado exitosamente. Tu plan ha sido actualizado.' 
+          }
         });
-
-        if (!pagoResponse.ok) {
-          const errorData = await pagoResponse.json();
-          throw new Error(errorData.error || 'Error al procesar el pago');
-        }
-
-        const pagoData = await pagoResponse.json();
-
-        if (pagoData.success) {
-          setPaymentSuccess(true);
-          // Limpiar los datos del localStorage
-          localStorage.removeItem('pending_plan_change');
-          // Esperar un momento antes de redirigir para mostrar el mensaje de éxito
-          setTimeout(() => {
-            window.location.href = '/dashboard-proveedor/membresia';
-          }, 2000);
-        } else {
-          throw new Error(pagoData.error || 'Error al actualizar el plan. Por favor, contacte al soporte.');
-        }
+      } else {
+        setError(result.error || 'Error al procesar el pago');
       }
     } catch (err) {
-      console.error('Error:', err);
-      setError(err.message || 'Error al procesar el pago. Por favor, intente nuevamente.');
-    } finally {
-      setLoading(false);
+      setError('Error al procesar el pago. Por favor, intente nuevamente.');
     }
+
+    setProcessing(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto mt-8">
-          <h2 className="text-2xl font-bold mb-6 text-center">Pago de diferencia - Plan {planName}</h2>
-          
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
-
-          {paymentSuccess ? (
-            <div className="text-center">
-              <div className="mb-6 p-4 bg-green-50 text-green-700 rounded-md">
-                <p className="text-lg font-semibold">¡Pago realizado con éxito!</p>
-                <p className="mt-2">Tu plan ha sido actualizado correctamente.</p>
-              </div>
-              <p className="text-gray-600">Redirigiendo al dashboard...</p>
-            </div>
-          ) : (
-            <>
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-600">Plan seleccionado:</span>
-                  <span className="font-semibold">{planName}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Diferencia a pagar:</span>
-                  <span className="text-xl font-bold">${amount.toFixed(2)}</span>
-                </div>
-              </div>
-
-              <form onSubmit={handleSubmit}>
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Detalles de la tarjeta
-                  </label>
-                  <div className="p-3 border border-gray-300 rounded-md">
-                    <CardElement
-                      options={{
-                        style: {
-                          base: {
-                            fontSize: '16px',
-                            color: '#424770',
-                            '::placeholder': {
-                              color: '#aab7c4',
-                            },
-                          },
-                          invalid: {
-                            color: '#9e2146',
-                          },
-                        },
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={!stripe || loading}
-                  className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loading ? 'Procesando...' : `Pagar $${amount.toFixed(2)}`}
-                </button>
-              </form>
-            </>
-          )}
+    <form onSubmit={handleSubmit} className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+      <h2 className="text-2xl font-bold mb-6 text-center">Pago de Cambio de Plan</h2>
+      
+      <div className="mb-6">
+        <div className="bg-gray-50 p-4 rounded-lg mb-4">
+          <h3 className="font-semibold mb-2">Detalles del Pago</h3>
+          <p>Plan: {planName}</p>
+          <p>Monto: RD${amount}</p>
         </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Información de la Tarjeta
+          </label>
+          <div className="p-3 border border-gray-300 rounded-md">
+            <CardElement
+              options={{
+                style: {
+                  base: {
+                    fontSize: '16px',
+                    color: '#424770',
+                    '::placeholder': {
+                      color: '#aab7c4',
+                    },
+                  },
+                  invalid: {
+                    color: '#9e2146',
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={!stripe || processing}
+          className={`w-full py-3 px-4 rounded-md text-white font-medium ${
+            processing || !stripe
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-blue-600 hover:bg-blue-700'
+          }`}
+        >
+          {processing ? 'Procesando...' : 'Pagar RD$' + amount}
+        </button>
       </div>
-    </div>
+    </form>
   );
 };
 

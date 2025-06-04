@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 // Paleta de colores pastel
 const colors = {
@@ -15,11 +16,13 @@ const colors = {
 const DatosProveedor = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [personaId, setPersonaId] = useState(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [proveedorCreado, setProveedorCreado] = useState(null);
+  const [providerData, setProviderData] = useState(null);
 
   // Definir los planes y sus montos
   const planes = {
@@ -60,6 +63,34 @@ const DatosProveedor = () => {
       setProveedorCreado(null);
     }
   }, [location.state, navigate]);
+
+  useEffect(() => {
+    const fetchProviderData = async () => {
+      if (!isAuthenticated || !user?.personaId) {
+        navigate('/login');
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/providers/${user.personaId}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener datos del proveedor');
+        }
+
+        const data = await response.json();
+        setProviderData(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProviderData();
+  }, [user, isAuthenticated, navigate]);
 
   const [formData, setFormData] = useState({
     nombre_empresa: '',
@@ -157,9 +188,8 @@ const DatosProveedor = () => {
         throw new Error(data.error || 'Error al crear el proveedor');
       }
 
-      // Guarda el ID del proveedor en localStorage
       if (data.proveedor && data.proveedor.id_provedor) {
-        localStorage.setItem('provedor_negocio_id_provedor', data.proveedor.id_provedor);
+        // localStorage.setItem('provedor_negocio_id_proveedor', data.proveedor.id_provedor);
       }
 
       return true;
@@ -277,6 +307,56 @@ const DatosProveedor = () => {
       "Presencia digital profesional"
     ]
   };
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    if (!user?.personaId) return;
+
+    try {
+      const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/providers/${user.personaId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(providerData),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al actualizar datos');
+      }
+
+      const updatedData = await response.json();
+      setProviderData(updatedData);
+      alert('Datos actualizados correctamente');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span className="block sm:inline">{error}</span>
+      </div>
+    );
+  }
+
+  if (!providerData) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-gray-500">No se encontraron datos del proveedor.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

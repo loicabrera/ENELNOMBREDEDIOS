@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { 
   ChartBarIcon,
   EyeIcon,
@@ -6,33 +8,64 @@ import {
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
-import { useEffect } from 'react';
 
 const Statistics = () => {
-  // Mock data - replace with actual data from your backend
-  const stats = {
-    profileViews: {
-      total: 1250,
-      change: 12.5,
-      trend: 'up'
-    },
-    publicationViews: {
-      total: 3500,
-      change: -5.2,
-      trend: 'down'
-    },
-    contactClicks: {
-      total: 450,
-      change: 8.3,
-      trend: 'up'
-    },
-    requests: {
-      total: 180,
-      change: 15.7,
-      trend: 'up'
-    }
-  };
+  const [stats, setStats] = useState({
+    totalViews: 0,
+    totalLikes: 0,
+    totalComments: 0,
+    totalShares: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { user } = useAuth();
 
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user?.personaId) {
+        setError('No se encontró el ID del proveedor');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/statistics/${user.personaId}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error('Error al obtener estadísticas');
+        }
+
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+        <span className="block sm:inline">{error}</span>
+      </div>
+    );
+  }
+
+  // Mock data - replace with actual data from your backend
   const topPublications = [
     {
       id: 1,
@@ -69,33 +102,6 @@ const Statistics = () => {
     return trend === 'up' ? 'text-green-600' : 'text-red-600';
   };
 
-  useEffect(() => {
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
-      window.location.href = '/login';
-      return;
-    }
-    // Obtener el negocio activo
-    const negocioActivoId = localStorage.getItem('negocio_activo');
-    fetch('https://spectacular-recreation-production.up.railway.app/proveedores')
-      .then(res => res.json())
-      .then(data => {
-        let prov;
-        if (negocioActivoId) {
-          prov = data.find(p => p.id_provedor === Number(negocioActivoId));
-        }
-        if (!prov) {
-          prov = data.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
-        }
-        if (!prov) {
-          // Manejar error si no hay proveedor
-          return;
-        }
-        // Aquí continúa tu lógica de estadísticas usando prov.id_provedor
-        // ...
-      });
-  }, []);
-
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-gray-800">Estadísticas</h1>
@@ -109,13 +115,14 @@ const Statistics = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Vistas del Perfil</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.profileViews.total}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalViews}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            {getTrendIcon(stats.profileViews.trend)}
-            <span className={`ml-2 text-sm font-medium ${getTrendColor(stats.profileViews.trend)}`}>
-              {stats.profileViews.change}%
+            {getTrendIcon(stats.totalViews > 0 ? 'up' : 'down')}
+            <span className={`ml-2 text-sm font-medium ${stats.totalViews > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {stats.totalViews > 0 ? '+' : ''}
+              {stats.totalViews}%
             </span>
             <span className="ml-2 text-sm text-gray-500">vs mes anterior</span>
           </div>
@@ -128,13 +135,14 @@ const Statistics = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Vistas de Publicaciones</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.publicationViews.total}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalLikes}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            {getTrendIcon(stats.publicationViews.trend)}
-            <span className={`ml-2 text-sm font-medium ${getTrendColor(stats.publicationViews.trend)}`}>
-              {stats.publicationViews.change}%
+            {getTrendIcon(stats.totalLikes > 0 ? 'up' : 'down')}
+            <span className={`ml-2 text-sm font-medium ${stats.totalLikes > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {stats.totalLikes > 0 ? '+' : ''}
+              {stats.totalLikes}%
             </span>
             <span className="ml-2 text-sm text-gray-500">vs mes anterior</span>
           </div>
@@ -147,13 +155,14 @@ const Statistics = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Clics en Contacto</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.contactClicks.total}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalComments}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            {getTrendIcon(stats.contactClicks.trend)}
-            <span className={`ml-2 text-sm font-medium ${getTrendColor(stats.contactClicks.trend)}`}>
-              {stats.contactClicks.change}%
+            {getTrendIcon(stats.totalComments > 0 ? 'up' : 'down')}
+            <span className={`ml-2 text-sm font-medium ${stats.totalComments > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {stats.totalComments > 0 ? '+' : ''}
+              {stats.totalComments}%
             </span>
             <span className="ml-2 text-sm text-gray-500">vs mes anterior</span>
           </div>
@@ -166,13 +175,14 @@ const Statistics = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Solicitudes Recibidas</p>
-              <p className="text-2xl font-semibold text-gray-900">{stats.requests.total}</p>
+              <p className="text-2xl font-semibold text-gray-900">{stats.totalShares}</p>
             </div>
           </div>
           <div className="mt-4 flex items-center">
-            {getTrendIcon(stats.requests.trend)}
-            <span className={`ml-2 text-sm font-medium ${getTrendColor(stats.requests.trend)}`}>
-              {stats.requests.change}%
+            {getTrendIcon(stats.totalShares > 0 ? 'up' : 'down')}
+            <span className={`ml-2 text-sm font-medium ${stats.totalShares > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {stats.totalShares > 0 ? '+' : ''}
+              {stats.totalShares}%
             </span>
             <span className="ml-2 text-sm text-gray-500">vs mes anterior</span>
           </div>

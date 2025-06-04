@@ -1,33 +1,25 @@
 import { BellIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 const Notifications = () => {
   const [mensajes, setMensajes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { isAuthenticated, user } = useAuth();
 
   useEffect(() => {
     const fetchMensajes = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (!user) {
-          throw new Error('No se encontró información del usuario logueado');
+        if (!isAuthenticated || !user || !user.provedorId) {
+          console.log('Usuario no autenticado o sin provedorId en contexto.');
+          setMensajes([]);
+          setLoading(false);
+          return;
         }
-        // Obtener el negocio activo
-        const negocioActivoId = localStorage.getItem('negocio_activo');
-        const resProveedor = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores`);
-        if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
-        const proveedores = await resProveedor.json();
-        let proveedor;
-        if (negocioActivoId) {
-          proveedor = proveedores.find(p => p.id_provedor === Number(negocioActivoId));
-        }
-        if (!proveedor) {
-          proveedor = proveedores.find(p => p.PERSONA_id_persona === user.PERSONA_id_persona);
-        }
-        if (!proveedor) throw new Error('No se encontró el proveedor');
-        const idProveedor = proveedor.id_provedor;
-        // 2. Obtener los mensajes de ese proveedor
-        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/usuarios?provedor_negocio_id_provedor=${idProveedor}`);
+
+        const idProveedor = user.provedorId;
+
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/usuarios?provedor_negocio_id_provedor=${idProveedor}`, { credentials: 'include' });
         if (!response.ok) {
           throw new Error('Error al obtener los mensajes');
         }
@@ -40,7 +32,7 @@ const Notifications = () => {
       }
     };
     fetchMensajes();
-  }, []);
+  }, [isAuthenticated, user]);
 
   if (loading) {
     return (

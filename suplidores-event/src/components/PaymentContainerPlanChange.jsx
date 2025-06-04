@@ -1,42 +1,56 @@
 import React, { useEffect, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import PaymentFormPlanChange from './PaymentFormPlanChange';
 import { STRIPE_PUBLIC_KEY } from '../config/stripe';
+import { useAuth } from '../context/AuthContext';
 
 // Inicializar Stripe
 const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
 
 const PaymentContainerPlanChange = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [paymentData, setPaymentData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { user, isAuthenticated, authLoading } = useAuth();
 
   useEffect(() => {
-    // Verificar si el usuario está autenticado
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (!user) {
+    if (authLoading) {
+        console.log('PaymentContainerPlanChange useEffect: authLoading es true, esperando...');
+        return;
+    }
+    console.log('PaymentContainerPlanChange useEffect: authLoading es false.');
+
+    if (!isAuthenticated || !user || !user.provedorId || !user.personaId) {
+      console.log('Usuario no autenticado o sin datos esenciales, redirigiendo a login.');
       navigate('/login');
       return;
     }
+    console.log('Usuario autenticado en PaymentContainerPlanChange.', user);
 
-    const storedData = localStorage.getItem('pending_plan_change');
-    if (!storedData) {
+    const pendingPlanChangeData = location.state;
+    console.log('Datos de cambio de plan del state:', pendingPlanChangeData);
+
+    if (!pendingPlanChangeData || !pendingPlanChangeData.amount || !pendingPlanChangeData.newPlanId || !pendingPlanChangeData.proveedorId) {
+      console.log('No se encontraron datos válidos para el cambio de plan en el state, redirigiendo a membresía.');
       navigate('/dashboard-proveedor/membresia');
       return;
     }
+    console.log('Datos de cambio de plan válidos encontrados.');
 
     try {
-      const parsedData = JSON.parse(storedData);
-      setPaymentData(parsedData);
+      setPaymentData(pendingPlanChangeData);
+      console.log('Payment data set.', pendingPlanChangeData);
     } catch (error) {
-      console.error('Error parsing payment data:', error);
+      console.error('Error al procesar datos de pago del state:', error);
       navigate('/dashboard-proveedor/membresia');
     } finally {
       setLoading(false);
+      console.log('Loading set to false.');
     }
-  }, [navigate]);
+  }, [navigate, location.state, isAuthenticated, user, authLoading]);
 
   if (loading) {
     return (

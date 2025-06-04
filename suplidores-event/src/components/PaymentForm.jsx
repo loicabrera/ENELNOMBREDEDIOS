@@ -1,95 +1,71 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import ProgressBar from '../ProgressBar';
 
 const PaymentForm = ({ amount, planName }) => {
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const { user } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    setLoading(true);
-    setError(null);
+    setProcessing(true);
 
     if (!stripe || !elements) {
       return;
     }
 
     try {
-      // Crear el PaymentIntent en el backend
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/create-payment-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: Math.round(amount * 100), // Convertir a centavos
-          planName,
-        }),
-      });
-
-      const { clientSecret } = await response.json();
-
-      // Confirmar el pago con Stripe
-      const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        },
+      const { error: stripeError, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: elements.getElement(CardElement),
       });
 
       if (stripeError) {
         setError(stripeError.message);
+        setProcessing(false);
         return;
       }
 
-      if (paymentIntent.status === 'succeeded') {
-        // Obtener los IDs de proveedor, membresía y persona desde localStorage
-        const proveedorId = localStorage.getItem('provedor_negocio_id_provedor');
-        const membresiaId = localStorage.getItem('MEMBRESIA_id_membresia');
-        const personaId = localStorage.getItem('PERSONA_id_persona');
+      const paymentData = {
+        paymentMethodId: paymentMethod.id,
+        amount: amount,
+        planName: planName,
+        personaId: user.personaId
+      };
 
-        if (!proveedorId || !membresiaId || !personaId) {
-          setError('No se encontró el ID de proveedor, membresía o persona.');
-          setLoading(false);
-          return;
-        }
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData),
+        credentials: 'include'
+      });
 
-        // Llamar al backend para registrar el pago y obtener credenciales
-        const pagoResponse = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            monto: amount,
-            fecha_pago: new Date().toISOString(),
-            monto_pago: amount,
-            MEMBRESIA_id_membresia: membresiaId,
-            provedor_negocio_id_provedor: proveedorId,
-            PERSONA_id_persona: personaId,
-            esRegistroInicial: true
-          })
-        });
+      const result = await response.json();
 
-        const pagoData = await pagoResponse.json();
-
-        navigate('/confirmacion', { 
+      if (result.success) {
+        navigate('/dashboard-proveedor', { 
           state: { 
-            success: true,
-            planName,
-            amount,
-            credenciales: pagoData.credenciales
+            success: true, 
+            message: 'Pago procesado exitosamente.' 
           }
         });
+      } else {
+        setError(result.error || 'Error al procesar el pago');
       }
     } catch (err) {
-      console.error('Error:', err);
       setError('Error al procesar el pago. Por favor, intente nuevamente.');
-    } finally {
-      setLoading(false);
     }
+
+    setProcessing(false);
   };
 
   return (
@@ -144,10 +120,14 @@ const PaymentForm = ({ amount, planName }) => {
 
             <button
               type="submit"
-              disabled={!stripe || loading}
-              className="w-full bg-purple-600 text-white py-3 px-4 rounded-md hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!stripe || processing}
+              className={`w-full py-3 px-4 rounded-md text-white font-medium ${
+                processing || !stripe
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
-              {loading ? 'Procesando...' : `Pagar $${amount.toFixed(2)}`}
+              {processing ? 'Procesando...' : `Pagar $${amount.toFixed(2)}`}
             </button>
           </form>
         </div>
