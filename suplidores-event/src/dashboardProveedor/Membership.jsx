@@ -53,15 +53,37 @@ const Membership = () => {
             setCurrentPlan(membresiaData);
             // Obtener el historial de pagos
             fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${prov.id_provedor}`)
-              .then(res => res.json())
+              .then(res => {
+                if (!res.ok) {
+                  throw new Error('Error al obtener el historial de pagos');
+                }
+                return res.json();
+              })
               .then(pagosData => {
-                setPaymentHistory(pagosData);
+                console.log('Historial de pagos recibido:', pagosData);
+                if (Array.isArray(pagosData)) {
+                  setPaymentHistory(pagosData);
+                } else {
+                  console.error('Formato de datos de pagos inválido:', pagosData);
+                  setPaymentHistory([]);
+                }
+                setLoading(false);
+              })
+              .catch(err => {
+                console.error('Error al obtener el historial de pagos:', err);
+                setPaymentHistory([]);
                 setLoading(false);
               });
+          })
+          .catch(err => {
+            console.error('Error al obtener la membresía:', err);
+            setError('Error al obtener la información de la membresía');
+            setLoading(false);
           });
       })
       .catch(err => {
-        setError(err.message);
+        console.error('Error al obtener datos del proveedor:', err);
+        setError('Error al obtener los datos del proveedor');
         setLoading(false);
       });
   }, []);
@@ -149,38 +171,89 @@ const Membership = () => {
       const membresiaId = currentPlan?.id_prov_membresia || currentPlan?.id_membresia;
       const personaId = localStorage.getItem('PERSONA_id_persona');
       const monto = currentPlan?.precio;
-      console.log('DEBUG handleRenewal:', { proveedorId, membresiaId, membresiaBaseId, personaId, monto, currentPlan });
+      const tipoPago = localStorage.getItem('pending_plan_change') ? 'cambio_plan' : 'renovacion';
+      
+      console.log('DEBUG handleRenewal:', { proveedorId, membresiaId, membresiaBaseId, personaId, monto, currentPlan, tipoPago });
+      
       if (!proveedorId || !membresiaId || !personaId || !monto || !membresiaBaseId) {
         setError('No se encontró la información necesaria para renovar la membresía.');
         return;
       }
-      // Llamar al backend para registrar el pago y renovar la membresía
+
+      // Preparar los datos del pago
+      const paymentData = {
+        monto: monto,
+        fecha_pago: new Date().toISOString(),
+        monto_pago: monto,
+        MEMBRESIA_id_membresia: membresiaBaseId,
+        provedor_negocio_id_provedor: proveedorId,
+        PERSONA_id_persona: personaId,
+        tipo_pago: tipoPago,
+        estado: 'completado',
+        esRegistroInicial: false
+      };
+
+      // Si es un cambio de plan, agregar la información adicional
+      if (tipoPago === 'cambio_plan') {
+        const pendingChange = JSON.parse(localStorage.getItem('pending_plan_change'));
+        paymentData.plan_anterior = currentPlan?.nombre_pla;
+        paymentData.plan_nuevo = pendingChange.planName;
+        paymentData.diferencia_precio = pendingChange.amount;
+      }
+
+      // Llamar al backend para registrar el pago
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          monto: monto,
-          fecha_pago: new Date().toISOString(),
-          monto_pago: monto,
-          MEMBRESIA_id_membresia: membresiaBaseId,
-          provedor_negocio_id_provedor: proveedorId,
-          PERSONA_id_persona: personaId,
-          esRegistroInicial: false
-        })
+        body: JSON.stringify(paymentData)
       });
+
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.error || 'Error al renovar la membresía');
+        setError(errorData.error || 'Error al registrar el pago');
         return;
       }
+
+      // Si es un cambio de plan, actualizar el plan en la base de datos
+      if (tipoPago === 'cambio_plan') {
+        const pendingChange = JSON.parse(localStorage.getItem('pending_plan_change'));
+        const planResponse = await fetch('https://spectacular-recreation-production.up.railway.app/cambiar_plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            proveedorId,
+            planId: pendingChange.newPlanId,
+            currentPlanId: pendingChange.currentPlanId,
+            type: 'upgrade'
+          })
+        });
+
+        if (!planResponse.ok) {
+          const errorData = await planResponse.json();
+          setError(errorData.error || 'Error al cambiar el plan');
+          return;
+        }
+
+        // Limpiar el cambio de plan pendiente
+        localStorage.removeItem('pending_plan_change');
+      }
+
       setShowRenewalModal(false);
+      
       // Actualizar los datos de la membresía
       const membresiaResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`);
       const membresiaData = await membresiaResponse.json();
       setCurrentPlan(membresiaData);
-      setAlerta({ tipo: 'success', mensaje: '¡Membresía renovada exitosamente!' });
+
+      // Actualizar el historial de pagos
+      const pagosResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/pagos/${proveedorId}`);
+      const pagosData = await pagosResponse.json();
+      setPaymentHistory(pagosData);
+
+      setAlerta({ tipo: 'success', mensaje: tipoPago === 'cambio_plan' ? '¡Plan cambiado exitosamente!' : '¡Membresía renovada exitosamente!' });
     } catch (err) {
-      setError(err.message || 'Error al renovar la membresía');
+      console.error('Error en handleRenewal:', err);
+      setError(err.message || 'Error al procesar el pago');
     }
   };
 
@@ -275,6 +348,42 @@ const Membership = () => {
       setCurrentPlan(membresiaResponse.data);
     } catch (err) {
       setAlerta({ tipo: 'error', mensaje: 'Error al cambiar el estado de la membresía' });
+    }
+  };
+
+  // Función para formatear el estado del pago
+  const getPaymentStatusBadge = (status) => {
+    switch (status?.toLowerCase()) {
+      case 'completado':
+      case 'completed':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+            <CheckCircleIcon className="w-4 h-4 mr-1" />
+            Completado
+          </span>
+        );
+      case 'pendiente':
+      case 'pending':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+            <ExclamationCircleIcon className="w-4 h-4 mr-1" />
+            Pendiente
+          </span>
+        );
+      case 'fallido':
+      case 'failed':
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+            <XCircleIcon className="w-4 h-4 mr-1" />
+            Fallido
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+            {status || 'Desconocido'}
+          </span>
+        );
     }
   };
 
@@ -404,13 +513,13 @@ const Membership = () => {
                   Factura
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Descripción
+                  Plan
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Tipo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Monto
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Método
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Estado
@@ -418,31 +527,36 @@ const Membership = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paymentHistory.map((payment) => (
-                <tr key={payment.id_pago}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(payment.fecha_pago).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    INV-{payment.id_pago.toString().padStart(6, '0')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Renovación {currentPlan?.nombre_pla}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    RD${payment.monto}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div className="flex items-center">
-                      <CreditCardIcon className="w-5 h-5 mr-2 text-gray-400" />
-                      Tarjeta de Crédito
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(payment.status)}
+              {paymentHistory && paymentHistory.length > 0 ? (
+                paymentHistory.map((payment) => (
+                  <tr key={payment.id_pago}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(payment.fecha_pago).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      INV-{payment.id_pago.toString().padStart(6, '0')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {payment.nombre_pla || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {payment.tipo_pago === 'cambio_plan' ? 'Cambio de Plan' : 'Renovación'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      RD${payment.monto || payment.monto_pago || '0'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getPaymentStatusBadge(payment.estado)}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                    No hay historial de pagos disponible
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

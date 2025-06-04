@@ -96,16 +96,52 @@ function App() {
       <Routes>
         {/* Rutas públicas (sin autenticación) */}
         <Route path="/login" element={<Login />} />
-        <Route path="/LoginAdmin" element={<LoginAdmin />} />
-        <Route path="/" element={<Layout><Home /></Layout>} />
-        <Route path="/home" element={<Layout><Home /></Layout>} />
-        <Route path="/servicios" element={<Layout><Servicios /></Layout>} />
-        <Route path="/productos" element={<Layout><Productos /></Layout>} />
-        <Route path="/vende" element={<Layout><Vende /></Layout>} />
-        <Route path="/servicios/:id" element={<Layout><DetalleServicio /></Layout>} />
-        <Route path="/productos/:id" element={<Layout><DetalleProducto /></Layout>} />
-        <Route path="/registro/:plan" element={<Layout><DatosPersonas /></Layout>} />
-        <Route path="/registro/evento" element={<Layout><DatosProveedor /></Layout>} />
+        <Route path="/enelnombrededios" element={<LoginAdmin />} />
+        <Route path="/" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><Home /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/home" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><Home /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/servicios" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><Servicios /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/productos" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><Productos /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/vende" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><Vende /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/servicios/:id" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><DetalleServicio /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/productos/:id" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><DetalleProducto /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/registro/:plan" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><DatosPersonas /></Layout>
+          </ProtectedRoute>
+        } />
+        <Route path="/registro/evento" element={
+          <ProtectedRoute allowedRoles={['cliente', 'admin']}>
+            <Layout><DatosProveedor /></Layout>
+          </ProtectedRoute>
+        } />
 
         {/* Rutas protegidas para administradores */}
         <Route

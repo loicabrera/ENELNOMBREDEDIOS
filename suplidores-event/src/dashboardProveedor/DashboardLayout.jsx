@@ -17,6 +17,7 @@ import Footer from './Footer';
 
 const navigation = [
   { name: 'Inicio', href: '/dashboard-proveedor', icon: HomeIcon },
+  { name: 'Perfil', href: '/dashboard-proveedor/perfil', icon: UserIcon },
   { name: 'Negocios', href: '/dashboard-proveedor/negocios', icon: BuildingStorefrontIcon },
   { name: 'Publicaciones', href: '/dashboard-proveedor/publicaciones', icon: DocumentTextIcon },
   { name: 'Membresía', href: '/dashboard-proveedor/membresia', icon: CreditCardIcon },
