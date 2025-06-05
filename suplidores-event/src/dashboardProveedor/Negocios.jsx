@@ -33,10 +33,24 @@ const Negocios = () => {
         
         // La respuesta debe ser un array de negocios
         if (Array.isArray(data)) {
-          setBusinesses(data); 
-           // Establecer el primer negocio como activo si la lista no está vacía
-          if (data.length > 0) {
-            setActiveBusiness(data[0]);
+          // Mapear los nombres de las propiedades del backend a los nombres esperados por el frontend
+          const mappedBusinesses = data.map(business => ({
+            id: business.id_provedor, // Mapear id_provedor a id
+            name: business.nombre_empresa, // Mapear nombre_empresa a name
+            email: business.email_empresa, // Mapear email_empresa a email
+            phone: business.telefono_empresa, // Mapear telefono_empresa a phone
+            address: business.direccion, // Mapear direccion a address
+            description: business.descripcion, // Mapear descripcion
+            socialMedia: business.redes_sociales, // Mapear redes_sociales
+            serviceType: business.tipo_servicio, // Mapear tipo_servicio
+            // Nota: `schedule` no existe en la tabla actual, se mantendrá undefined o se manejará por separado si es necesario.
+            schedule: [] // O manejar según la estructura real si existe en otra tabla
+          }));
+
+          setBusinesses(mappedBusinesses); 
+           // Establecer el primer negocio mapeado como activo si la lista no está vacía
+          if (mappedBusinesses.length > 0) {
+            setActiveBusiness(mappedBusinesses[0]);
           } else {
             setActiveBusiness(null);
           }
