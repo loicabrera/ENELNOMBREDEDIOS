@@ -927,14 +927,33 @@ app.get('/api/productos-todos', async (req, res) => {
 // Endpoint para obtener todos los servicios publicados SOLO si la membresía está activa
 app.get('/api/servicios', async (req, res) => {
   try {
-    const [rows] = await conexion.query(`
+    const { provedor_negocio_id_provedor } = req.query;
+
+    let query = `
       SELECT s.* FROM SERVICIO s
       JOIN provedor_negocio pn ON s.provedor_negocio_id_provedor = pn.id_provedor
       JOIN PROVEDOR_MEMBRESIA pm ON pm.id_provedor = pn.id_provedor
       WHERE pm.estado = 'activa'
-    `);
+    `;
+    const replacements = [];
+
+    // Si se proporciona provedorId, añadir la condición de filtro
+    if (provedor_negocio_id_provedor) {
+      query += ' AND s.provedor_negocio_id_provedor = ?';
+      replacements.push(provedor_negocio_id_provedor);
+       console.log('✅ Solicitud GET /api/servicios filtrada por provedorId:', provedor_negocio_id_provedor);
+    } else {
+       // Si no se proporciona provedorId, podrías querer devolver un error o todos los servicios activos (depende de la necesidad)
+       // Por ahora, mantenemos la lógica anterior de devolver todos los activos si no hay filtro.
+       console.log('✅ Solicitud GET /api/servicios (todos los activos)');
+    }
+     query += ' ORDER BY s.fecha_creacion DESC'; // O algún otro criterio de ordenación
+
+    const [rows] = await conexion.query(query, { replacements });
+
     res.json(rows);
   } catch (error) {
+    console.error('❌ Error al obtener los servicios:', error);
     res.status(500).json({ error: 'Error al obtener los servicios' });
   }
 });
