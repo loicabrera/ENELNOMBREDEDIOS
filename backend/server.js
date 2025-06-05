@@ -1290,14 +1290,18 @@ app.get('/usuarios', async (req, res) => {
 // Endpoint para obtener el límite de fotos según la membresía activa del proveedor (proteger con JWT)
 app.get('/api/limite-fotos', authenticateJWT, async (req, res) => {
   const { provedor_negocio_id_provedor } = req.query;
-   // Opcional: Verificar que el provedor_negocio_id_provedor solicitado coincide con el id en el token
-  if (req.user.provedorId && req.user.provedorId !== parseInt(provedor_negocio_id_provedor)) {
-     return res.sendStatus(403); // Prohibido
-  }
   if (!provedor_negocio_id_provedor) {
     return res.status(400).json({ error: 'Falta el id del proveedor' });
   }
   try {
+    // Verificar que el negocio pertenece a la persona autenticada
+    const [negocios] = await db.query(
+      'SELECT id_provedor FROM provedor_negocio WHERE id_provedor = ? AND PERSONA_id_persona = ?',
+      [provedor_negocio_id_provedor, req.user.personaId]
+    );
+    if (!negocios.length) {
+      return res.sendStatus(403); // Prohibido
+    }
     const [rows] = await db.query(`
       SELECT M.limite_fotos
       FROM PROVEDOR_MEMBRESIA PM
