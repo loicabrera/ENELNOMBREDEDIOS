@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext';
 
 const LoginProveedor = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const LoginProveedor = () => {
   });
 
   const { login, loading: authLoading, isAuthenticated: isAuthContextAuthenticated } = useAuth();
+  const { clearActiveBusiness } = useActiveBusiness();
 
   useEffect(() => {
     console.log('LoginProveedor useEffect: Estado actual de AuthContext - authLoading:', authLoading, 'isAuthenticated:', isAuthContextAuthenticated);
@@ -41,6 +43,7 @@ const LoginProveedor = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    clearActiveBusiness();
 
     try {
       await login(formData.username, formData.password);

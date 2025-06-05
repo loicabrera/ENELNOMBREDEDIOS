@@ -18,8 +18,14 @@ export const ActiveBusinessProvider = ({ children }) => {
     }
   }, [activeBusiness]);
 
+  // Nueva función para limpiar el negocio activo
+  const clearActiveBusiness = () => {
+    setActiveBusiness(null);
+    sessionStorage.removeItem('activeBusiness');
+  };
+
   return (
-    <ActiveBusinessContext.Provider value={{ activeBusiness, setActiveBusiness }}>
+    <ActiveBusinessContext.Provider value={{ activeBusiness, setActiveBusiness, clearActiveBusiness }}>
       {children}
     </ActiveBusinessContext.Provider>
   );

@@ -36,7 +36,7 @@ export default function DashboardLayout() {
   const [isMobile, setIsMobile] = useState(false);
   const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
   const { user, isAuthenticated, setIsAuthenticated, setUser } = useAuth();
-  const { activeBusiness } = useActiveBusiness();
+  const { activeBusiness, clearActiveBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -96,6 +96,7 @@ export default function DashboardLayout() {
     }
     setIsAuthenticated(false);
     setUser(null);
+    clearActiveBusiness();
     window.location.href = '/login';
   };
 
