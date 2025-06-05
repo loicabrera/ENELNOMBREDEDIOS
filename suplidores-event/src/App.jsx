@@ -93,54 +93,41 @@ function AdminLayout() {
 function App() {
   return (
     <Routes>
-      {/* Rutas públicas (sin autenticación) */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/enelnombrededios" element={<LoginAdmin />} />
-      <Route path="/" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><Home /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/home" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><Home /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/servicios" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><Servicios /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/productos" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><Productos /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/vende" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><Vende /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/servicios/:id" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><DetalleServicio /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/productos/:id" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><DetalleProducto /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/registro/:plan" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><DatosPersonas /></Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/registro/evento" element={
-        <ProtectedRoute allowedRoles={['cliente', 'admin']}>
-          <Layout><DatosProveedor /></Layout>
-        </ProtectedRoute>
-      } />
+      {/* Rutas públicas (accesibles sin autenticación) */}
+      <Route path="/login" element={<SimpleLayout><Login /></SimpleLayout>} />
+      <Route path="/enelnombrededios" element={<SimpleLayout><LoginAdmin /></SimpleLayout>} />
+      <Route path="/" element={<Layout><Home /></Layout>} />
+      <Route path="/home" element={<Layout><Home /></Layout>} />
+      <Route path="/servicios" element={<Layout><Servicios /></Layout>} />
+      <Route path="/productos" element={<Layout><Productos /></Layout>} />
+      <Route path="/vende" element={<Layout><Vende /></Layout>} />
+      <Route path="/servicios/:id" element={<Layout><DetalleServicio /></Layout>} />
+      <Route path="/productos/:id" element={<Layout><DetalleProducto /></Layout>} />
+      <Route path="/registro/:plan" element={<SimpleLayout><DatosPersonas /></SimpleLayout>} />
+      <Route path="/registro/evento" element={<SimpleLayout><DatosProveedor /></SimpleLayout>} />
+       <Route path="/pago" element={<Layout><PaymentContainer /></Layout>} />
+        <Route
+        path="/pago-nuevo-negocio"
+        element={
+          <SimpleLayout>
+            <PaymentContainerNuevoNegocio />
+          </SimpleLayout>
+        }
+      />
+       <Route
+        path="/confirmacion"
+        element={
+          <Layout><Confirmacion /></Layout>
+        }
+      />
+       <Route
+        path="/confirmacion-nuevo-negocio"
+        element={
+          <SimpleLayout>
+            <ConfirmacionNuevoNegocio />
+          </SimpleLayout>
+        }
+      />
 
       {/* Rutas protegidas para administradores */}
       <Route
@@ -176,23 +163,17 @@ function App() {
         <Route path="negocios/:id" element={<DetalleNegocio />} />
       </Route>
 
-      {/* Rutas protegidas para clientes */}
+      {/* Ruta protegida para perfil de usuario autenticado (ajustar rol si es necesario) */}
       <Route
         path="/perfil"
         element={
-          <ProtectedRoute allowedRoles={['cliente']}>
+          <ProtectedRoute allowedRoles={['cliente', 'proveedor', 'admin']}>{/* Permite ver el perfil a cualquier usuario autenticado */}
             <Layout><Perfil /></Layout>
           </ProtectedRoute>
         }
       />
 
-      {/* Rutas protegidas para pagos */}
-      <Route
-        path="/pago"
-        element={
-          <Layout><PaymentContainer /></Layout>
-        }
-      />
+      {/* Rutas protegidas para pagos específicos (cambio de plan, edición, etc.) */}
 
       <Route
         path="/pago-cambio-plan"
@@ -203,37 +184,7 @@ function App() {
         }
       />
 
-      <Route
-        path="/pago-nuevo-negocio"
-        element={
-          <SimpleLayout>
-            <PaymentContainerNuevoNegocio />
-          </SimpleLayout>
-        }
-      />
-
-      <Route
-        path="/confirmacion"
-        element={
-          <Layout><Confirmacion /></Layout>
-        }
-      />
-
-      {/* Ruta para el formulario de datos del proveedor (accesible para todos) */}
-      <Route
-        path="/datosproveedor"
-        element={
-          <SimpleLayout><DatosProveedor /></SimpleLayout>
-        }
-      />
-      <Route
-        path="/datosproveedor2"
-        element={
-          <SimpleLayout><DatosProveedor2 /></SimpleLayout>
-        }
-      />
-
-      {/* Rutas protegidas para edición */}
+      {/* Rutas protegidas para edición (solo proveedores) */}
       <Route
         path="/productos/editar/:id"
         element={
@@ -251,16 +202,7 @@ function App() {
         }
       />
 
-      <Route
-        path="/confirmacion-nuevo-negocio"
-        element={
-          <Layout>
-            <ConfirmacionNuevoNegocio />
-          </Layout>
-        }
-      />
-
-      {/* Ruta por defecto */}
+      {/* Ruta por defecto - redirige a la página principal */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
