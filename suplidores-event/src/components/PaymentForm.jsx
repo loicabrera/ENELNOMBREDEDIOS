@@ -40,7 +40,7 @@ const PaymentForm = ({ amount, planName }) => {
         personaId: user.personaId
       };
 
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/pago', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
