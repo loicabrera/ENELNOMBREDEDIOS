@@ -23,6 +23,7 @@ const DatosProveedor = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [proveedorCreado, setProveedorCreado] = useState(null);
   const [providerData, setProviderData] = useState(null);
+  const [mainBusinessPlanDetails, setMainBusinessPlanDetails] = useState(null);
 
   // Definir los planes y sus montos
   const planes = {
@@ -40,7 +41,7 @@ const DatosProveedor = () => {
     }
   };
 
-  // Verificar si tenemos el ID de la persona y el plan seleccionado
+  // Verificar si tenemos el ID de la persona y el plan seleccionado (o si es flujo agregar nuevo negocio)
   useEffect(() => {
     console.log('DatosProveedor2 useEffect: Iniciando validación de estado.');
     console.log('DatosProveedor2 useEffect: location.state:', location.state);
@@ -48,6 +49,7 @@ const DatosProveedor = () => {
 
     const id = location.state?.id_persona;
     const plan = location.state?.plan;
+    const isAddingNewBusiness = location.state?.isAddingNewBusiness;
     
     if (!id) {
       console.error('No se encontró el ID de la persona en el estado. Redirigiendo.');
@@ -58,12 +60,17 @@ const DatosProveedor = () => {
       setPersonaId(id);
     }
 
-    // Solo validar el plan si el objeto planes está definido
-    if (!planes || !plan || !planes[plan]) {
-       console.error('Datos de plan faltantes o inválidos en el estado. Redirigiendo.', { plan, planes });
-      setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
-      navigate('/');
-      return; // Salir temprano si falta el plan
+    // Validar el plan SOLO si NO es el flujo de agregar un nuevo negocio adicional
+    if (!isAddingNewBusiness) {
+      console.log('Flujo de registro inicial o desconocido: Validando plan.');
+      if (!planes || !plan || !planes[plan]) {
+         console.error('Datos de plan faltantes o inválidos en el estado. Redirigiendo.', { plan, planes });
+        setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
+        navigate('/');
+        return; // Salir temprano si falta el plan
+      }
+    } else {
+        console.log('Flujo de agregar nuevo negocio: Omitiendo validación de plan del state.');
     }
 
     // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
@@ -71,7 +78,58 @@ const DatosProveedor = () => {
       setShowConfirmation(false);
       setProveedorCreado(null);
     }
-  }, [location.state, navigate]);
+  }, [location.state, navigate, planes]);
+
+  // Nuevo useEffect para obtener los detalles del plan del negocio principal si se agrega uno nuevo
+  useEffect(() => {
+    const fetchMainBusinessPlan = async () => {
+       console.log('fetchMainBusinessPlan useEffect: Iniciando.');
+       // Solo ejecutar si está autenticado, es un proveedor, es el flujo de agregar nuevo negocio, y tenemos el provedorId
+      if (isAuthenticated && user?.provedorId && location.state?.isAddingNewBusiness) {
+         console.log('fetchMainBusinessPlan useEffect: Fetching membresia para provedorId:', user.provedorId);
+        try {
+          const response = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${user.provedorId}`, {
+            credentials: 'include'
+          });
+
+          if (!response.ok) {
+             // Si no hay membresía activa para el proveedor principal (ej: acaba de registrarse y no pagó?),
+             // podrías redirigir a seleccionar plan o mostrar un error.
+             // Por ahora, solo logueamos y no establecemos planDetails, lo que podría causar un error más adelante en handleSubmit si no se maneja.
+             console.warn('No se encontró membresía activa para el provedor principal o error al obtenerla.', response.status);
+             // Podrías manejar este caso redirigiendo o mostrando un mensaje.
+             // navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', { state: { id_persona: user.personaId, isAddingNewBusiness: true, error: 'Necesitas una membresía activa para agregar otro negocio.' }});
+             return; 
+          }
+
+          const data = await response.json();
+          console.log('Detalles de membresía del provedor principal recibidos:', data);
+          // Asumiendo que la respuesta contiene nombre_pla y precio
+          if (data?.nombre_pla && data?.precio) {
+            setMainBusinessPlanDetails({ name: data.nombre_pla, amount: data.precio });
+             console.log('Detalles del plan principal establecidos.', { name: data.nombre_pla, amount: data.precio });
+          } else {
+              console.warn('La respuesta de membresía no contiene nombre_pla o precio esperados.', data);
+               // Manejar caso donde la membresía no tiene los campos esperados
+               // Podrías redirigir o mostrar un error.
+               // navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', { state: { id_persona: user.personaId, isAddingNewBusiness: true, error: 'Error al obtener detalles del plan principal.' }});
+          }
+
+        } catch (err) {
+          console.error('Error al obtener membresía del provedor principal:', err);
+          setError('Error al obtener los detalles de tu plan principal.');
+           // Podrías redirigir o mostrar un error.
+           // navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', { state: { id_persona: user.personaId, isAddingNewBusiness: true, error: 'Error en la red al obtener detalles del plan principal.' }});
+        } finally {
+            // Aunque no seteamos loading aquí, podrías necesitar manejar un estado de loading separado para esta llamada.
+        }
+      } else {
+         console.log('fetchMainBusinessPlan useEffect: Condiciones no cumplidas.', { isAuthenticated, user: user?.provedorId, isAddingNewBusiness: location.state?.isAddingNewBusiness });
+      }
+    };
+
+    fetchMainBusinessPlan();
+  }, [isAuthenticated, user?.provedorId, location.state?.isAddingNewBusiness, navigate]); // Dependencias relevantes
 
   useEffect(() => {
     const fetchProviderData = async () => {
@@ -227,35 +285,85 @@ const DatosProveedor = () => {
         const planInfo = planes[plan];
         const isAddingNewBusiness = location.state?.isAddingNewBusiness;
 
+        // Determinar los detalles del plan y el provedorId objetivo para el pago
+        let paymentAmount = null;
+        let paymentPlanName = null;
+        let targetProveedorId = null;
+
+        if (isAddingNewBusiness) {
+           // Flujo de agregar nuevo negocio: usar detalles del plan principal y el ID del nuevo negocio
+           console.log('handleSubmit: Flujo agregar nuevo negocio. Usando detalles del plan principal.');
+           if (!mainBusinessPlanDetails) {
+              // Esto no debería ocurrir si el fetchMainBusinessPlan tuvo éxito, pero lo manejamos por seguridad.
+               console.error('handleSubmit: Detalles del plan principal no disponibles.');
+               setError('No se pudieron obtener los detalles de tu plan principal para el pago.');
+               setLoading(false);
+               // Podrías redirigir de vuelta a Mis Negocios o a la selección de plan si decides reintroducirla como fallback.
+               // navigate('/dashboard-proveedor/negocios');
+               return;
+           }
+           paymentAmount = mainBusinessPlanDetails.amount;
+           paymentPlanName = mainBusinessPlanDetails.name;
+           targetProveedorId = nuevoProveedor.id_provedor; // El ID del NUEVO negocio creado
+           console.log('handleSubmit: Datos para pago de nuevo negocio:', { paymentAmount, paymentPlanName, targetProveedorId });
+
+        } else if (location.state?.fromRegistro) {
+           // Flujo de registro inicial: usar detalles del plan del state y *asociar al primer negocio encontrado para la persona* en el backend /api/pago (manejo en backend)
+           console.log('handleSubmit: Flujo de registro inicial. Usando detalles del plan del state.');
+           if (!planInfo) {
+                console.error('handleSubmit: PlanInfo no disponible para registro inicial.', { plan, planes });
+                 setError('Error interno: Información del plan no disponible.');
+                 setLoading(false);
+                 // navigate('/'); // Redirigir si falta información crítica
+                 return;
+           }
+           paymentAmount = planInfo.monto; // Usar el monto del state (originalmente pasado desde la selección de plan de registro)
+           paymentPlanName = planInfo.nombre;
+           // En este flujo, no pasamos provedorId al /api/pago, el backend lo busca por personaId.
+           targetProveedorId = undefined; // No pasar provedorId explícitamente en este flujo
+            console.log('handleSubmit: Datos para pago de registro inicial:', { paymentAmount, paymentPlanName, targetProveedorId });
+
+        } else {
+           // Caso inesperado
+           console.warn('handleSubmit: Flujo desconocido. Redirigiendo.', location.state);
+           setError('Error interno: Flujo de formulario desconocido.');
+           setLoading(false);
+           // navigate('/dashboard-proveedor/negocios');
+           return;
+        }
+
+        // Verificar que tenemos datos de pago válidos antes de redirigir
+        if (paymentAmount === null || paymentPlanName === null) {
+             console.error('handleSubmit: Datos de pago nulos antes de redirigir.', { paymentAmount, paymentPlanName });
+             setError('Error interno: No se pudieron determinar los detalles del pago.');
+             setLoading(false);
+             // navigate('/dashboard-proveedor/negocios');
+             return;
+        }
+
+        // Construir el objeto paymentData para la navegación
         const paymentData = {
-          amount: location.state?.amount,
-          planName: planInfo.nombre,
-          isNewBusiness: true,
-          businessName: nuevoProveedor.nombre_empresa,
-          proveedorId: nuevoProveedor.id_provedor,
-          personaId: personaId
+             amount: paymentAmount,
+             planName: paymentPlanName,
+             isNewBusiness: isAddingNewBusiness, // Pasar la bandera original
+             businessName: nuevoProveedor.nombre_empresa,
+             // Solo incluir proveedorId si se determinó (para el flujo de agregar nuevo negocio)
+             ...(targetProveedorId && { proveedorId: targetProveedorId }),
+             personaId: personaId // Asegúrate de que personaId está disponible
         };
 
-        if (location.state?.fromRegistro) {
-          setProveedorCreado({
-            ...formData,
-            plan: planInfo,
-          });
-          setShowConfirmation(true);
-        } else if (isAddingNewBusiness) {
-          console.log('Redirigiendo a pago para nuevo negocio adicional con datos:', paymentData);
-          navigate('/pago-nuevo-negocio', { 
-            state: paymentData
-          });
-        } else {
-          console.warn('handleSubmit: Redirección desconocida. State:', location.state);
-          navigate('/dashboard-proveedor/negocios');
-        }
+        console.log('Redirigiendo a pago con datos:', paymentData);
+        navigate('/pago-nuevo-negocio', { 
+          state: paymentData
+        });
+
       } else if (nuevoProveedor === null) {
-        // insertarDatos falló y retornó null (ya maneja el setError interno)
+         // insertarDatos falló y retornó null (ya maneja el setError interno)
+         // No hacemos nada aquí, el error ya está seteado y loading es false.
       } else {
-        console.error('insertarDatos tuvo éxito pero no retornó el objeto proveedor.', nuevoProveedor);
-        setError('Error interno al obtener los datos del negocio creado.');
+         // Esto podría ocurrir si insertarDatos tuvo éxito pero no devolvió el objeto proveedor como esperaba.
+         console.error('insertarDatos tuvo éxito pero no retornó el objeto proveedor.', nuevoProveedor);
+         setError('Error interno al obtener los datos del negocio creado.');
       }
 
     } catch (error) {
