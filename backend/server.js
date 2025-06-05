@@ -2057,7 +2057,13 @@ app.get('/api/persona/:personaId/negocios', authenticateJWT, async (req, res) =>
 });
 
 app.post('/logout', (req, res) => {
-  res.clearCookie('token'); // Asegúrate de que 'token' es el nombre de tu cookie JWT
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+    domain: process.env.NODE_ENV === 'production' ? '.up.railway.app' : undefined
+  });
   res.json({ success: true });
 });
 
