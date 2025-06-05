@@ -164,7 +164,7 @@ function App() {
         <Route path="negocios/:id" element={<DetalleNegocio />} />
         <Route path="productos/editar/:id" element={<EditarProducto />} />
         <Route path="servicios/editar/:id" element={<EditarServicio />} />
-        <Route path="agregar-negocio/seleccionar-plan" element={<SeleccionarPlanNuevoNegocio />} />
+        <Route path="agregar-negocio-form" element={<DatosProveedor2 />} />
       </Route>
 
       {/* Ruta protegida para perfil de usuario autenticado (ajustar rol si es necesario) */}
