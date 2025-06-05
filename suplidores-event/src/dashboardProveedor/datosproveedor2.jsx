@@ -82,11 +82,18 @@ const DatosProveedor = () => {
     console.log('DatosProveedor2 useEffect: Extraído - plan:', plan);
     console.log('DatosProveedor2 useEffect: Extraído - isAddingNewBusiness:', isAddingNewBusiness);
     
-    if (!id) {
-      console.error('DatosProveedor2 useEffect: No se encontró el ID de la persona en el estado. Redirigiendo a /datospersonas.');
-      setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
-      navigate('/datospersonas');
-      return; // Salir temprano si falta el ID de persona
+    if (!isAuthenticated || !user) {
+      console.log('DatosProveedor2 useEffect: Usuario no autenticado o nulo, redirigiendo a /login');
+      navigate('/login');
+      return;
+    }
+
+    // Modificar la condición de redirección a home
+    // Solo redirigir si NO estamos agregando un nuevo negocio Y falta el id_persona
+    if (!isAddingNewBusiness && !id && !user?.personaId) {
+        console.log('DatosProveedor2 useEffect: No estamos agregando un nuevo negocio y falta id_persona. Redirigiendo a /');
+        navigate('/'); // Redirige a home
+        return;
     }
 
     // Si es el flujo de agregar nuevo negocio, no validamos el plan del state
