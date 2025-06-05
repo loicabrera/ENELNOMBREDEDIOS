@@ -16,6 +16,9 @@ import { Membresia } from './Models/Membresias.js';
 import { Op } from 'sequelize';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -2100,10 +2103,10 @@ app.get('/personas/:id', async (req, res) => {
 });
 
 // Servir archivos estáticos del frontend
-app.use(express.static(path.join(process.cwd(), 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 // Fallback para SPA: cualquier ruta no encontrada devuelve index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 startServer();
