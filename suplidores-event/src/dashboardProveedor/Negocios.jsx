@@ -81,7 +81,7 @@ const Negocios = () => {
       return;
     }
     // Redirigir al formulario de datos proveedor para agregar nuevo negocio
-    navigate('/datos-proveedor', {
+    navigate('/dashboard-proveedor/agregar-negocio-form', {
       state: {
         id_persona: user.personaId,
         isAddingNewBusiness: true // Indicamos que es para agregar un negocio nuevo
