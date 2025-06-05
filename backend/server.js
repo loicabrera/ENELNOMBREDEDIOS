@@ -1601,13 +1601,127 @@ app.delete('/proveedores/:id', authenticateJWT, async (req, res) => {
 });
 
 // Endpoint para registrar el pago de cambio de plan (proteger con JWT)
-app.post('/registrar_pago_cambio_plan', authenticateJWT, async (req, res) => {
-  const { monto, fecha_pago, monto_pago, newPlanId, proveedorId } = req.body;
-  // Opcional: Verificar que el proveedorId solicitado coincide con el id en el token
-  if (req.user.provedorId && req.user.provedorId !== parseInt(proveedorId)) {
-     return res.sendStatus(403); // Prohibido
+app.post('/registrar_pago_cambio_plan', async (req, res) => {
+  // Esta ruta ahora manejará todo el flujo de pago y cambio de plan
+  try {
+    const { paymentMethodId, amount, planName, proveedorId } = req.body; // Asegúrate de que estos datos se envían desde el frontend
+
+    console.log('✅ Solicitud de pago de cambio de plan recibida:', { paymentMethodId, amount, planName, proveedorId });
+
+    // 1. Validar los datos recibidos
+    if (!paymentMethodId || !amount || !planName || !proveedorId) {
+      console.log('❌ Datos incompletos para registro de pago de cambio de plan.');
+      return res.status(400).json({ success: false, error: 'Datos incompletos para procesar el cambio de plan.' });
+    }
+
+    // Asegurarse de que el monto es un número válido y positivo (Stripe espera centavos)
+    const amountInCents = Math.round(amount * 100);
+     if (typeof amountInCents !== 'number' || amountInCents <= 0) {
+         console.log('❌ Monto inválido para cambio de plan.');
+         return res.status(400).json({ success: false, error: 'Monto de pago inválido para el cambio de plan.' });
+    }
+
+    // 2. Buscar la nueva membresía por nombre del plan
+    const [membresia] = await conexion.query(
+        'SELECT id_memebresia, duracion_dias FROM MEMBRESIA WHERE nombre_pla = ?',
+        { replacements: [planName] }
+    );
+
+    if (membresia.length === 0) {
+      console.log('❌ Nueva membresía no encontrada para plan:', planName);
+      return res.status(404).json({ success: false, error: 'Plan de membresía de destino no encontrado.' });
+    }
+
+    const nuevaMembresiaId = membresia[0].id_memebresia;
+    const duracionDias = membresia[0].duracion_dias;
+    console.log('Nueva membresía encontrada para cambio de plan:', { nuevaMembresiaId, duracionDias });
+
+    // 3. Procesar el pago con Stripe (similar a /api/pago)
+    try {
+        console.log('Intentando procesar pago de cambio de plan con Stripe...');
+         const paymentIntent = await stripe.paymentIntents.create({
+            amount: amountInCents,
+            currency: 'usd', // Asegúrate de que esta sea la moneda correcta
+            payment_method: paymentMethodId,
+            automatic_payment_methods: {
+                enabled: true,
+                allow_redirects: 'never'
+            },
+            metadata: {
+                proveedorId: proveedorId,
+                planName: planName,
+                nuevaMembresiaId: nuevaMembresiaId,
+                tipoPago: 'cambio_plan'
+            },
+        });
+
+        const confirmedPaymentIntent = await stripe.paymentIntents.confirm(
+             paymentIntent.id,
+             { payment_method: paymentMethodId }
+         );
+
+        console.log('PaymentIntent de cambio de plan confirmado. Estado:', confirmedPaymentIntent.status);
+
+        // 4. Si el pago en Stripe es exitoso (status === 'succeeded')
+        if (confirmedPaymentIntent.status === 'succeeded') {
+            console.log('Pago de cambio de plan en Stripe exitoso. Actualizando membresía y registrando pago...');
+
+            // Finalizar la membresía activa actual del proveedor
+            await conexion.query(
+              'UPDATE PROVEDOR_MEMBRESIA SET estado = \'vencida\' WHERE id_provedor = ? AND estado = \'activa\'',
+              { replacements: [proveedorId] }
+            );
+            console.log('Finalizada membresía activa anterior (si existía) para provedorId:', proveedorId);
+
+            // Calcular fechas para la nueva membresía
+            const fechaInicio = new Date();
+            const fechaFin = new Date(fechaInicio);
+            fechaFin.setDate(fechaFin.getDate() + duracionDias);
+
+            const fechaInicioSQL = formatDateToMySQL(fechaInicio);
+            const fechaFinSQL = formatDateToMySQL(fechaFin);
+            const fechaPagoSQL = formatDateToMySQL(new Date()); // Fecha actual del pago
+
+            // Crear la nueva membresía en PROVEDOR_MEMBRESIA
+            await conexion.query(
+              `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor, estado)
+               VALUES (?, ?, ?, ?, ?, 'activa')`,
+              { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, nuevaMembresiaId, proveedorId, 'activa'] }
+            );
+            console.log('Nueva membresía registrada para provedorId:', proveedorId, 'MembresiaId:', nuevaMembresiaId);
+
+            // Registrar el pago en la tabla pago
+             await conexion.query(
+                'INSERT INTO pago (monto, fecha_pago, monto_pago, m_e_m_b_r_e_s_i_a_id_membresia, provedor_negocio_id_provedor)',
+                 { replacements: [amount, fechaPagoSQL, amount, nuevaMembresiaId, proveedorId] }
+            );
+            console.log('Registro de pago de cambio de plan guardado en tabla pago.');
+
+            // 5. Devolver respuesta de éxito al frontend.
+            res.status(200).json({ success: true, message: 'Plan cambiado y pago registrado exitosamente.' });
+
+        } else {
+            // Pago en Stripe no exitoso (por ejemplo, requiere autenticación adicional)
+            console.log('Pago de cambio de plan en Stripe no exitoso. Estado:', confirmedPaymentIntent.status);
+             // Dependiendo del estado, podrías necesitar enviar información adicional al frontend para manejar 3D Secure, etc.
+            res.status(400).json({ success: false, error: 'El pago de cambio de plan requiere pasos adicionales o falló.', paymentIntent: confirmedPaymentIntent });
+        }
+
+    } catch (stripeError) {
+        console.error('❌ Error en la interacción con Stripe para cambio de plan:', stripeError);
+        let userFacingMessage = 'Error en el procesamiento del pago de cambio de plan. Por favor, intente con otra tarjeta o contacte soporte.';
+        if (stripeError.type === 'StripeCardError') {
+          userFacingMessage = 'Error con la tarjeta: ' + stripeError.message;
+        } else if (stripeError.type === 'StripeInvalidRequestError') {
+           userFacingMessage = 'Error en la solicitud de pago: ' + stripeError.message;
+        }
+        res.status(500).json({ success: false, error: userFacingMessage });
+    }
+
+  } catch (error) {
+    console.error('❌ Error general al registrar pago de cambio de plan:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor al registrar pago de cambio de plan.' });
   }
-  // ... existing code ...
 });
 
 // Ruta para verificar autenticación
