@@ -2086,4 +2086,17 @@ app.get('/api/obtener-username', async (req, res) => {
   }
 });
 
+app.get('/personas/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const persona = await PERSONA.findByPk(id);
+    if (!persona) {
+      return res.status(404).json({ error: 'Persona no encontrada' });
+    }
+    res.json(persona);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener la persona' });
+  }
+});
+
 startServer();
