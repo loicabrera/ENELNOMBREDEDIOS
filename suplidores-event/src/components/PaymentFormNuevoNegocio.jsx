@@ -40,7 +40,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
         proveedorId: location.state?.proveedorId
       };
 
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment/new-business', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/pago', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
