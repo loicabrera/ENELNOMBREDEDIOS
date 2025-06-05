@@ -11,6 +11,7 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext';
 
 const HomeProveedor = () => {
   const [proveedor, setProveedor] = useState(null);
@@ -19,17 +20,17 @@ const HomeProveedor = () => {
   const [publicaciones, setPublicaciones] = useState({ productos: 0, servicios: 0, limite_productos: 0, limite_servicios: 0 });
   const [membresia, setMembresia] = useState(null);
   const { user, isAuthenticated } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
-        if (!isAuthenticated || !user || !user.provedorId) {
-          console.log('Usuario no autenticado o sin provedorId en contexto.');
+        if (!isAuthenticated || !activeBusiness?.id) {
           setLoading(false);
+          setError('Selecciona un negocio en la sección "Negocios" para ver el inicio.');
           return;
         }
-
-        const proveedorId = user.provedorId;
+        const proveedorId = activeBusiness.id;
 
         const resProveedor = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${proveedorId}`, { credentials: 'include' });
         if (!resProveedor.ok) throw new Error('Error al obtener datos del proveedor');
@@ -54,7 +55,7 @@ const HomeProveedor = () => {
     };
 
     fetchHomeData();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, activeBusiness]);
 
   if (loading) return <div className="p-8 text-center">Cargando...</div>;
   if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
