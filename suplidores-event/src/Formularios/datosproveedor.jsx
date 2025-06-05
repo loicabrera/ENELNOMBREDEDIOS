@@ -186,14 +186,15 @@ const DatosProveedor = () => {
         }
 
         const planInfo = planes[plan];
-        console.log('Redirigiendo a pago con plan:', plan, 'monto:', planInfo.monto);
+        console.log('Redirigiendo a pago con plan:', plan, 'monto:', planInfo.monto, 'personaId:', personaId);
 
         // Redirigir a la página de pago con el monto correcto
         navigate('/pago', { 
           state: { 
             amount: planInfo.monto,
             planName: planInfo.nombre,
-            plan: plan // Añadimos el identificador del plan también
+            plan: plan,
+            id_persona: personaId
           } 
         });
       }
