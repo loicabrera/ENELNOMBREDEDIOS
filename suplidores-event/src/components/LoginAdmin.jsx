@@ -16,7 +16,7 @@ const LoginAdmin = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/login', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/login_admin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
