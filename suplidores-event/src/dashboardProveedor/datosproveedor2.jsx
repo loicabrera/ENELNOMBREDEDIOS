@@ -24,6 +24,7 @@ const DatosProveedor = () => {
   const [proveedorCreado, setProveedorCreado] = useState(null);
   const [providerData, setProviderData] = useState(null);
   const [mainBusinessPlanDetails, setMainBusinessPlanDetails] = useState(null);
+  const [planFetchAttempted, setPlanFetchAttempted] = useState(false);
 
   // Definir los planes y sus montos
   const planes = {
@@ -139,54 +140,30 @@ const DatosProveedor = () => {
 
   // Nuevo useEffect para obtener los detalles del plan del negocio principal si se agrega uno nuevo
   useEffect(() => {
-    const fetchMainBusinessPlan = async () => {
-       console.log('fetchMainBusinessPlan useEffect: Iniciando.');
-       // Solo ejecutar si está autenticado, es un proveedor, es el flujo de agregar nuevo negocio, y tenemos el provedorId
-      if (isAuthenticated && user?.provedorId && location.state?.isAddingNewBusiness) {
-         console.log('fetchMainBusinessPlan useEffect: Fetching membresia para provedorId:', user.provedorId);
-        try {
-          const response = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${user.provedorId}`, {
-            credentials: 'include'
-          });
+    if (
+      isAuthenticated &&
+      user?.provedorId &&
+      location.state?.isAddingNewBusiness &&
+      !planFetchAttempted
+    ) {
+      setPlanFetchAttempted(true); // Marcar que ya intentamos
+      fetchMainBusinessPlan(user.provedorId);
+    }
+    // No dependas de mainBusinessPlanDetails aquí
+  }, [isAuthenticated, user?.provedorId, location.state?.isAddingNewBusiness, planFetchAttempted]);
 
-          if (!response.ok) {
-             // Si no hay membresía activa para el proveedor principal (ej: acaba de registrarse y no pagó?),
-             // podrías redirigir a seleccionar plan o mostrar un error.
-             // Por ahora, solo logueamos y no establecemos planDetails, lo que podría causar un error más adelante en handleSubmit si no se maneja.
-             console.warn('No se encontró membresía activa para el provedor principal o error al obtenerla.', response.status);
-             // Podrías manejar este caso redirigiendo o mostrando un mensaje.
-             // navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', { state: { id_persona: user.personaId, isAddingNewBusiness: true, error: 'Necesitas una membresía activa para agregar otro negocio.' }});
-             return; 
-          }
-
-          const data = await response.json();
-          console.log('Detalles de membresía del provedor principal recibidos:', data);
-          // Asumiendo que la respuesta contiene nombre_pla y precio
-          if (data?.nombre_pla && data?.precio) {
-            setMainBusinessPlanDetails({ name: data.nombre_pla, amount: data.precio });
-             console.log('Detalles del plan principal establecidos.', { name: data.nombre_pla, amount: data.precio });
-          } else {
-              console.warn('La respuesta de membresía no contiene nombre_pla o precio esperados.', data);
-               // Manejar caso donde la membresía no tiene los campos esperados
-               // Podrías redirigir o mostrar un error.
-               // navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', { state: { id_persona: user.personaId, isAddingNewBusiness: true, error: 'Error al obtener detalles del plan principal.' }});
-          }
-
-        } catch (err) {
-          console.error('Error al obtener membresía del provedor principal:', err);
-          setError('Error al obtener los detalles de tu plan principal.');
-           // Podrías redirigir o mostrar un error.
-           // navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', { state: { id_persona: user.personaId, isAddingNewBusiness: true, error: 'Error en la red al obtener detalles del plan principal.' }});
-        } finally {
-            // Aunque no seteamos loading aquí, podrías necesitar manejar un estado de loading separado para esta llamada.
-        }
-      } else {
-         console.log('fetchMainBusinessPlan useEffect: Condiciones no cumplidas.', { isAuthenticated, user: user?.provedorId, isAddingNewBusiness: location.state?.isAddingNewBusiness });
-      }
-    };
-
-    fetchMainBusinessPlan();
-  }, [isAuthenticated, user?.provedorId, location.state?.isAddingNewBusiness, navigate]); // Dependencias relevantes
+  // useEffect para mostrar error solo una vez si no se pudo obtener el plan principal
+  useEffect(() => {
+    if (
+      location.state?.isAddingNewBusiness &&
+      planFetchAttempted &&
+      !mainBusinessPlanDetails &&
+      !error
+    ) {
+      setError('No se pudieron obtener los detalles del plan principal. Por favor, intente nuevamente.');
+      // No navegues ni repitas el setError
+    }
+  }, [location.state?.isAddingNewBusiness, planFetchAttempted, mainBusinessPlanDetails, error]);
 
   useEffect(() => {
     const fetchProviderData = async () => {
@@ -311,10 +288,6 @@ const DatosProveedor = () => {
 
       if (!response.ok) {
         throw new Error(data.error || 'Error al crear el proveedor');
-      }
-
-      if (data.proveedor && data.proveedor.id_provedor) {
-        // localStorage.setItem('provedor_negocio_id_proveedor', data.proveedor.id_provedor);
       }
 
       return data.proveedor;
@@ -444,8 +417,8 @@ const DatosProveedor = () => {
         return;
       }
 
-      const success = await insertarDatos();
-      if (success) {
+      const nuevoProveedor = await insertarDatos();
+      if (nuevoProveedor && nuevoProveedor.id_provedor) {
         const plan = location.state?.plan;
         const planInfo = planes[plan];
         // Siempre ir al pago sin mostrar el modal
@@ -454,7 +427,7 @@ const DatosProveedor = () => {
           planName: planInfo.nombre,
           isNewBusiness: true,
           businessName: formData.nombre_empresa,
-          proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
+          proveedorId: nuevoProveedor.id_provedor
         };
         console.log('Redirigiendo con datos:', paymentData);
         navigate('/pago-nuevo-negocio', { 
@@ -478,7 +451,7 @@ const DatosProveedor = () => {
         planName: planInfo.nombre,
         isNewBusiness: true,
         businessName: formData.nombre_empresa,
-        proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
+        proveedorId: nuevoProveedor.id_provedor
       } 
     });
   };
