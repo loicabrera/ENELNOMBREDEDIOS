@@ -13,6 +13,7 @@ const colors = {
 };
 
 const DatosProveedor = () => {
+  console.log('DatosProveedor mounted. location.state:', location.state);
   const location = useLocation();
   const navigate = useNavigate();
   const [error, setError] = useState(null);
