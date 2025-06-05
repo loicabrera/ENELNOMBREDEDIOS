@@ -145,8 +145,8 @@ const DatosPersonas = () => {
       }
 
       // Redirigir al formulario de proveedor
-      console.log('Redirigiendo a /datosproveedor con state:', { id_persona: data.persona.id_persona, plan: location.state.plan });
-      navigate('/datosproveedor', {
+      console.log('Redirigiendo a /registro/evento con state:', { id_persona: data.persona.id_persona, plan: location.state.plan });
+      navigate('/registro/evento', {
         state: {
           id_persona: data.persona.id_persona,
           planFromState: location.state.plan

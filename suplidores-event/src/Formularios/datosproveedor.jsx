@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
+
 console.log('Loading DatosProveedor.jsx file'); // Added log
 
 // Paleta de colores pastel
