@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 import { 
   ChartBarIcon,
   EyeIcon,
@@ -19,17 +20,18 @@ const Statistics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchStats = async () => {
-      if (!user?.personaId) {
-        setError('No se encontró el ID del proveedor');
+      if (!activeBusiness?.id) {
+        setError('Selecciona un negocio en la sección "Negocios" para ver las estadísticas.');
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/statistics/${user.personaId}`, {
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/statistics/${activeBusiness.id}`, {
           credentials: 'include'
         });
 
@@ -47,7 +49,7 @@ const Statistics = () => {
     };
 
     fetchStats();
-  }, [user]);
+  }, [activeBusiness]);
 
   if (loading) {
     return (

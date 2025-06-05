@@ -1,23 +1,25 @@
 import { BellIcon } from '@heroicons/react/24/outline';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 
 const Notifications = () => {
   const [mensajes, setMensajes] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isAuthenticated, user } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchMensajes = async () => {
       try {
-        if (!isAuthenticated || !user || !user.provedorId) {
-          console.log('Usuario no autenticado o sin provedorId en contexto.');
+        if (!isAuthenticated || !activeBusiness?.id) {
+          console.log('Usuario no autenticado o sin negocio activo en contexto.');
           setMensajes([]);
           setLoading(false);
           return;
         }
 
-        const idProveedor = user.provedorId;
+        const idProveedor = activeBusiness.id;
 
         const response = await fetch(`https://spectacular-recreation-production.up.railway.app/usuarios?provedor_negocio_id_provedor=${idProveedor}`, { credentials: 'include' });
         if (!response.ok) {
@@ -32,7 +34,7 @@ const Notifications = () => {
       }
     };
     fetchMensajes();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, activeBusiness]);
 
   if (loading) {
     return (

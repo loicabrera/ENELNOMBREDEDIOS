@@ -12,6 +12,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Link, Outlet } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 
 const Membership = () => {
   const navigate = useNavigate();
@@ -28,17 +29,17 @@ const Membership = () => {
   const [planChangeDetails, setPlanChangeDetails] = useState(null);
   const [pendingPlanChange, setPendingPlanChange] = useState(null);
   const { isAuthenticated, user } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchMembershipData = async () => {
       try {
-        if (!isAuthenticated || !user || !user.provedorId) {
-          console.log('Usuario no autenticado o sin provedorId en contexto, redirigiendo a login.');
-          navigate('/login');
+        if (!isAuthenticated || !activeBusiness?.id) {
+          setLoading(false);
+          setError('Selecciona un negocio en la sección "Negocios" para ver la membresía.');
           return;
         }
-
-        const proveedorId = user.provedorId;
+        const proveedorId = activeBusiness.id;
 
         const membresiaResponse = await fetch(`https://spectacular-recreation-production.up.railway.app/membresia/${proveedorId}`, { credentials: 'include' });
         const membresiaData = await membresiaResponse.json();
@@ -74,7 +75,7 @@ const Membership = () => {
     };
 
     fetchMembershipData();
-  }, [navigate, isAuthenticated, user]);
+  }, [navigate, isAuthenticated, user, activeBusiness]);
 
   const availablePlans = [
     {
@@ -153,7 +154,7 @@ const Membership = () => {
 
   const handleRenewal = async () => {
     try {
-      const proveedorId = currentPlan?.id_provedor || user?.provedorId;
+      const proveedorId = currentPlan?.id_provedor || activeBusiness?.id;
       const membresiaBaseId = currentPlan?.MEMBRESIA_id_memebresia;
       const membresiaId = currentPlan?.id_prov_membresia || currentPlan?.id_membresia;
       const personaId = user?.personaId;
@@ -259,7 +260,7 @@ const Membership = () => {
 
   const confirmPlanChange = async () => {
     try {
-      const proveedorId = user?.provedorId;
+      const proveedorId = activeBusiness?.id;
 
       console.log('DEBUG - Valor de proveedorId obtenido del contexto:', proveedorId);
 

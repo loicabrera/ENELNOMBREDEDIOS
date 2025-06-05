@@ -10,6 +10,7 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 
 
 const Profile = () => {
@@ -23,17 +24,18 @@ const Profile = () => {
   const [showModal, setShowModal] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: '' });
   const { user, isAuthenticated } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        if (!isAuthenticated || !user || !user.provedorId || !user.personaId) {
-          console.log('Usuario no autenticado o sin provedorId/personaId en contexto, redirigiendo a login.');
+        if (!isAuthenticated || !activeBusiness?.id || !user.personaId) {
+          console.log('Usuario no autenticado o sin negocio activo, redirigiendo a login.');
           setLoading(false);
           return;
         }
 
-        const proveedorId = user.provedorId;
+        const proveedorId = activeBusiness.id;
         const personaId = user.personaId;
 
         const resProveedor = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${proveedorId}`, { credentials: 'include' });
@@ -55,7 +57,7 @@ const Profile = () => {
     };
 
     fetchProfileData();
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, activeBusiness]);
 
   const handlePasswordChange = async (e) => {
     e.preventDefault();

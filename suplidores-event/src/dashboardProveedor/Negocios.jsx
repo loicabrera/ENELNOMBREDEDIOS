@@ -3,6 +3,7 @@ import { BuildingStorefrontIcon } from '@heroicons/react/24/outline';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaStore, FaCalendarAlt, FaClock, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 
 const Negocios = () => {
   const [businesses, setBusinesses] = useState([]);
@@ -11,6 +12,7 @@ const Negocios = () => {
   const [activeBusiness, setActiveBusiness] = useState(null);
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { activeBusiness: globalActiveBusiness, setActiveBusiness: setGlobalActiveBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchBusinesses = async () => {
@@ -47,9 +49,12 @@ const Negocios = () => {
             schedule: [] // O manejar según la estructura real si existe en otra tabla
           }));
 
-          setBusinesses(mappedBusinesses); 
-           // Establecer el primer negocio mapeado como activo si la lista no está vacía
-          if (mappedBusinesses.length > 0) {
+          setBusinesses(mappedBusinesses);
+          // Si hay uno activo en el contexto, seleccionarlo
+          if (globalActiveBusiness) {
+            const found = mappedBusinesses.find(b => b.id === globalActiveBusiness.id);
+            setActiveBusiness(found || mappedBusinesses[0]);
+          } else if (mappedBusinesses.length > 0) {
             setActiveBusiness(mappedBusinesses[0]);
           } else {
             setActiveBusiness(null);
@@ -69,10 +74,11 @@ const Negocios = () => {
     };
 
     fetchBusinesses();
-  }, [user, isAuthenticated, navigate]);
+  }, [user, isAuthenticated, navigate, globalActiveBusiness]);
 
   const handleBusinessSelect = (business) => {
     setActiveBusiness(business);
+    setGlobalActiveBusiness(business);
   };
 
   const handleAgregarNegocio = () => {

@@ -15,6 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 
 const Publications = () => {
   const [tipoVendedor, setTipoVendedor] = useState(null); // null, 'servicios', 'productos'
@@ -56,20 +57,16 @@ const Publications = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { user, isAuthenticated, loading: authLoading } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const fetchData = async () => {
-      if (authLoading) return;
-
-      if (!isAuthenticated || !user?.provedorId) {
-        setError('Usuario no autenticado o sin provedorId en contexto, redirigiendo a login.');
+      if (!isAuthenticated || !activeBusiness?.id) {
+        setError('Selecciona un negocio en la sección "Negocios" para ver las publicaciones.');
         setLoading(false);
-        setLoadingMembresia(false);
-        // navigate('/login'); // Redireccionar si no está autenticado como proveedor
         return;
       }
-
-      const proveedorId = user.provedorId;
+      const proveedorId = activeBusiness.id;
 
       try {
         // Obtener datos del proveedor logueado
@@ -137,7 +134,7 @@ const Publications = () => {
     };
 
     fetchData();
-  }, [user, isAuthenticated, authLoading]); // Dependencias del useEffect
+  }, [user, isAuthenticated, authLoading, activeBusiness]);
 
   const handleServicioChange = (e) => {
     const { name, value } = e.target;
@@ -1091,7 +1088,7 @@ const Publications = () => {
   }
 
    // Si no está autenticado como proveedor y no está cargando, redirigir
-   if (!isAuthenticated || !user?.provedorId) {
+   if (!isAuthenticated || !activeBusiness?.id) {
        // Nota: La redirección también está en el useEffect inicial, esto es un fallback visual
         return (
             <div className="p-8 text-center text-red-700">
