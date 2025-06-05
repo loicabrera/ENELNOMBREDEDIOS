@@ -189,7 +189,7 @@ const DatosProveedor = () => {
       }
 
       try {
-        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/providers/${user.personaId}`, {
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${user.provedorId}`, {
           credentials: 'include'
         });
 
@@ -492,7 +492,7 @@ const DatosProveedor = () => {
     if (!user?.personaId) return;
 
     try {
-      const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/providers/${user.personaId}`, {
+      const response = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${user.provedorId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
