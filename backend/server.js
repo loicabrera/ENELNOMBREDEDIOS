@@ -2056,4 +2056,9 @@ app.get('/api/persona/:personaId/negocios', authenticateJWT, async (req, res) =>
   }
 });
 
+app.post('/logout', (req, res) => {
+  res.clearCookie('token'); // Asegúrate de que 'token' es el nombre de tu cookie JWT
+  res.json({ success: true });
+});
+
 startServer();

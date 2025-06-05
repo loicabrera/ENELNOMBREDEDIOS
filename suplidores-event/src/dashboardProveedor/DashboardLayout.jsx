@@ -35,7 +35,7 @@ export default function DashboardLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, setIsAuthenticated, setUser } = useAuth();
   const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
@@ -85,7 +85,17 @@ export default function DashboardLayout() {
     return () => clearInterval(interval);
   }, [location.pathname, isAuthenticated, activeBusiness]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await fetch('https://spectacular-recreation-production.up.railway.app/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch (e) {
+      // Ignora errores de red, igual limpia el estado
+    }
+    setIsAuthenticated(false);
+    setUser(null);
     window.location.href = '/login';
   };
 
