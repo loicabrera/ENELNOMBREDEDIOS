@@ -2099,4 +2099,11 @@ app.get('/personas/:id', async (req, res) => {
   }
 });
 
+// Servir archivos estáticos del frontend
+app.use(express.static(path.join(process.cwd(), 'public')));
+// Fallback para SPA: cualquier ruta no encontrada devuelve index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+});
+
 startServer();
