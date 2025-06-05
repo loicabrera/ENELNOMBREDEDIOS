@@ -71,6 +71,7 @@ const DatosProveedor = () => {
       }
     } else {
         console.log('Flujo de agregar nuevo negocio: Omitiendo validación de plan del state.');
+        // No redirigir en este caso, permitir que el componente continúe
     }
 
     // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
@@ -520,7 +521,8 @@ const DatosProveedor = () => {
                   Información de empresa: <span className="font-normal">Complete los datos de su negocio</span>
                 </div>
                 
-                {location.state?.fromRegistro ? (
+                {/* Mostrar el formulario de registro inicial o el de nuevo negocio */}
+                {(location.state?.fromRegistro || location.state?.isAddingNewBusiness) ? (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
