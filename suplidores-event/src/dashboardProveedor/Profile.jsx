@@ -314,6 +314,18 @@ const Profile = () => {
                 {showPasswordForm ? 'Cancelar' : 'Cambiar Contraseña'}
               </button>
 
+              {/* Mensaje de éxito o error SIEMPRE visible si existe */}
+              {passwordMsg && (
+                <div className={`mt-4 p-4 rounded-xl text-center font-medium flex items-center justify-center gap-2 ${passwordMsg.toLowerCase().includes('correctamente') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {passwordMsg.toLowerCase().includes('correctamente') ? (
+                    <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                  )}
+                  {passwordMsg}
+                </div>
+              )}
+
               {showPasswordForm && (
                   <form onSubmit={handlePasswordChange} className="space-y-6">
                     <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-4 rounded-xl shadow-sm">
@@ -342,16 +354,6 @@ const Profile = () => {
                   >
                     Guardar nueva contraseña
                   </button>
-                  {passwordMsg && (
-                    <div className={`mt-4 p-4 rounded-xl text-center font-medium flex items-center justify-center gap-2 ${passwordMsg.toLowerCase().includes('correctamente') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {passwordMsg.toLowerCase().includes('correctamente') ? (
-                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                      ) : (
-                        <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
-                      )}
-                      {passwordMsg}
-                    </div>
-                  )}
                 </form>
               )}
               </div>
