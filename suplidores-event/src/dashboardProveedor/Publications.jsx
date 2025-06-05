@@ -231,12 +231,17 @@ const Publications = () => {
           for (let img of nuevoProducto.imagenes) {
             const formData = new FormData();
             formData.append('imagen', img);
-            formData.append('productos_id_productos', data.id_producto); // Usar el ID correcto
-            await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
+            formData.append('productos_id_productos', data.id_producto);
+            const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
               method: 'POST',
               body: formData,
               credentials: 'include'
             });
+            if (!response.ok) {
+              const errorData = await response.json();
+              alert(errorData.error || 'Error al subir la imagen.');
+              return false;
+            }
           }
           alert('Producto creado con éxito');
           return true;
@@ -319,11 +324,16 @@ const Publications = () => {
           const formData = new FormData();
           formData.append('imagen', img);
           formData.append('SERVICIO_id_servicio', data.id_servicio);
-          await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
+          const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
             method: 'POST',
             body: formData,
             credentials: 'include'
           });
+          if (!response.ok) {
+            const errorData = await response.json();
+            alert(errorData.error || 'Error al subir la imagen.');
+            return;
+          }
         }
         alert('Servicio creado con éxito');
         // Limpiar el formulario después de crear exitosamente
@@ -578,11 +588,16 @@ const Publications = () => {
             const formDataImg = new FormData();
             formDataImg.append('imagen', img);
             formDataImg.append('SERVICIO_id_servicio', data.id_servicio);
-            await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
+            const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio', {
               method: 'POST',
               body: formDataImg,
               credentials: 'include'
             });
+            if (!response.ok) {
+              const errorData = await response.json();
+              alert(errorData.error || 'Error al subir la imagen.');
+              return;
+            }
           }
 
           alert('Servicio creado con éxito');
@@ -870,12 +885,17 @@ const Publications = () => {
           for (let img of formData.imagenes) {
             const formDataImg = new FormData();
             formDataImg.append('imagen', img);
-            formDataImg.append('productos_id_productos', data.id_producto); // Usar el ID correcto
-            await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
+            formDataImg.append('productos_id_productos', data.id_producto);
+            const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
               method: 'POST',
               body: formDataImg,
               credentials: 'include'
             });
+            if (!response.ok) {
+              const errorData = await response.json();
+              alert(errorData.error || 'Error al subir la imagen.');
+              return;
+            }
           }
 
           alert('Producto creado con éxito');
