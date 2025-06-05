@@ -7,7 +7,9 @@ import {
   LockClosedIcon,
   XMarkIcon,
   BuildingOfficeIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
 import { useAuth } from '../context/AuthContext';
 import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
@@ -341,9 +343,14 @@ const Profile = () => {
                     Guardar nueva contraseña
                   </button>
                   {passwordMsg && (
-                      <div className="mt-4 p-4 bg-[#2C3E50]/10 rounded-xl text-center text-[#2C3E50] font-medium">
-                        {passwordMsg}
-                      </div>
+                    <div className={`mt-4 p-4 rounded-xl text-center font-medium flex items-center justify-center gap-2 ${passwordMsg.toLowerCase().includes('correctamente') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {passwordMsg.toLowerCase().includes('correctamente') ? (
+                        <CheckCircleIcon className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+                      )}
+                      {passwordMsg}
+                    </div>
                   )}
                 </form>
               )}
