@@ -226,12 +226,12 @@ const Publications = () => {
             return false;
         }
 
-        if (data.id_productos) {
+        if (data.id_producto) {
           // Subir imágenes si hay
           for (let img of nuevoProducto.imagenes) {
             const formData = new FormData();
             formData.append('imagen', img);
-            formData.append('productos_id_productos', data.id_productos); // Usar el ID correcto
+            formData.append('productos_id_productos', data.id_producto); // Usar el ID correcto
             await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
               method: 'POST',
               body: formData,
@@ -865,12 +865,12 @@ const Publications = () => {
             return;
         }
 
-        if (data.id_productos) {
+        if (data.id_producto) {
           // Subir imágenes
           for (let img of formData.imagenes) {
             const formDataImg = new FormData();
             formDataImg.append('imagen', img);
-            formDataImg.append('productos_id_productos', data.id_productos); // Usar el ID correcto
+            formDataImg.append('productos_id_productos', data.id_producto); // Usar el ID correcto
             await fetch('https://spectacular-recreation-production.up.railway.app/api/imagenes_productos', {
               method: 'POST',
               body: formDataImg,
