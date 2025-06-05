@@ -1560,6 +1560,32 @@ app.get('/api/verify-auth', authenticateJWT, (req, res) => {
   });
 });
 
+// Ruta para procesar pagos (Stripe)
+app.post('/api/pago', async (req, res) => {
+  try {
+    const { paymentMethodId, amount, planName, personaId } = req.body;
+
+    console.log('✅ Solicitud de pago recibida:', { paymentMethodId, amount, planName, personaId });
+
+    // TODO: Implementar la lógica de procesamiento del pago aquí:
+    // 1. Validar los datos recibidos.
+    // 2. Buscar el provedor_negocio_id_provedor usando el personaId recibido.
+    // 3. Crear un PaymentIntent en Stripe usando el paymentMethodId y amount.
+    // 4. Confirmar el PaymentIntent (si es necesario, dependiendo de la configuración de Stripe).
+    // 5. Si el pago en Stripe es exitoso, guardar un registro en tu tabla `pago` en la base de datos,
+    //    asegurándote de usar el provedor_negocio_id_provedor correcto.
+    // 6. Devolver una respuesta al frontend indicando si el pago fue exitoso o no.
+
+    // Por ahora, enviaremos una respuesta de éxito simulada:
+    console.log('Lógica de procesamiento de pago pendiente. Simulando éxito.');
+    res.status(200).json({ success: true, message: 'Pago procesado simuladamente con éxito.' });
+
+  } catch (error) {
+    console.error('❌ Error al procesar pago en /api/pago:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor al procesar el pago.' });
+  }
+});
+
 // Iniciar el servidor
 async function startServer() {
   try {
