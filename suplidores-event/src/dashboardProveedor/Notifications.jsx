@@ -6,6 +6,7 @@ import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 const Notifications = () => {
   const [mensajes, setMensajes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notificacionesNoLeidas, setNotificacionesNoLeidas] = useState(true);
   const { isAuthenticated, user } = useAuth();
   const { activeBusiness } = useActiveBusiness();
 
@@ -36,6 +37,18 @@ const Notifications = () => {
     fetchMensajes();
   }, [isAuthenticated, user, activeBusiness]);
 
+  // Función para marcar todas como leídas
+  const marcarLeidas = async () => {
+    if (!activeBusiness?.id) return;
+    await fetch('https://spectacular-recreation-production.up.railway.app/api/notificaciones/leer', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ proveedor_id: activeBusiness.id })
+    });
+    setNotificacionesNoLeidas(false);
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -51,6 +64,12 @@ const Notifications = () => {
           <h2 className="text-2xl font-bold">Mensajes de Contacto</h2>
           <p className="text-gray-600">Mensajes recibidos de usuarios interesados</p>
         </div>
+        <button
+          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+          onClick={marcarLeidas}
+        >
+          Marcar todas como leídas
+        </button>
       </div>
 
       <div className="space-y-4">

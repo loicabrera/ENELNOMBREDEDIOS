@@ -15,6 +15,7 @@ import {
 import { useState, useEffect } from 'react';
 import Footer from './Footer';
 import { useAuth } from '../context/AuthContext';
+import { useActiveBusiness } from '../context/ActiveBusinessContext';
 
 const navigation = [
   { name: 'Inicio', href: '/dashboard-proveedor', icon: HomeIcon },
@@ -35,6 +36,7 @@ export default function DashboardLayout() {
   const [isMobile, setIsMobile] = useState(false);
   const [tieneNotificaciones, setTieneNotificaciones] = useState(false);
   const { user, isAuthenticated } = useAuth();
+  const { activeBusiness } = useActiveBusiness();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -55,52 +57,33 @@ export default function DashboardLayout() {
   useEffect(() => {
     const checkNotificaciones = async () => {
       try {
-        if (!isAuthenticated || !user || !user.provedorId) {
-          console.log('Usuario no autenticado o sin provedorId en contexto.');
+        if (!isAuthenticated || !activeBusiness?.id) {
           setTieneNotificaciones(false);
           return;
         }
-
-        const proveedorId = user.provedorId;
-        console.log('Verificando notificaciones para proveedor:', proveedorId);
-
-        const resProveedor = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores', { credentials: 'include' });
-        if (!resProveedor.ok) throw new Error('Error al obtener proveedores');
-        const proveedores = await resProveedor.json();
-
-        const proveedorLogueado = proveedores.find(p => p.id_provedor === Number(proveedorId));
-
-        if (!proveedorLogueado) {
-           console.log('No se encontró proveedor en la lista para el id del contexto.');
-           setTieneNotificaciones(false);
-           return;
-        }
-
+        const proveedorId = activeBusiness.id;
         const res = await fetch(`https://spectacular-recreation-production.up.railway.app/api/notificaciones/nuevas?proveedor_id=${proveedorId}`, { credentials: 'include' });
         if (!res.ok) throw new Error('Error al verificar notificaciones');
         const data = await res.json();
-        console.log('Respuesta de notificaciones:', data);
         setTieneNotificaciones(data.nuevas);
-
+        // Si estamos en la ruta de notificaciones, marcarlas como leídas
         if (location.pathname === '/dashboard-proveedor/notificaciones') {
-          console.log('Marcando notificaciones como leídas');
           await fetch('https://spectacular-recreation-production.up.railway.app/api/notificaciones/leer', {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
             body: JSON.stringify({ proveedor_id: proveedorId })
           });
           setTieneNotificaciones(false);
         }
       } catch (error) {
-        console.error('Error al verificar notificaciones:', error);
         setTieneNotificaciones(false);
       }
     };
-
     checkNotificaciones();
     const interval = setInterval(checkNotificaciones, 10000);
     return () => clearInterval(interval);
-  }, [location.pathname]);
+  }, [location.pathname, isAuthenticated, activeBusiness]);
 
   const handleLogout = () => {
     window.location.href = '/login';
