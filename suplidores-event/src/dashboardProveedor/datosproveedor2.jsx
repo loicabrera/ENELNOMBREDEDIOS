@@ -42,6 +42,10 @@ const DatosProveedor = () => {
 
   // Verificar si tenemos el ID de la persona y el plan seleccionado
   useEffect(() => {
+    console.log('DatosProveedor2 useEffect: Iniciando validación de estado.');
+    console.log('DatosProveedor2 useEffect: location.state:', location.state);
+    console.log('DatosProveedor2 useEffect: planes object:', planes);
+
     const id = location.state?.id_persona;
     const plan = location.state?.plan;
     
