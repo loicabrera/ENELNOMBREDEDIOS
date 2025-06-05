@@ -175,20 +175,30 @@ const DatosProveedor = () => {
     try {
       const success = await insertarDatos();
       if (success) {
-        const plan = location.state?.plan;
+        // Obtener el plan del estado o del localStorage
+        const planFromState = location.state?.plan;
+        const planFromStorage = localStorage.getItem('registrationPlan');
+        const plan = planFromState || planFromStorage;
+
+        if (!plan || !planes[plan]) {
+          throw new Error('No se encontró el plan seleccionado');
+        }
+
         const planInfo = planes[plan];
+        console.log('Redirigiendo a pago con plan:', plan, 'monto:', planInfo.monto);
 
         // Redirigir a la página de pago con el monto correcto
         navigate('/pago', { 
           state: { 
             amount: planInfo.monto,
-            planName: planInfo.nombre
+            planName: planInfo.nombre,
+            plan: plan // Añadimos el identificador del plan también
           } 
         });
       }
     } catch (error) {
       console.error('Error en el envío:', error);
-      setError('Error al procesar el formulario');
+      setError(error.message || 'Error al procesar el formulario');
     } finally {
       setLoading(false);
     }
