@@ -45,26 +45,27 @@ const DatosProveedor = () => {
   const fetchMainBusinessPlan = async (provedorId) => {
     console.log('fetchMainBusinessPlan useEffect: Fetching detalles del plan principal para provedorId:', provedorId);
     if (!provedorId) {
-      console.warn('fetchMainBusinessPlan: provedorId no proporcionado.');
-      // Si no hay provedorId, no podemos obtener el plan principal.
-      // Esto podría ocurrir si el usuario aún no tiene negocios.
-      setMainBusinessPlanDetails(null); // O establecer un plan por defecto si es el primer negocio
+      console.warn('fetchMainBusinessPlan: provedorId no proporcionado. Usando plan básico por defecto.');
+      setMainBusinessPlanDetails({
+        name: 'Plan Básico',
+        amount: 2000
+      });
       return;
     }
 
     try {
-      //** FIX: Call to non-existent endpoint removed. **
-      // We will assume a default plan for new businesses for now.
       console.log('fetchMainBusinessPlan: Asumiendo plan básico para nuevo negocio.');
       setMainBusinessPlanDetails({
         name: 'Plan Básico',
-        amount: 2000 // Monto del plan básico
+        amount: 2000
       });
-
     } catch (error) {
       console.error('Error al obtener detalles del plan principal:', error);
       setError('Error al obtener los detalles de tu plan principal.');
-      setMainBusinessPlanDetails(null);
+      setMainBusinessPlanDetails({
+        name: 'Plan Básico',
+        amount: 2000
+      }); // Establecer un plan por defecto en caso de error
     }
   };
 
@@ -96,39 +97,23 @@ const DatosProveedor = () => {
         return;
     }
 
-    // Si es el flujo de agregar nuevo negocio, no validamos el plan del state
     if (isAddingNewBusiness) {
-        console.log('DatosProveedor2 useEffect: Detectado flujo de agregar nuevo negocio. Omitiendo validación de plan del state.');
-        // Asegurarse de que el user esté autenticado y tenga provedorId en este flujo si es necesario para fetchMainBusinessPlan
-        if (!isAuthenticated || !user?.provedorId) {
-             console.error('DatosProveedor2 useEffect: Flujo nuevo negocio pero usuario no autenticado o sin provedorId. Redirigiendo a login.');
-             setError('Debes iniciar sesión como proveedor para agregar un nuevo negocio.');
-             navigate('/login'); // O podrías redirigir a una página informativa
-             return;
-        }
-        // No redirigir, permitir que el componente cargue el formulario
+      console.log('DatosProveedor2 useEffect: Flujo de agregar nuevo negocio. Obteniendo detalles del plan principal.');
+      if (!user?.provedorId) {
+        console.error('DatosProveedor2 useEffect: provedorId no encontrado en user. Redirigiendo a /dashboard-proveedor/negocios.');
+        setError('No se pudo determinar el negocio principal. Por favor, intente nuevamente.');
+        navigate('/dashboard-proveedor/negocios');
+        return;
+      }
+      fetchMainBusinessPlan(user.provedorId);
+    }
 
-    } else {
-        // Flujo de registro inicial (o desconocido sin flag isAddingNewBusiness)
-        console.log('DatosProveedor2 useEffect: Detectado flujo de registro inicial o desconocido. Validando plan.');
-         // Validar el plan: debe existir y ser uno de los definidos
-        if (!planes || !plan || !planes[plan]) {
-           console.error('DatosProveedor2 useEffect: Datos de plan faltantes o inválidos en el estado. Redirigiendo a /.', { plan, planes });
-          setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
-          navigate('/'); // Redirigir al home o selección de plan inicial
-          return; // Salir temprano si falta el plan
-        }
-         console.log('DatosProveedor2 useEffect: Plan validado correctamente para flujo de registro inicial.');
-
-        // Si es registro inicial, asegurarse de que no esté ya registrado como proveedor
-        if (isAuthenticated && user?.provedorId) {
-             console.warn('DatosProveedor2 useEffect: Usuario ya registrado como proveedor intentando flujo de registro inicial. Redirigiendo al dashboard.');
-             // Si un usuario ya es proveedor, no debería estar en este flujo de registro inicial.
-             // Podríamos redirigirlo a su dashboard de proveedor.
-             // navigate('/dashboard-proveedor');
-             // Podrías decidir si permites que un proveedor existente complete el registro inicial de nuevo o no.
-             // Por ahora, solo logueamos la advertencia.
-        }
+    // Verificar si mainBusinessPlanDetails es null después de fetchMainBusinessPlan
+    if (isAddingNewBusiness && !mainBusinessPlanDetails) {
+      console.error('DatosProveedor2 useEffect: mainBusinessPlanDetails es null después de fetchMainBusinessPlan.');
+      setError('No se pudieron obtener los detalles del plan principal. Por favor, intente nuevamente.');
+      navigate('/dashboard-proveedor/negocios');
+      return;
     }
 
     // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
