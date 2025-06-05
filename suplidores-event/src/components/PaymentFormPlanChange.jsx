@@ -42,7 +42,7 @@ const PaymentFormPlanChange = ({ amount, planName, currentPlanId, newPlanId, pro
         personaId: user.personaId
       };
 
-      const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment/plan-change', {
+      const response = await fetch('https://spectacular-recreation-production.up.railway.app/registrar_pago_cambio_plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
