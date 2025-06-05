@@ -23,7 +23,6 @@ const DatosProveedor = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [proveedorCreado, setProveedorCreado] = useState(null);
   const [providerData, setProviderData] = useState(null);
-  const [mainBusinessPlanDetails, setMainBusinessPlanDetails] = useState(null);
   const [planFetchAttempted, setPlanFetchAttempted] = useState(false);
 
   // Definir los planes y sus montos
@@ -42,35 +41,6 @@ const DatosProveedor = () => {
     }
   };
 
-  // Función para obtener los detalles del plan del negocio principal
-  const fetchMainBusinessPlan = async (provedorId) => {
-    console.log('fetchMainBusinessPlan useEffect: Fetching detalles del plan principal para provedorId:', provedorId);
-    if (!provedorId) {
-      console.warn('fetchMainBusinessPlan: provedorId no proporcionado. Usando plan básico por defecto.');
-      setMainBusinessPlanDetails({
-        name: 'Plan Básico',
-        amount: 2000
-      });
-      return;
-    }
-
-    try {
-      console.log('fetchMainBusinessPlan: Asumiendo plan básico para nuevo negocio.');
-      setMainBusinessPlanDetails({
-        name: 'Plan Básico',
-        amount: 2000
-      });
-    } catch (error) {
-      console.error('Error al obtener detalles del plan principal:', error);
-      setError('Error al obtener los detalles de tu plan principal.');
-      setMainBusinessPlanDetails({
-        name: 'Plan Básico',
-        amount: 2000
-      }); // Establecer un plan por defecto en caso de error
-    }
-  };
-
-  // Verificar si tenemos el ID de la persona y el plan seleccionado (o si es flujo agregar nuevo negocio)
   useEffect(() => {
     console.log('DatosProveedor2 useEffect: Iniciando validación de estado.');
     console.log('DatosProveedor2 useEffect: location.state:', location.state);
@@ -113,15 +83,6 @@ const DatosProveedor = () => {
         navigate('/dashboard-proveedor/negocios');
         return;
       }
-      fetchMainBusinessPlan(user.provedorId);
-    }
-
-    // Verificar si mainBusinessPlanDetails es null después de fetchMainBusinessPlan
-    if (isAddingNewBusiness && !mainBusinessPlanDetails) {
-      console.error('DatosProveedor2 useEffect: mainBusinessPlanDetails es null después de fetchMainBusinessPlan.');
-      setError('No se pudieron obtener los detalles del plan principal. Por favor, intente nuevamente.');
-      navigate('/dashboard-proveedor/negocios');
-      return;
     }
 
     // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
@@ -137,33 +98,6 @@ const DatosProveedor = () => {
      console.log('DatosProveedor2 useEffect: Validación completada. Componente cargando.');
 
   }, [location.state, navigate, planes, isAuthenticated, user]); // Añadir dependencias faltantes
-
-  // Nuevo useEffect para obtener los detalles del plan del negocio principal si se agrega uno nuevo
-  useEffect(() => {
-    if (
-      isAuthenticated &&
-      user?.provedorId &&
-      location.state?.isAddingNewBusiness &&
-      !planFetchAttempted
-    ) {
-      setPlanFetchAttempted(true); // Marcar que ya intentamos
-      fetchMainBusinessPlan(user.provedorId);
-    }
-    // No dependas de mainBusinessPlanDetails aquí
-  }, [isAuthenticated, user?.provedorId, location.state?.isAddingNewBusiness, planFetchAttempted]);
-
-  // useEffect para mostrar error solo una vez si no se pudo obtener el plan principal
-  useEffect(() => {
-    if (
-      location.state?.isAddingNewBusiness &&
-      planFetchAttempted &&
-      !mainBusinessPlanDetails &&
-      !error
-    ) {
-      setError('No se pudieron obtener los detalles del plan principal. Por favor, intente nuevamente.');
-      // No navegues ni repitas el setError
-    }
-  }, [location.state?.isAddingNewBusiness, planFetchAttempted, mainBusinessPlanDetails, error]);
 
   useEffect(() => {
     const fetchProviderData = async () => {
@@ -312,148 +246,33 @@ const DatosProveedor = () => {
       const nuevoProveedor = await insertarDatos();
 
       if (nuevoProveedor && nuevoProveedor.id_provedor) {
-        const plan = location.state?.plan;
-        const planInfo = planes[plan];
+        const plan = location.state?.plan || 'basico';
+        const planInfo = planes[plan] || planes['basico'];
         const isAddingNewBusiness = location.state?.isAddingNewBusiness;
 
-        // Determinar los detalles del plan y el provedorId objetivo para el pago
-        let paymentAmount = null;
-        let paymentPlanName = null;
-        let targetProveedorId = null;
-
-        if (isAddingNewBusiness) {
-           // Flujo de agregar nuevo negocio: usar detalles del plan principal y el ID del nuevo negocio
-           console.log('handleSubmit: Flujo agregar nuevo negocio. Usando detalles del plan principal.');
-           if (!mainBusinessPlanDetails) {
-              // Esto no debería ocurrir si el fetchMainBusinessPlan tuvo éxito, pero lo manejamos por seguridad.
-               console.error('handleSubmit: Detalles del plan principal no disponibles.');
-               setError('No se pudieron obtener los detalles de tu plan principal para el pago.');
-               setLoading(false);
-               // Podrías redirigir de vuelta a Mis Negocios o a la selección de plan si decides reintroducirla como fallback.
-               // navigate('/dashboard-proveedor/negocios');
-               return;
-           }
-           paymentAmount = mainBusinessPlanDetails.amount;
-           paymentPlanName = mainBusinessPlanDetails.name;
-           targetProveedorId = nuevoProveedor.id_provedor; // El ID del NUEVO negocio creado
-           console.log('handleSubmit: Datos para pago de nuevo negocio:', { paymentAmount, paymentPlanName, targetProveedorId });
-
-        } else if (location.state?.fromRegistro) {
-           // Flujo de registro inicial: usar detalles del plan del state y *asociar al primer negocio encontrado para la persona* en el backend /api/pago (manejo en backend)
-           console.log('handleSubmit: Flujo de registro inicial. Usando detalles del plan del state.');
-           if (!planInfo) {
-                console.error('handleSubmit: PlanInfo no disponible para registro inicial.', { plan, planes });
-                 setError('Error interno: Información del plan no disponible.');
-                 setLoading(false);
-                 // navigate('/'); // Redirigir si falta información crítica
-                 return;
-           }
-           paymentAmount = planInfo.monto; // Usar el monto del state (originalmente pasado desde la selección de plan de registro)
-           paymentPlanName = planInfo.nombre;
-           // En este flujo, no pasamos provedorId al /api/pago, el backend lo busca por personaId.
-           targetProveedorId = undefined; // No pasar provedorId explícitamente en este flujo
-            console.log('handleSubmit: Datos para pago de registro inicial:', { paymentAmount, paymentPlanName, targetProveedorId });
-
-        } else {
-           // Caso inesperado
-           console.warn('handleSubmit: Flujo desconocido. Redirigiendo.', location.state);
-           setError('Error interno: Flujo de formulario desconocido.');
-           setLoading(false);
-           // navigate('/dashboard-proveedor/negocios');
-           return;
-        }
-
-        // Verificar que tenemos datos de pago válidos antes de redirigir
-        if (paymentAmount === null || paymentPlanName === null) {
-             console.error('handleSubmit: Datos de pago nulos antes de redirigir.', { paymentAmount, paymentPlanName });
-             setError('Error interno: No se pudieron determinar los detalles del pago.');
-             setLoading(false);
-             // navigate('/dashboard-proveedor/negocios');
-             return;
-        }
-
-        // Construir el objeto paymentData para la navegación
+        // Usar el plan seleccionado o el plan por defecto
         const paymentData = {
-             amount: paymentAmount,
-             planName: paymentPlanName,
-             isNewBusiness: isAddingNewBusiness, // Pasar la bandera original
-             businessName: nuevoProveedor.nombre_empresa,
-             // Solo incluir proveedorId si se determinó (para el flujo de agregar nuevo negocio)
-             ...(targetProveedorId && { proveedorId: targetProveedorId }),
-             personaId: personaId // Asegúrate de que personaId está disponible
+          amount: planInfo.monto,
+          planName: planInfo.nombre,
+          isNewBusiness: isAddingNewBusiness,
+          businessName: nuevoProveedor.nombre_empresa,
+          proveedorId: nuevoProveedor.id_provedor,
+          personaId: personaId
         };
-
         console.log('Redirigiendo a pago con datos:', paymentData);
-        navigate('/pago-nuevo-negocio', { 
-          state: paymentData
-        });
-
+        navigate('/pago-nuevo-negocio', { state: paymentData });
       } else if (nuevoProveedor === null) {
-         // insertarDatos falló y retornó null (ya maneja el setError interno)
-         // No hacemos nada aquí, el error ya está seteado y loading es false.
+        // insertarDatos falló y retornó null (ya maneja el setError interno)
       } else {
-         // Esto podría ocurrir si insertarDatos tuvo éxito pero no devolvió el objeto proveedor como esperaba.
-         console.error('insertarDatos tuvo éxito pero no retornó el objeto proveedor.', nuevoProveedor);
-         setError('Error interno al obtener los datos del negocio creado.');
+        console.error('insertarDatos tuvo éxito pero no retornó el objeto proveedor.', nuevoProveedor);
+        setError('Error interno al obtener los datos del negocio creado.');
       }
-
     } catch (error) {
       console.error('Error en el envío del formulario:', error);
       setError('Error al procesar el formulario');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Nuevo formulario para agregar negocio adicional
-  const handleSubmitAdditionalBusiness = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (!validarFormulario()) {
-        setLoading(false);
-        return;
-      }
-
-      const nuevoProveedor = await insertarDatos();
-      if (nuevoProveedor && nuevoProveedor.id_provedor) {
-        const plan = location.state?.plan;
-        const planInfo = planes[plan];
-        // Siempre ir al pago sin mostrar el modal
-        const paymentData = {
-          amount: planInfo.monto,
-          planName: planInfo.nombre,
-          isNewBusiness: true,
-          businessName: formData.nombre_empresa,
-          proveedorId: nuevoProveedor.id_provedor
-        };
-        console.log('Redirigiendo con datos:', paymentData);
-        navigate('/pago-nuevo-negocio', { 
-          state: paymentData
-        });
-      }
-    } catch (error) {
-      console.error('Error en el envío:', error);
-      setError('Error al procesar el formulario');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleConfirmPayment = () => {
-    const plan = location.state?.plan;
-    const planInfo = planes[plan];
-    navigate('/pago-nuevo-negocio', { 
-      state: { 
-        amount: planInfo.monto,
-        planName: planInfo.nombre,
-        isNewBusiness: true,
-        businessName: formData.nombre_empresa,
-        proveedorId: nuevoProveedor.id_provedor
-      } 
-    });
   };
 
   // Información sobre el registro del proveedor
@@ -703,7 +522,7 @@ const DatosProveedor = () => {
                     </div>
                   </form>
                 ) : (
-                  <form onSubmit={handleSubmitAdditionalBusiness} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -898,7 +717,7 @@ const DatosProveedor = () => {
                   Cancelar
                 </button>
                 <button
-                  onClick={handleConfirmPayment}
+                  onClick={handleSubmit}
                   className="flex-1 px-4 py-2 bg-[#012e33] text-white rounded-lg hover:bg-[#fbaccb]"
                 >
                   Proceder al Pago
