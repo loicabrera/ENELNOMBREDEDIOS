@@ -1784,5 +1784,67 @@ async function startServer() {
   }
 }
 
+// Endpoint para obtener el conteo de publicaciones (productos y servicios) por proveedor
+app.get('/api/publicaciones-count', async (req, res) => {
+  try {
+    const { provedorId } = req.query;
+
+    if (!provedorId) {
+      console.log('❌ ID de proveedor no proporcionado en /api/publicaciones-count');
+      return res.status(400).json({ error: 'ID de proveedor es requerido.' });
+    }
+
+    console.log('✅ Solicitud de conteo de publicaciones para provedorId:', provedorId);
+
+    // Contar productos para este proveedor
+    const [productosResult] = await conexion.query(
+      'SELECT COUNT(*) as total FROM productos WHERE provedor_negocio_id_provedor = ?',
+      { replacements: [provedorId] }
+    );
+    const totalProductos = productosResult[0].total;
+
+    // Contar servicios para este proveedor
+    const [serviciosResult] = await conexion.query(
+      'SELECT COUNT(*) as total FROM SERVICIO WHERE provedor_negocio_id_provedor = ?',
+      { replacements: [provedorId] }
+    );
+    const totalServicios = serviciosResult[0].total;
+
+    // Obtener límites de membresía
+     let limiteProductos = 0;
+     let limiteServicios = 0;
+     try {
+       const [membresia] = await conexion.query(`
+         SELECT M.limite_productos, M.limite_servicios
+         FROM PROVEDOR_MEMBRESIA PM
+         JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
+         WHERE PM.id_provedor = ? AND PM.estado = 'activa'
+         ORDER BY PM.fecha_fin DESC LIMIT 1
+       `, { replacements: [provedorId] });
+
+       if (membresia.length > 0) {
+         limiteProductos = membresia[0].limite_productos || 0;
+         limiteServicios = membresia[0].limite_servicios || 0;
+       }
+     } catch(membresiaError) {
+        console.error('Error al obtener límites de membresía en conteo de publicaciones:', membresiaError);
+        // Continuar aunque no se puedan obtener límites
+     }
+
+    console.log('Resultados de conteo para provedorId', provedorId, ':', { productos: totalProductos, servicios: totalServicios, limite_productos: limiteProductos, limite_servicios: limiteServicios });
+
+    // Devolver los conteos como JSON
+    res.status(200).json({
+      productos: totalProductos,
+      servicios: totalServicios,
+      limite_productos: limiteProductos,
+      limite_servicios: limiteServicios
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener conteo de publicaciones:', error);
+    res.status(500).json({ error: 'Error interno del servidor al obtener conteo de publicaciones.' });
+  }
+});
 
 startServer();
