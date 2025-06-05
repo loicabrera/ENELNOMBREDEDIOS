@@ -1378,12 +1378,18 @@ app.put('/api/servicios/:id', async (req, res) => {
 // Endpoint para verificar notificaciones no leídas (proteger con JWT)
 app.get('/api/notificaciones/nuevas', authenticateJWT, async (req, res) => {
   const { proveedor_id } = req.query;
-   // Opcional: Verificar que el proveedor_id solicitado coincide con el id en el token
-  if (req.user.provedorId && req.user.provedorId !== parseInt(proveedor_id)) {
-     return res.sendStatus(403); // Prohibido
-  }
   if (!proveedor_id) {
     return res.status(400).json({ error: 'Falta el ID del proveedor' });
+  }
+  if (req.user.personaId) {
+    // Verifica que el negocio consultado pertenece a la persona autenticada
+    const [negocios] = await db.query(
+      'SELECT id_provedor FROM provedor_negocio WHERE id_provedor = ? AND PERSONA_id_persona = ?',
+      [proveedor_id, req.user.personaId]
+    );
+    if (!negocios.length) {
+      return res.sendStatus(403); // Prohibido
+    }
   }
   try {
     // Contar mensajes no leídos del proveedor
@@ -1401,12 +1407,18 @@ app.get('/api/notificaciones/nuevas', authenticateJWT, async (req, res) => {
 // Endpoint para marcar mensajes como leídos (proteger con JWT)
 app.put('/api/notificaciones/leer', authenticateJWT, async (req, res) => {
   const { proveedor_id } = req.body;
-  // Opcional: Verificar que el proveedor_id solicitado coincide con el id en el token
-  if (req.user.provedorId && req.user.provedorId !== parseInt(proveedor_id)) {
-     return res.sendStatus(403); // Prohibido
-  }
   if (!proveedor_id) {
     return res.status(400).json({ error: 'Falta el ID del proveedor' });
+  }
+  if (req.user.personaId) {
+    // Verifica que el negocio consultado pertenece a la persona autenticada
+    const [negocios] = await db.query(
+      'SELECT id_provedor FROM provedor_negocio WHERE id_provedor = ? AND PERSONA_id_persona = ?',
+      [proveedor_id, req.user.personaId]
+    );
+    if (!negocios.length) {
+      return res.sendStatus(403); // Prohibido
+    }
   }
   try {
     await db.query(
