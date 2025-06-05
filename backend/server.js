@@ -265,12 +265,13 @@ app.get('/proveedores', async (req, res) => {
 app.get('/proveedores/:id', authenticateJWT, async (req, res) => {
   try {
     const { id } = req.params;
-    // Opcional: Verificar que el id del proveedor solicitado coincide con el id en el token (para proteger datos sensibles del proveedor)
-    if (req.user.provedorId && req.user.provedorId !== parseInt(id)) {
-       return res.sendStatus(403); // Prohibido si el token no corresponde a este proveedor
-    }
+    const { personaId } = req.user;
     const [result] = await db.query('SELECT * FROM provedor_negocio WHERE id_provedor = ?', [id]);
     if (result.length === 0) return res.status(404).json({ error: 'No encontrado' });
+    // Permitir acceso si el negocio pertenece a la persona autenticada
+    if (result[0].PERSONA_id_persona !== personaId) {
+      return res.sendStatus(403);
+    }
     res.json(result[0]);
   } catch (error) {
     console.error('Error al obtener proveedor autenticado:', error);
