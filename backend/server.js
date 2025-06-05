@@ -1692,7 +1692,7 @@ app.post('/registrar_pago_cambio_plan', async (req, res) => {
 
             // Registrar el pago en la tabla pago
              await conexion.query(
-                'INSERT INTO pago (monto, fecha_pago, monto_pago, m_e_m_b_r_e_s_i_a_id_membresia, provedor_negocio_id_provedor)',
+                'INSERT INTO pago (monto, fecha_pago, monto_pago, m_e_m_b_r_e_s_i_a_id_membresia, provedor_negocio_id_provedor) VALUES (?, ?, ?, ?, ?)',
                  { replacements: [amount, fechaPagoSQL, amount, nuevaMembresiaId, proveedorId] }
             );
             console.log('Registro de pago de cambio de plan guardado en tabla pago.');
