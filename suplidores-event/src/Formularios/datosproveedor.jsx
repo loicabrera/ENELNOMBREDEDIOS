@@ -176,12 +176,13 @@ const DatosProveedor = () => {
       const success = await insertarDatos();
       if (success) {
         // Obtener el plan del estado o del localStorage
-        const planFromState = location.state?.plan;
+        const planFromState = location.state?.planFromState;
         const planFromStorage = localStorage.getItem('registrationPlan');
         const plan = planFromState || planFromStorage;
 
         if (!plan || !planes[plan]) {
-          throw new Error('No se encontró el plan seleccionado');
+          console.error('Plan no encontrado después de insertar datos:', { plan, locationState: location.state, localStoragePlan: planFromStorage });
+          throw new Error('No se pudo obtener la información del plan seleccionado después del registro.');
         }
 
         const planInfo = planes[plan];
