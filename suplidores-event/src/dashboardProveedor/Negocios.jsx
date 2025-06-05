@@ -29,11 +29,17 @@ const Negocios = () => {
         }
 
         const data = await response.json();
-        setBusinesses(data);
         
-        // Si hay negocios, establecer el primero como activo por defecto
-        if (data.length > 0) {
-          setActiveBusiness(data[0]);
+        // El backend /proveedores/:id devuelve un solo objeto o 404 si no existe.
+        // El frontend espera un array para `businesses`.
+        // Ajustamos para poner el objeto recibido en un array o un array vacío.
+        if (data) {
+          setBusinesses([data]); // Envuelve el objeto en un array
+           // Si hay negocios (al menos 1), establecer el primero como activo por defecto
+          setActiveBusiness(data); // Establece el objeto único como negocio activo
+        } else {
+          setBusinesses([]); // No se encontró negocio, usa array vacío
+          setActiveBusiness(null);
         }
       } catch (err) {
         setError(err.message);
