@@ -1980,4 +1980,32 @@ app.get('/api/publicaciones-count', async (req, res) => {
   }
 });
 
+// Ruta para obtener negocios por ID de Persona (para la sección "Mis Negocios")
+app.get('/api/persona/:personaId/negocios', authenticateJWT, async (req, res) => {
+  try {
+    const { personaId } = req.params;
+
+    // Opcional: Verificar que el personaId solicitado coincide con el id en el token (para seguridad)
+    if (req.user.personaId && req.user.personaId !== parseInt(personaId)) {
+       return res.sendStatus(403); // Prohibido si el token no corresponde a esta persona
+    }
+
+    console.log('✅ Solicitud GET /api/persona/:personaId/negocios recibida para personaId:', personaId);
+
+    const [negocios] = await conexion.query(
+      'SELECT * FROM provedor_negocio WHERE PERSONA_id_persona = ?',
+      { replacements: [personaId] }
+    );
+
+    console.log(`✅ Encontrados ${negocios.length} negocios para personaId ${personaId}`);
+
+    // Devolver la lista de negocios (puede ser vacía si no hay ninguno)
+    res.json(negocios);
+
+  } catch (error) {
+    console.error('❌ Error al obtener negocios por personaId:', error);
+    res.status(500).json({ error: 'Error al obtener los negocios de la persona' });
+  }
+});
+
 startServer();

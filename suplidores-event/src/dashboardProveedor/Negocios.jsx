@@ -20,7 +20,8 @@ const Negocios = () => {
       }
 
       try {
-        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${user.provedorId}`, {
+        // Llama al nuevo endpoint que devuelve todos los negocios de la persona
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/persona/${user.personaId}/negocios`, {
           credentials: 'include'
         });
 
@@ -28,18 +29,23 @@ const Negocios = () => {
           throw new Error('Error al obtener negocios');
         }
 
-        const data = await response.json();
+        const data = await response.json(); // Esperamos un array de negocios
         
-        // El backend /proveedores/:id devuelve un solo objeto o 404 si no existe.
-        // El frontend espera un array para `businesses`.
-        // Ajustamos para poner el objeto recibido en un array o un array vacío.
-        if (data) {
-          setBusinesses([data]); // Envuelve el objeto en un array
-           // Si hay negocios (al menos 1), establecer el primero como activo por defecto
-          setActiveBusiness(data); // Establece el objeto único como negocio activo
+        // La respuesta debe ser un array de negocios
+        if (Array.isArray(data)) {
+          setBusinesses(data); 
+           // Establecer el primer negocio como activo si la lista no está vacía
+          if (data.length > 0) {
+            setActiveBusiness(data[0]);
+          } else {
+            setActiveBusiness(null);
+          }
         } else {
-          setBusinesses([]); // No se encontró negocio, usa array vacío
+           // Si por alguna razón no es un array (ej: error en backend, o respuesta vacía pero no array)
+          console.error('La respuesta del backend no es un array:', data);
+          setBusinesses([]);
           setActiveBusiness(null);
+          setError('Formato de datos de negocios incorrecto recibido.');
         }
       } catch (err) {
         setError(err.message);
