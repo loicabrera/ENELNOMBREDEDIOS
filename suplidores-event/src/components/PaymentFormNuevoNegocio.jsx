@@ -37,7 +37,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
         amount: amount,
         planName: planName,
         personaId: user.personaId,
-        proveedorId: location.state?.proveedorId
+        provedor_negocio_id_provedor: location.state?.proveedorId
       };
 
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/pago', {
