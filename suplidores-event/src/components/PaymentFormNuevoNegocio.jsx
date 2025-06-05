@@ -36,7 +36,8 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
         paymentMethodId: paymentMethod.id,
         amount: amount,
         planName: planName,
-        personaId: user.personaId
+        personaId: user.personaId,
+        proveedorId: location.state?.proveedorId
       };
 
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/payment/new-business', {
@@ -51,8 +52,7 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
       const result = await response.json();
 
       if (result.success) {
-        const redirectUrl = result.redirectTo || '/dashboard-proveedor';
-        navigate(redirectUrl, { 
+        navigate('/confirmacion-nuevo-negocio', { 
           state: { 
             success: true, 
             planName: planName,
