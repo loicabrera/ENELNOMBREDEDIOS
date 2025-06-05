@@ -45,41 +45,71 @@ const DatosProveedor = () => {
   useEffect(() => {
     console.log('DatosProveedor2 useEffect: Iniciando validación de estado.');
     console.log('DatosProveedor2 useEffect: location.state:', location.state);
-    console.log('DatosProveedor2 useEffect: planes object:', planes);
+    console.log('DatosProveedor2 useEffect: user:', user);
 
     const id = location.state?.id_persona;
     const plan = location.state?.plan;
     const isAddingNewBusiness = location.state?.isAddingNewBusiness;
+
+    console.log('DatosProveedor2 useEffect: Extraído - id_persona:', id);
+    console.log('DatosProveedor2 useEffect: Extraído - plan:', plan);
+    console.log('DatosProveedor2 useEffect: Extraído - isAddingNewBusiness:', isAddingNewBusiness);
     
     if (!id) {
-      console.error('No se encontró el ID de la persona en el estado. Redirigiendo.');
+      console.error('DatosProveedor2 useEffect: No se encontró el ID de la persona en el estado. Redirigiendo a /datospersonas.');
       setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
       navigate('/datospersonas');
       return; // Salir temprano si falta el ID de persona
-    } else {
-      setPersonaId(id);
     }
 
-    // Validar el plan SOLO si NO es el flujo de agregar un nuevo negocio adicional
-    if (!isAddingNewBusiness) {
-      console.log('Flujo de registro inicial o desconocido: Validando plan.');
-      if (!planes || !plan || !planes[plan]) {
-         console.error('Datos de plan faltantes o inválidos en el estado. Redirigiendo.', { plan, planes });
-        setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
-        navigate('/');
-        return; // Salir temprano si falta el plan
-      }
+    // Si es el flujo de agregar nuevo negocio, no validamos el plan del state
+    if (isAddingNewBusiness) {
+        console.log('DatosProveedor2 useEffect: Detectado flujo de agregar nuevo negocio. Omitiendo validación de plan del state.');
+        // Asegurarse de que el user esté autenticado y tenga provedorId en este flujo si es necesario para fetchMainBusinessPlan
+        if (!isAuthenticated || !user?.provedorId) {
+             console.error('DatosProveedor2 useEffect: Flujo nuevo negocio pero usuario no autenticado o sin provedorId. Redirigiendo a login.');
+             setError('Debes iniciar sesión como proveedor para agregar un nuevo negocio.');
+             navigate('/login'); // O podrías redirigir a una página informativa
+             return;
+        }
+        // No redirigir, permitir que el componente cargue el formulario
+
     } else {
-        console.log('Flujo de agregar nuevo negocio: Omitiendo validación de plan del state.');
-        // No redirigir en este caso, permitir que el componente continúe
+        // Flujo de registro inicial (o desconocido sin flag isAddingNewBusiness)
+        console.log('DatosProveedor2 useEffect: Detectado flujo de registro inicial o desconocido. Validando plan.');
+         // Validar el plan: debe existir y ser uno de los definidos
+        if (!planes || !plan || !planes[plan]) {
+           console.error('DatosProveedor2 useEffect: Datos de plan faltantes o inválidos en el estado. Redirigiendo a /.', { plan, planes });
+          setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
+          navigate('/'); // Redirigir al home o selección de plan inicial
+          return; // Salir temprano si falta el plan
+        }
+         console.log('DatosProveedor2 useEffect: Plan validado correctamente para flujo de registro inicial.');
+
+        // Si es registro inicial, asegurarse de que no esté ya registrado como proveedor
+        if (isAuthenticated && user?.provedorId) {
+             console.warn('DatosProveedor2 useEffect: Usuario ya registrado como proveedor intentando flujo de registro inicial. Redirigiendo al dashboard.');
+             // Si un usuario ya es proveedor, no debería estar en este flujo de registro inicial.
+             // Podríamos redirigirlo a su dashboard de proveedor.
+             // navigate('/dashboard-proveedor');
+             // Podrías decidir si permites que un proveedor existente complete el registro inicial de nuevo o no.
+             // Por ahora, solo logueamos la advertencia.
+        }
     }
 
     // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
+    // La condición para mostrar el modal ahora debe ser solo si fromRegistro es true
     if (!location.state?.fromRegistro) {
       setShowConfirmation(false);
       setProveedorCreado(null);
+    } else {
+         // Si fromRegistro es true, asegurarse de que el modal solo se muestra si proveedorCreado está seteado (después del handleSubmit exitoso)
+         // Esto ya lo maneja la condición del modal, pero es bueno tenerlo en cuenta aquí.
     }
-  }, [location.state, navigate, planes]);
+
+     console.log('DatosProveedor2 useEffect: Validación completada. Componente cargando.');
+
+  }, [location.state, navigate, planes, isAuthenticated, user]); // Añadir dependencias faltantes
 
   // Nuevo useEffect para obtener los detalles del plan del negocio principal si se agrega uno nuevo
   useEffect(() => {
