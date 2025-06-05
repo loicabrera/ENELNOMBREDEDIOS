@@ -652,18 +652,59 @@ app.get('/pagos/:proveedorId', async (req, res) => {
 // Ruta para generar credenciales de acceso para un proveedor
 app.post('/generar_credenciales', async (req, res) => {
   try {
-    // Puedes obtener el id_persona si lo necesitas: const { id_persona } = req.body;
-    // Aquí deberías generar credenciales reales, pero para pruebas devolvemos datos de ejemplo
-    res.json({
+    const { id_persona } = req.body;
+
+    if (!id_persona) {
+      return res.status(400).json({ error: 'ID de persona no proporcionado.' });
+    }
+
+    console.log('Recibida solicitud para generar credenciales para personaId:', id_persona);
+
+    // Verificar si ya existen credenciales para esta persona
+    const [existingUser] = await conexion.query(
+      `SELECT user_name, password FROM inicio_seccion WHERE PERSONA_id_persona = ?`,
+      { replacements: [id_persona] }
+    );
+
+    if (existingUser.length > 0) {
+      console.log('Credenciales ya existen para personaId', id_persona, '. Devolviendo existentes.');
+      // Si ya existen, devolvemos las credenciales existentes
+      return res.status(200).json({
+        message: 'Credenciales ya existen.',
+        credentials: {
+          username: existingUser[0].user_name,
+          password: existingUser[0].password,
+          email: null // No almacenamos email en inicio_seccion según el esquema actual
+        }
+      });
+    }
+
+    // Generar usuario y contraseña aleatorios
+    const user_name = generarUsuarioAleatorio(); // Asegúrate de que esta función esté definida
+    const password = generarPasswordAleatorio(); // Asegúrate de que esta función esté definida
+
+    // Insertar en la tabla inicio_seccion
+    console.log('Insertando nuevas credenciales para personaId:', id_persona, 'Usuario:', user_name);
+    await conexion.query(
+      `INSERT INTO inicio_seccion (password, user_name, PERSONA_id_persona)
+       VALUES (?, ?, ?)`,
+      { replacements: [password, user_name, id_persona] }
+    );
+    console.log('Inserción en inicio_seccion exitosa.');
+
+    // Devolver las credenciales generadas
+    res.status(201).json({
+      message: 'Credenciales generadas y registradas exitosamente',
       credentials: {
-        username: 'usuario_ejemplo',
-        password: 'contraseña123',
-        email: 'ejemplo@email.com'
+        username: user_name,
+        password: password,
+        email: null // No almacenamos email en inicio_seccion según el esquema actual
       }
     });
+
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Error al generar credenciales' });
+    console.error('❌ Error al generar credenciales:', error);
+    res.status(500).json({ error: 'Error interno del servidor al generar credenciales.' });
   }
 });
 
@@ -1054,14 +1095,17 @@ app.get('/api/imagenes_productos/:id', async (req, res) => {
 app.delete('/api/imagenes_productos/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    const [result] = await db.query('DELETE FROM IMAGENES_productos WHERE id_imagenes = ?', [id]);
+    // Elimina primero las imágenes asociadas al producto
+    await db.query('DELETE FROM IMAGENES_productos WHERE productos_id_productos = ?', [id]);
+    // Luego elimina el producto
+    const [result] = await db.query('DELETE FROM productos WHERE id_productos = ?', [id]);
     if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Imagen de producto no encontrada' });
+      return res.status(404).json({ error: 'Producto no encontrado' });
     }
-    res.json({ message: 'Imagen de producto eliminada correctamente' });
+    res.json({ message: 'Producto eliminado exitosamente' });
   } catch (error) {
-    console.error('Error al eliminar imagen de producto:', error);
-    res.status(500).json({ error: 'Error al eliminar la imagen de producto' });
+    console.error('Error al eliminar producto:', error);
+    res.status(500).json({ error: 'Error al eliminar el producto' });
   }
 });
 
@@ -1565,23 +1609,142 @@ app.post('/api/pago', async (req, res) => {
   try {
     const { paymentMethodId, amount, planName, personaId } = req.body;
 
-    console.log('✅ Solicitud de pago recibida:', { paymentMethodId, amount, planName, personaId });
+    console.log('✅ Solicitud de pago recibida para procesamiento:', { paymentMethodId, amount, planName, personaId });
 
-    // TODO: Implementar la lógica de procesamiento del pago aquí:
     // 1. Validar los datos recibidos.
-    // 2. Buscar el provedor_negocio_id_provedor usando el personaId recibido.
-    // 3. Crear un PaymentIntent en Stripe usando el paymentMethodId y amount.
-    // 4. Confirmar el PaymentIntent (si es necesario, dependiendo de la configuración de Stripe).
-    // 5. Si el pago en Stripe es exitoso, guardar un registro en tu tabla `pago` en la base de datos,
-    //    asegurándote de usar el provedor_negocio_id_provedor correcto.
-    // 6. Devolver una respuesta al frontend indicando si el pago fue exitoso o no.
+    if (!paymentMethodId || !amount || !planName || !personaId) {
+      console.log('❌ Datos de pago incompletos.');
+      return res.status(400).json({ success: false, error: 'Datos de pago incompletos.' });
+    }
 
-    // Por ahora, enviaremos una respuesta de éxito simulada:
-    console.log('Lógica de procesamiento de pago pendiente. Simulando éxito.');
-    res.status(200).json({ success: true, message: 'Pago procesado simuladamente con éxito.' });
+    // Asegurarse de que el monto es un número válido y positivo (Stripe espera centavos)
+    const amountInCents = Math.round(amount * 100); // Asegúrate de que amount viene en la unidad correcta (ej. USD)
+    if (typeof amountInCents !== 'number' || amountInCents <= 0) {
+         console.log('❌ Monto inválido.');
+         return res.status(400).json({ success: false, error: 'Monto de pago inválido.' });
+    }
+
+    // 2. Buscar el provedor_negocio_id_provedor usando el personaId recibido.
+    const [proveedor] = await conexion.query(
+      `SELECT id_provedor FROM provedor_negocio WHERE PERSONA_id_persona = ?`,
+      { replacements: [personaId] }
+    );
+
+    if (proveedor.length === 0) {
+      console.log('❌ Proveedor no encontrado para personaId:', personaId);
+      return res.status(404).json({ success: false, error: 'Proveedor no encontrado para el usuario.' });
+    }
+
+    const provedorNegocioId = proveedor[0].id_provedor;
+    console.log('Proveedor encontrado:', provedorNegocioId);
+
+    // 3. Buscar el MEMBRESIA_id_memebresia basado en el planName.
+    const [membresia] = await conexion.query(
+        `SELECT id_memebresia, duracion_dias FROM MEMBRESIA WHERE nombre_pla = ?`,
+        { replacements: [planName] }
+    );
+
+    if (membresia.length === 0) {
+      console.log('❌ Membresía no encontrada para plan:', planName);
+      return res.status(404).json({ success: false, error: 'Plan de membresía no encontrado.' });
+    }
+
+    const membresiaId = membresia[0].id_memebresia;
+    const duracionDias = membresia[0].duracion_dias;
+    console.log('Membresía encontrada:', { membresiaId, duracionDias });
+
+    // 4. Crear y confirmar un PaymentIntent con Stripe usando el paymentMethodId.
+    try {
+        console.log('Intentando crear PaymentIntent con PaymentMethod:', paymentMethodId, 'y monto:', amountInCents);
+        // Primero, crea un PaymentIntent sin confirmarlo automáticamente
+         const paymentIntent = await stripe.paymentIntents.create({
+            amount: amountInCents,
+            currency: 'usd', // Asegúrate de que esta sea la moneda correcta
+            payment_method: paymentMethodId,
+            automatic_payment_methods: {
+                enabled: true,
+                allow_redirects: 'never'
+            },
+            metadata: {
+                personaId: personaId,
+                provedorNegocioId: provedorNegocioId,
+                planName: planName,
+                membresiaId: membresiaId
+            },
+             // Opcional: agregar un customer si manejas usuarios en Stripe
+            // customer: 'cus_XXXXXXXXXXXX',
+        });
+
+        console.log('PaymentIntent creado:', paymentIntent.id);
+
+         // Luego, confirma el PaymentIntent usando el PaymentMethod
+         const confirmedPaymentIntent = await stripe.paymentIntents.confirm(
+             paymentIntent.id,
+             { payment_method: paymentMethodId }
+         );
+
+        console.log('PaymentIntent confirmado. Estado:', confirmedPaymentIntent.status);
+
+        // 5. Si el pago en Stripe es exitoso (status === 'succeeded').
+        if (confirmedPaymentIntent.status === 'succeeded') {
+            console.log('Pago en Stripe exitoso. Guardando en BD...');
+
+            // Guardar registro en la tabla `pago`
+            const fechaActual = new Date();
+            const fechaPagoSQL = formatDateToMySQL(fechaActual); // Asegúrate de que formatDateToMySQL esté definida y disponible
+
+            await conexion.query(
+                `INSERT INTO pago (monto, fecha_pago, monto_pago, m_e_m_b_r_e_s_i_a_id_membresia, provedor_negocio_id_provedor)
+                 VALUES (?, ?, ?, ?, ?)`,
+                { replacements: [amount, fechaPagoSQL, amount, membresiaId, provedorNegocioId] }
+            );
+            console.log('Registro de pago guardado.');
+
+            // Guardar registro en la tabla `PROVEDOR_MEMBRESIA`
+            const fechaInicio = new Date();
+            const fechaFin = new Date(fechaInicio);
+            fechaFin.setDate(fechaFin.getDate() + duracionDias); // Suma los días reales del plan
+
+            const fechaInicioSQL = formatDateToMySQL(fechaInicio);
+            const fechaFinSQL = formatDateToMySQL(fechaFin);
+
+             // Opcional: Finalizar membresía activa anterior si existe
+             await conexion.query(
+                `UPDATE PROVEDOR_MEMBRESIA SET estado = 'vencida' WHERE id_provedor = ? AND estado = 'activa'`,
+                { replacements: [provedorNegocioId] }
+             );
+             console.log('Finalizada membresía activa anterior (si existía).');
+
+            await conexion.query(
+                `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor, estado)
+                 VALUES (?, ?, ?, ?, ?, 'activa')`,
+                { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, membresiaId, provedorNegocioId, 'activa'] }
+            );
+             console.log('Registro de membresía guardado.');
+
+            // 6. Devolver respuesta de éxito al frontend.
+            res.status(200).json({ success: true, message: 'Pago procesado y registrado exitosamente.' });
+
+        } else {
+            // Pago en Stripe no exitoso (por ejemplo, requiere autenticación adicional)
+            console.log('Pago en Stripe no exitoso. Estado:', confirmedPaymentIntent.status);
+            // Dependiendo del estado, podrías necesitar enviar información adicional al frontend para manejar 3D Secure, etc.
+            res.status(400).json({ success: false, error: 'El pago requiere pasos adicionales o falló.', paymentIntent: confirmedPaymentIntent });
+        }
+
+    } catch (stripeError) {
+        console.error('❌ Error en la interacción con Stripe:', stripeError);
+        let userFacingMessage = 'Error en el procesamiento del pago. Por favor, intente con otra tarjeta o contacte soporte.';
+        if (stripeError.type === 'StripeCardError') {
+          userFacingMessage = 'Error con la tarjeta: ' + stripeError.message;
+        } else if (stripeError.type === 'StripeInvalidRequestError') {
+           userFacingMessage = 'Error en la solicitud de pago: ' + stripeError.message;
+        }
+        res.status(500).json({ success: false, error: userFacingMessage });
+    }
 
   } catch (error) {
-    console.error('❌ Error al procesar pago en /api/pago:', error);
+    console.error('❌ Error general al procesar pago en /api/pago:', error);
     res.status(500).json({ success: false, error: 'Error interno del servidor al procesar el pago.' });
   }
 });

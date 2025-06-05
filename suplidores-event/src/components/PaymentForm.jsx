@@ -57,10 +57,12 @@ const PaymentForm = ({ amount, planName }) => {
       const result = await response.json();
 
       if (result.success) {
-        navigate('/dashboard-proveedor', { 
+        navigate('/confirmacion', { 
           state: { 
             success: true, 
-            message: 'Pago procesado exitosamente.' 
+            planName: planName,
+            amount: amount,
+            id_persona: location.state?.id_persona
           }
         });
       } else {
