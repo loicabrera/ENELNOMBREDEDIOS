@@ -180,13 +180,22 @@ const DatosProveedor = () => {
         const planFromStorage = localStorage.getItem('registrationPlan');
         const plan = planFromState || planFromStorage;
 
+        // Usar el estado local personaId que se estableció en el useEffect
+        const id_persona_to_pass = personaId; // <-- Usamos el estado local personaId
+
         if (!plan || !planes[plan]) {
           console.error('Plan no encontrado después de insertar datos:', { plan, locationState: location.state, localStoragePlan: planFromStorage });
           throw new Error('No se pudo obtener la información del plan seleccionado después del registro.');
         }
+      
+        if (!id_persona_to_pass) {
+            // Si el personaId local es nulo, esto indica un problema en el flujo anterior o en el useEffect.
+            console.error('ID de persona local es nulo antes de la navegación al pago.', { personaIdLocal: personaId, locationState: location.state });
+            throw new Error('No se encontró el ID de persona necesario para redirigir al pago. Por favor, intente el registro desde el principio.');
+        }
 
         const planInfo = planes[plan];
-        console.log('Redirigiendo a pago con plan:', plan, 'monto:', planInfo.monto, 'personaId:', personaId);
+        console.log('Redirigiendo a pago con plan:', plan, 'monto:', planInfo.monto, 'personaId a pasar (desde estado local):', id_persona_to_pass);
 
         // Redirigir a la página de pago con el monto correcto
         navigate('/pago', { 
@@ -194,7 +203,7 @@ const DatosProveedor = () => {
             amount: planInfo.monto,
             planName: planInfo.nombre,
             plan: plan,
-            id_persona: personaId
+            id_persona: id_persona_to_pass // <-- Pasamos el personaId del estado local
           } 
         });
       }
