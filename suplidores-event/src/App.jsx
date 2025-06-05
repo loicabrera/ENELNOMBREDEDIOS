@@ -161,6 +161,8 @@ function App() {
         <Route path="membresia" element={<Membership />} />
         <Route path="notificaciones" element={<Notifications />} />
         <Route path="negocios/:id" element={<DetalleNegocio />} />
+        <Route path="productos/editar/:id" element={<EditarProducto />} />
+        <Route path="servicios/editar/:id" element={<EditarServicio />} />
       </Route>
 
       {/* Ruta protegida para perfil de usuario autenticado (ajustar rol si es necesario) */}
@@ -180,24 +182,6 @@ function App() {
         element={
           <ProtectedRoute allowedRoles={['proveedor']}>
             <Layout><PaymentContainerPlanChange /></Layout>
-          </ProtectedRoute>
-        }
-      />
-
-      {/* Rutas protegidas para edición (solo proveedores) */}
-      <Route
-        path="/productos/editar/:id"
-        element={
-          <ProtectedRoute allowedRoles={['proveedor']}>
-            <Layout><EditarProducto /></Layout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/servicios/editar/:id"
-        element={
-          <ProtectedRoute allowedRoles={['proveedor']}>
-            <Layout><EditarServicio /></Layout>
           </ProtectedRoute>
         }
       />
