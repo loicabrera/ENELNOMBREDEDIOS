@@ -14,13 +14,16 @@ const Negocios = () => {
 
   useEffect(() => {
     const fetchBusinesses = async () => {
-      if (!isAuthenticated || !user?.personaId) {
+      if (!isAuthenticated || !user?.provedorId) {
+        console.log('Usuario no autenticado o sin provedorId, redirigiendo a login.');
         navigate('/login');
         return;
       }
 
+      console.log('Fetching business data for provedorId:', user.provedorId);
+
       try {
-        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/api/businesses/${user.personaId}`, {
+        const response = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores/${user.provedorId}`, {
           credentials: 'include'
         });
 
