@@ -192,11 +192,11 @@ const DatosProveedor = () => {
         // localStorage.setItem('provedor_negocio_id_proveedor', data.proveedor.id_provedor);
       }
 
-      return true;
+      return data.proveedor;
     } catch (error) {
       console.error('Error al crear proveedor:', error);
       setError(error.message);
-      return false;
+      return null;
     }
   };
 
@@ -211,34 +211,46 @@ const DatosProveedor = () => {
         return;
       }
 
-      const success = await insertarDatos();
-      if (success) {
+      const nuevoProveedor = await insertarDatos();
+
+      if (nuevoProveedor && nuevoProveedor.id_provedor) {
         const plan = location.state?.plan;
         const planInfo = planes[plan];
+        const isAddingNewBusiness = location.state?.isAddingNewBusiness;
+
+        const paymentData = {
+          amount: location.state?.amount,
+          planName: planInfo.nombre,
+          isNewBusiness: true,
+          businessName: nuevoProveedor.nombre_empresa,
+          proveedorId: nuevoProveedor.id_provedor,
+          personaId: personaId
+        };
+
         if (location.state?.fromRegistro) {
-          // Es el flujo de registro inicial, mostrar credenciales/modal
           setProveedorCreado({
             ...formData,
-            plan: planInfo
+            plan: planInfo,
           });
           setShowConfirmation(true);
-        } else {
-          // Es un negocio adicional, ir al pago directamente
-          const paymentData = {
-            amount: planInfo.monto,
-            planName: planInfo.nombre,
-            isNewBusiness: true,
-            businessName: formData.nombre_empresa,
-            proveedorId: localStorage.getItem('provedor_negocio_id_provedor')
-          };
-          console.log('Redirigiendo con datos:', paymentData);
+        } else if (isAddingNewBusiness) {
+          console.log('Redirigiendo a pago para nuevo negocio adicional con datos:', paymentData);
           navigate('/pago-nuevo-negocio', { 
             state: paymentData
           });
+        } else {
+          console.warn('handleSubmit: Redirección desconocida. State:', location.state);
+          navigate('/dashboard-proveedor/negocios');
         }
+      } else if (nuevoProveedor === null) {
+        // insertarDatos falló y retornó null (ya maneja el setError interno)
+      } else {
+        console.error('insertarDatos tuvo éxito pero no retornó el objeto proveedor.', nuevoProveedor);
+        setError('Error interno al obtener los datos del negocio creado.');
       }
+
     } catch (error) {
-      console.error('Error en el envío:', error);
+      console.error('Error en el envío del formulario:', error);
       setError('Error al procesar el formulario');
     } finally {
       setLoading(false);

@@ -18,6 +18,7 @@ import DetalleNegocio from './dashboardProveedor/DetalleNegocio';
 import LoginAdmin from './components/LoginAdmin';
 import PaymentContainerPlanChange from './components/PaymentContainerPlanChange';
 import FooterAdmin from './dashboardAdmin/FooterAdmin';
+import SeleccionarPlanNuevoNegocio from './dashboardProveedor/SeleccionarPlanNuevoNegocio';
 
 import "./App.css";
 import "./Formularios/datos.css";
@@ -163,6 +164,7 @@ function App() {
         <Route path="negocios/:id" element={<DetalleNegocio />} />
         <Route path="productos/editar/:id" element={<EditarProducto />} />
         <Route path="servicios/editar/:id" element={<EditarServicio />} />
+        <Route path="agregar-negocio/seleccionar-plan" element={<SeleccionarPlanNuevoNegocio />} />
       </Route>
 
       {/* Ruta protegida para perfil de usuario autenticado (ajustar rol si es necesario) */}

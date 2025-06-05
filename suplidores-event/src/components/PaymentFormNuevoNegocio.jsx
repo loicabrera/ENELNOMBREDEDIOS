@@ -51,10 +51,12 @@ const PaymentFormNuevoNegocio = ({ amount, planName }) => {
       const result = await response.json();
 
       if (result.success) {
-        navigate('/dashboard-proveedor', { 
+        const redirectUrl = result.redirectTo || '/dashboard-proveedor';
+        navigate(redirectUrl, { 
           state: { 
             success: true, 
-            message: 'Pago procesado exitosamente. Tu negocio ha sido registrado.' 
+            planName: planName,
+            amount: amount
           }
         });
       } else {

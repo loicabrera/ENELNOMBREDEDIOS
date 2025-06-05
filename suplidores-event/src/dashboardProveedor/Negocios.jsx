@@ -80,12 +80,11 @@ const Negocios = () => {
       navigate('/login');
       return;
     }
-    // Redirigir al formulario de datos proveedor
-    navigate('/datosproveedor2', {
+    // Redirigir a la página de selección de plan para agregar nuevo negocio
+    navigate('/dashboard-proveedor/agregar-negocio/seleccionar-plan', {
       state: {
         id_persona: user.personaId,
-        plan: 'basico',
-        isNewBusiness: true
+        isAddingNewBusiness: true // Indicamos que es para agregar un negocio nuevo
       }
     });
   };
@@ -159,6 +158,17 @@ const Negocios = () => {
             ))}
           </div>
         )}
+
+        {/* Botón para agregar nuevo negocio */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={handleAgregarNegocio}
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Agregar Nuevo Negocio
+          </button>
+        </div>
+
       </div>
 
       {activeBusiness && (

@@ -715,7 +715,7 @@ async function getLimiteProductos(proveedorId) {
     FROM PROVEDOR_MEMBRESIA PM
     JOIN MEMBRESIA M ON PM.MEMBRESIA_id_memebresia = M.id_memebresia
     WHERE PM.id_provedor = ? AND PM.estado = 'activa'
-    ORDER BY PM.fecha_inicio DESC LIMIT 1
+    ORDER BY PM.fecha_fin DESC LIMIT 1
   `, { replacements: [proveedorId] });
   return rows.length > 0 ? rows[0].limite_productos : 0;
 }
@@ -1740,14 +1740,15 @@ app.get('/api/verify-auth', authenticateJWT, (req, res) => {
 // Ruta para procesar pagos (Stripe)
 app.post('/api/pago', async (req, res) => {
   try {
-    const { paymentMethodId, amount, planName, personaId } = req.body;
+    const { paymentMethodId, amount, planName, personaId, provedor_negocio_id_provedor } = req.body; // Aceptar provedor_negocio_id_provedor opcionalmente
 
-    console.log('✅ Solicitud de pago recibida para procesamiento:', { paymentMethodId, amount, planName, personaId });
+    console.log('✅ Solicitud de pago recibida para procesamiento:', { paymentMethodId, amount, planName, personaId, provedor_negocio_id_provedor });
 
     // 1. Validar los datos recibidos.
+    // Ahora provedor_negocio_id_provedor es opcional, pero se valida más abajo
     if (!paymentMethodId || !amount || !planName || !personaId) {
-      console.log('❌ Datos de pago incompletos.');
-      return res.status(400).json({ success: false, error: 'Datos de pago incompletos.' });
+      console.log('❌ Datos de pago incompletos (faltan campos obligatorios).');
+      return res.status(400).json({ success: false, error: 'Datos de pago incompletos (faltan campos obligatorios).' });
     }
 
     // Asegurarse de que el monto es un número válido y positivo (Stripe espera centavos)
@@ -1757,19 +1758,48 @@ app.post('/api/pago', async (req, res) => {
          return res.status(400).json({ success: false, error: 'Monto de pago inválido.' });
     }
 
-    // 2. Buscar el provedor_negocio_id_provedor usando el personaId recibido.
-    const [proveedor] = await conexion.query(
-      `SELECT id_provedor FROM provedor_negocio WHERE PERSONA_id_persona = ?`,
-      { replacements: [personaId] }
-    );
+    // 2. Determinar el provedor_negocio_id_provedor.
+    let targetProvedorId = provedor_negocio_id_provedor; // Usar el proporcionado si existe
 
-    if (proveedor.length === 0) {
-      console.log('❌ Proveedor no encontrado para personaId:', personaId);
-      return res.status(404).json({ success: false, error: 'Proveedor no encontrado para el usuario.' });
+    if (!targetProvedorId) {
+      // Si no se proporcionó un ID de proveedor, buscarlo usando personaId (flujo de registro inicial)
+      console.log('Provedor_negocio_id_provedor no proporcionado. Buscando por personaId:', personaId);
+      const [proveedor] = await conexion.query(
+        `SELECT id_provedor FROM provedor_negocio WHERE PERSONA_id_persona = ?`,
+        { replacements: [personaId] }
+      );
+
+      if (proveedor.length === 0) {
+        console.log('❌ Proveedor no encontrado para personaId:', personaId, '. No se pudo determinar el negocio objetivo.');
+        return res.status(404).json({ success: false, error: 'Proveedor no encontrado para el usuario o negocio no especificado.' });
+      }
+
+      // En este caso (registro inicial), asumimos el primer negocio encontrado (puede ser problemático si una persona tiene varios negocios desde el inicio)
+      targetProvedorId = proveedor[0].id_provedor;
+      console.log('Provedor_negocio_id_provedor encontrado a través de personaId:', targetProvedorId);
+    } else {
+        // Verificar que el proveedorId proporcionado realmente existe y está asociado a la personaId (seguridad)
+        console.log('Provedor_negocio_id_provedor proporcionado:', targetProvedorId, '. Verificando asociación con personaId:', personaId);
+         const [existingProveedor] = await conexion.query(
+             `SELECT id_provedor FROM provedor_negocio WHERE id_provedor = ? AND PERSONA_id_persona = ?`,
+             { replacements: [targetProvedorId, personaId] }
+         );
+
+         if (existingProveedor.length === 0) {
+             console.log('❌ ProvedorId proporcionado (', targetProvedorId, ') no encontrado o no coincide con personaId (', personaId, ').');
+             return res.status(403).json({ success: false, error: 'Provedor especificado no válido o no pertenece al usuario autenticado.' });
+         }
+        console.log('ProvedorId proporcionado verificado.');
     }
 
-    const provedorNegocioId = proveedor[0].id_provedor;
-    console.log('Proveedor encontrado:', provedorNegocioId);
+    // Validar que tenemos un provedorNegocioId válido antes de continuar
+    if (!targetProvedorId) {
+         console.log('❌ No se pudo determinar un Provedor_negocio_id_provedor válido.');
+         return res.status(400).json({ success: false, error: 'No se pudo determinar el negocio al que se asociará el pago.' });
+    }
+
+    const provedorNegocioId = targetProvedorId; // Usar el ID determinado
+    console.log('Provedor Negocio ID final para el pago:', provedorNegocioId);
 
     // 3. Buscar el MEMBRESIA_id_memebresia basado en el planName.
     const [membresia] = await conexion.query(
@@ -1829,9 +1859,9 @@ app.post('/api/pago', async (req, res) => {
             await conexion.query(
                 `INSERT INTO pago (monto, fecha_pago, monto_pago, m_e_m_b_r_e_s_i_a_id_membresia, provedor_negocio_id_provedor)
                  VALUES (?, ?, ?, ?, ?)`,
-                { replacements: [amount, fechaPagoSQL, amount, membresiaId, provedorNegocioId] }
+                { replacements: [amount, fechaPagoSQL, amount, membresiaId, provedorNegocioId] } // Usar provedorNegocioId determinado
             );
-            console.log('Registro de pago guardado.');
+            console.log('Registro de pago guardado con provedorNegocioId:', provedorNegocioId);
 
             // Guardar registro en la tabla `PROVEDOR_MEMBRESIA`
             const fechaInicio = new Date();
@@ -1851,12 +1881,13 @@ app.post('/api/pago', async (req, res) => {
             await conexion.query(
                 `INSERT INTO PROVEDOR_MEMBRESIA (fecha_inicio, fecha_fin, fecha_pago, MEMBRESIA_id_memebresia, id_provedor, estado)
                  VALUES (?, ?, ?, ?, ?, 'activa')`,
-                { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, membresiaId, provedorNegocioId, 'activa'] }
+                { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, membresiaId, provedorNegocioId, 'activa'] } // Usar provedorNegocioId determinado
             );
-             console.log('Registro de membresía guardado.');
+             console.log('Registro de membresía guardado con provedorNegocioId:', provedorNegocioId);
 
             // 6. Devolver respuesta de éxito al frontend.
-            res.status(200).json({ success: true, message: 'Pago procesado y registrado exitosamente.' });
+            // Redirigir a la página de confirmación específica para nuevo negocio
+            res.status(200).json({ success: true, message: 'Pago procesado y registrado exitosamente.', redirectTo: '/confirmacion-nuevo-negocio' }); // Indicar al frontend a dónde redirigir
 
         } else {
             // Pago en Stripe no exitoso (por ejemplo, requiere autenticación adicional)
