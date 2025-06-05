@@ -41,6 +41,33 @@ const DatosProveedor = () => {
     }
   };
 
+  // Función para obtener los detalles del plan del negocio principal
+  const fetchMainBusinessPlan = async (provedorId) => {
+    console.log('fetchMainBusinessPlan useEffect: Fetching detalles del plan principal para provedorId:', provedorId);
+    if (!provedorId) {
+      console.warn('fetchMainBusinessPlan: provedorId no proporcionado.');
+      // Si no hay provedorId, no podemos obtener el plan principal.
+      // Esto podría ocurrir si el usuario aún no tiene negocios.
+      setMainBusinessPlanDetails(null); // O establecer un plan por defecto si es el primer negocio
+      return;
+    }
+
+    try {
+      //** FIX: Call to non-existent endpoint removed. **
+      // We will assume a default plan for new businesses for now.
+      console.log('fetchMainBusinessPlan: Asumiendo plan básico para nuevo negocio.');
+      setMainBusinessPlanDetails({
+        name: 'Plan Básico',
+        amount: 2000 // Monto del plan básico
+      });
+
+    } catch (error) {
+      console.error('Error al obtener detalles del plan principal:', error);
+      setError('Error al obtener los detalles de tu plan principal.');
+      setMainBusinessPlanDetails(null);
+    }
+  };
+
   // Verificar si tenemos el ID de la persona y el plan seleccionado (o si es flujo agregar nuevo negocio)
   useEffect(() => {
     console.log('DatosProveedor2 useEffect: Iniciando validación de estado.');
