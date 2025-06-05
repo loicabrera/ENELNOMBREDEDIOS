@@ -16,6 +16,7 @@ import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
 const Profile = () => {
   const [proveedor, setProveedor] = useState(null);
   const [persona, setPersona] = useState(null);
+  const [userName, setUserName] = useState('');
   const [loading, setLoading] = useState(true);
   const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [oldPassword, setOldPassword] = useState('');
@@ -48,6 +49,12 @@ const Profile = () => {
         const dataPersona = await resPersona.json();
         setPersona(dataPersona);
 
+        const resUserName = await fetch(`https://spectacular-recreation-production.up.railway.app/api/obtener-username?personaId=${personaId}`, { credentials: 'include' });
+        if (resUserName.ok) {
+          const dataUserName = await resUserName.json();
+          setUserName(dataUserName.user_name || '');
+        }
+
         setLoading(false);
 
       } catch (err) {
@@ -62,15 +69,14 @@ const Profile = () => {
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordMsg('');
-    if (!user || !user.user_name) {
+    if (!userName) {
       setPasswordMsg('Error: No se encontró la información del usuario para cambiar la contraseña.');
       return;
     }
-    const user_name = user.user_name;
     const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/cambiar-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_name, oldPassword, newPassword })
+      body: JSON.stringify({ user_name: userName, oldPassword, newPassword })
     });
     const data = await res.json();
     if (data.success) {

@@ -2067,4 +2067,23 @@ app.post('/logout', (req, res) => {
   res.json({ success: true });
 });
 
+app.get('/api/obtener-username', async (req, res) => {
+  const { personaId } = req.query;
+  if (!personaId) {
+    return res.status(400).json({ error: 'Falta el personaId' });
+  }
+  try {
+    const [result] = await conexion.query(
+      'SELECT user_name FROM inicio_seccion WHERE PERSONA_id_persona = ?',
+      { replacements: [personaId] }
+    );
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'No se encontró el usuario para esa persona' });
+    }
+    res.json({ user_name: result[0].user_name });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener el user_name' });
+  }
+});
+
 startServer();
