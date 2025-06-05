@@ -46,15 +46,20 @@ const DatosProveedor = () => {
     const plan = location.state?.plan;
     
     if (!id) {
+      console.error('No se encontró el ID de la persona en el estado. Redirigiendo.');
       setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
       navigate('/datospersonas');
+      return; // Salir temprano si falta el ID de persona
     } else {
       setPersonaId(id);
     }
 
-    if (!plan || !planes[plan]) {
+    // Solo validar el plan si el objeto planes está definido
+    if (!planes || !plan || !planes[plan]) {
+       console.error('Datos de plan faltantes o inválidos en el estado. Redirigiendo.', { plan, planes });
       setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
       navigate('/');
+      return; // Salir temprano si falta el plan
     }
 
     // Refuerzo: Si NO es el flujo de registro inicial, asegúrate de que el modal no se muestre
