@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import ProgressBar from '../ProgressBar';
 
 const PaymentForm = ({ amount, planName }) => {
@@ -11,7 +10,6 @@ const PaymentForm = ({ amount, planName }) => {
   const location = useLocation();
   const [error, setError] = useState(null);
   const [processing, setProcessing] = useState(false);
-  const { user } = useAuth();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -37,8 +35,15 @@ const PaymentForm = ({ amount, planName }) => {
         paymentMethodId: paymentMethod.id,
         amount: amount,
         planName: planName,
-        personaId: user.personaId
+        personaId: location.state?.id_persona
       };
+
+      if (!paymentData.personaId) {
+        setError('No se encontró el ID de persona necesario para el pago.');
+        setProcessing(false);
+        console.error('Error: personaId no encontrado en location state para el pago.', location.state);
+        return;
+      }
 
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/api/pago', {
         method: 'POST',
