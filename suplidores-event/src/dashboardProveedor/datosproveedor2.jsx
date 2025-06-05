@@ -92,9 +92,16 @@ const DatosProveedor = () => {
     // Modificar la condición de redirección a home
     // Solo redirigir si NO estamos agregando un nuevo negocio Y falta el id_persona
     if (!isAddingNewBusiness && !id && !user?.personaId) {
-        console.log('DatosProveedor2 useEffect: No estamos agregando un nuevo negocio y falta id_persona. Redirigiendo a /');
-        navigate('/'); // Redirige a home
-        return;
+      console.log('DatosProveedor2 useEffect: No estamos agregando un nuevo negocio y falta id_persona. Redirigiendo a /');
+      navigate('/'); // Redirige a home
+      return;
+    }
+
+    // Si estamos agregando un nuevo negocio pero no hay personaId, redirigir a login
+    if (isAddingNewBusiness && !user?.personaId && !id) {
+      console.log('DatosProveedor2 useEffect: Agregando nuevo negocio pero falta personaId. Redirigiendo a /login');
+      navigate('/login');
+      return;
     }
 
     if (isAddingNewBusiness) {
@@ -279,13 +286,14 @@ const DatosProveedor = () => {
 
   const insertarDatos = async () => {
     try {
-      if (!personaId) {
+      const personaIdToSend = personaId || user?.personaId || location.state?.id_persona;
+      if (!personaIdToSend) {
         throw new Error('No se encontró el ID de la persona registrada');
       }
 
       console.log('Enviando datos al servidor:', {
         ...formData,
-        p_e_r_s_o_n_a_id_persona: personaId
+        PERSONA_id_persona: personaIdToSend
       });
 
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/crear_proveedores', {
@@ -295,7 +303,7 @@ const DatosProveedor = () => {
         },
         body: JSON.stringify({
           ...formData,
-          p_e_r_s_o_n_a_id_persona: personaId
+          PERSONA_id_persona: personaIdToSend
         }),
       });
 
@@ -512,6 +520,16 @@ const DatosProveedor = () => {
       setError(err.message);
     }
   };
+
+  // Justo después de los useState
+  useEffect(() => {
+    // Si hay personaId en el usuario, setearlo en el estado local
+    if (user?.personaId) {
+      setPersonaId(user.personaId);
+    } else if (location.state?.id_persona) {
+      setPersonaId(location.state.id_persona);
+    }
+  }, [user, location.state]);
 
   if (loading) {
     return (
