@@ -38,21 +38,44 @@ const DatosProveedor = () => {
 
   // Verificar si tenemos el ID de la persona y el plan seleccionado
   useEffect(() => {
-    const id = location.state?.id_persona;
-    const plan = location.state?.plan;
-    
-    if (!id) {
-      setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
-      navigate('/datospersonas');
-    } else {
-      setPersonaId(id);
-    }
+    // Usamos un pequeño delay para dar tiempo a que location.state se actualice
+    const timer = setTimeout(() => {
+      const id = location.state?.id_persona;
 
-    if (!plan || !planes[plan]) {
-      setError('No se encontró el plan seleccionado. Por favor, seleccione un plan válido.');
-      navigate('/');
-    }
-  }, [location.state, navigate]);
+      // Intentar obtener el plan de location.state, o de localStorage como fallback
+      const planFromState = location.state?.planFromState; // Leer el plan si se pasó en state
+      const planFromStorage = localStorage.getItem('registrationPlan');
+      const plan = planFromState || planFromStorage; // Usar state primero, luego storage
+
+      console.log('DatosProveedor useEffect check:', { id, plan, state: location.state, planFromState, planFromStorage }); // Added log
+
+      // Limpiar localStorage después de leer (independientemente de dónde se obtuvo)
+      if (planFromStorage) {
+          localStorage.removeItem('registrationPlan');
+          console.log('Plan eliminado de localStorage.');
+      }
+
+      if (!id) {
+        setError('No se encontró el ID de la persona. Por favor, registre sus datos personales primero.');
+        navigate('/datospersonas');
+      } else {
+        setPersonaId(id);
+      }
+
+      // Validar el plan obtenido
+      if (!plan || !planes[plan]) {
+        setError('No se encontró el plan seleccionado o es inválido. Por favor, seleccione un plan válido.');
+        navigate('/'); // Redirige a la página principal
+      } else {
+         // Aquí ya tenemos un ID de persona y un plan válido.
+         // La lógica del formulario de proveedor puede continuar.
+         console.log('ID de persona y plan válidos encontrados. Procediendo con formulario de proveedor.');
+      }
+
+    }, 100); // Pequeño delay de 100ms
+
+    return () => clearTimeout(timer); // Limpia el timer si el componente se desmonta
+  }, [location.state, navigate, planes]); // Añadimos planes a dependencias
 
   const [formData, setFormData] = useState({
     nombre_empresa: '',

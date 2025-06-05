@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
@@ -138,12 +138,18 @@ const DatosPersonas = () => {
         throw new Error(data.error || 'Error al crear la persona');
       }
 
+      // Guardar el plan en localStorage antes de redirigir
+      if (location.state?.plan) {
+        localStorage.setItem('registrationPlan', location.state.plan);
+        console.log('Plan guardado en localStorage:', location.state.plan);
+      }
+
       // Redirigir al formulario de proveedor
       console.log('Redirigiendo a /datosproveedor con state:', { id_persona: data.persona.id_persona, plan: location.state.plan });
       navigate('/datosproveedor', {
         state: {
           id_persona: data.persona.id_persona,
-          plan: location.state.plan
+          planFromState: location.state.plan
         }
       });
     } catch (error) {
