@@ -115,25 +115,17 @@ const db = mysql.createPool({
 
 // Middleware para verificar JWT (ejemplo)
 const authenticateJWT = (req, res, next) => {
-  console.log('=== authenticateJWT Debug ===');
-  console.log('Cookies recibidas:', req.cookies);
   const token = req.cookies.token; // Intentar obtener el token de las cookies
 
-  console.log('Token extraído:', token);
-
   if (!token) {
-    console.log('No se encontró token, enviando 401.');
     return res.sendStatus(401); // Si no hay token, no autorizado
   }
 
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) {
-      console.error('Error al verificar JWT:', err);
-      console.log('Token inválido, enviando 403.');
       return res.sendStatus(403); // Si el token no es válido, prohibido
     }
     req.user = user; // Agregar los datos del usuario decodificados a la solicitud
-    console.log('Token verificado, usuario:', user);
     next(); // Continuar con la siguiente función middleware o ruta
   });
 };
