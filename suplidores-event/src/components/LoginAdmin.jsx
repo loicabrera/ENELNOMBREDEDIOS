@@ -28,7 +28,7 @@ const LoginAdmin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if (data.rol === 'admin') {
+        if (data.user && data.user.rol === 'admin') {
           await login(username, password);
           navigate('/admin/dashboard');
         } else {
