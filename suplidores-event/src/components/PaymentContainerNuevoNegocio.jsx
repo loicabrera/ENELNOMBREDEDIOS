@@ -13,10 +13,7 @@ const PaymentContainerNuevoNegocio = () => {
   const navigate = useNavigate();
   const { amount, planName, isNewBusiness, businessName, proveedorId } = location.state || {};
 
-  console.log('PaymentContainer - State recibido:', location.state);
-
   if (!amount || !planName || !businessName || !proveedorId) {
-    console.log('PaymentContainer - Faltan datos:', { amount, planName, businessName, proveedorId });
     return (
       <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-4xl mx-auto px-4">

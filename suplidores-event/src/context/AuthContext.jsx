@@ -25,30 +25,24 @@ export const AuthProvider = ({ children }) => {
         const data = await response.json();
         // Si el backend verifica la autenticación
         if (data.isAuthenticated) {
-          console.log('AuthContext: verifyAuth exitoso. Estableciendo estado autenticado.', data.user);
           setIsAuthenticated(true);
           // Guarda los datos básicos del usuario que el backend envía en el payload del JWT
           setUser(data.user);
-          console.log('AuthContext: Estado después de verifyAuth exitoso - isAuthenticated:', true, 'user:', data.user);
         } else {
           // Autenticación fallida según el backend
-          console.log('AuthContext: verifyAuth fallido (backend dice no autenticado).');
           setIsAuthenticated(false);
           setUser(null);
         }
       } else {
         // Respuesta no OK (ej. 401, 403), autenticación fallida
-        console.log('AuthContext: verifyAuth fallido (respuesta no OK). Status:', response.status);
         setIsAuthenticated(false);
         setUser(null);
       }
     } catch (error) {
-      console.error('Error al verificar autenticación en AuthContext:', error);
       // En caso de error de red u otro, asumir no autenticado por seguridad
       setIsAuthenticated(false);
       setUser(null);
     } finally {
-      console.log('AuthContext: verifyAuth finalizado. Estado final - isAuthenticated:', isAuthenticated, 'loading:', loading);
       setLoading(false);
     }
   };
@@ -79,7 +73,6 @@ export const AuthProvider = ({ children }) => {
       // No necesitamos retornar el user aquí, ya que verifyAuth lo actualiza en el estado del contexto.
 
     } catch (error) {
-      console.error('Error en la función login del AuthContext:', error);
       // Es importante resetear el estado si el login falla para no quedarse en un estado inconsistente
       setIsAuthenticated(false);
       setUser(null);

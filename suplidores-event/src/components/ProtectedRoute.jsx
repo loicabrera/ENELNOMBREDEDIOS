@@ -30,12 +30,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     checkAdmin();
   }, [location.pathname]);
 
-  console.log('=== ProtectedRoute Debug ===');
-  console.log('Estado de autenticación (AuthContext):', { isAuthenticated, loading, user });
-  console.log('Ruta actual:', location.pathname);
-  console.log('Roles permitidos:', allowedRoles);
-  console.log('========================');
-
   // Permitir acceso a rutas de admin si isAdmin está en localStorage
   const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
 

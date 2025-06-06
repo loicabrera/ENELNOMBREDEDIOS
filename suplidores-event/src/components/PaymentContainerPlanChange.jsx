@@ -18,37 +18,27 @@ const PaymentContainerPlanChange = () => {
 
   useEffect(() => {
     if (authLoading) {
-        console.log('PaymentContainerPlanChange useEffect: authLoading es true, esperando...');
         return;
     }
-    console.log('PaymentContainerPlanChange useEffect: authLoading es false.');
 
     if (!isAuthenticated || !user || !user.provedorId || !user.personaId) {
-      console.log('Usuario no autenticado o sin datos esenciales, redirigiendo a login.');
       navigate('/login');
       return;
     }
-    console.log('Usuario autenticado en PaymentContainerPlanChange.', user);
 
     const pendingPlanChangeData = location.state;
-    console.log('Datos de cambio de plan del state:', pendingPlanChangeData);
 
     if (!pendingPlanChangeData || !pendingPlanChangeData.amount || !pendingPlanChangeData.newPlanId || !pendingPlanChangeData.proveedorId) {
-      console.log('No se encontraron datos válidos para el cambio de plan en el state, redirigiendo a membresía.');
       navigate('/dashboard-proveedor/membresia');
       return;
     }
-    console.log('Datos de cambio de plan válidos encontrados.');
 
     try {
       setPaymentData(pendingPlanChangeData);
-      console.log('Payment data set.', pendingPlanChangeData);
     } catch (error) {
-      console.error('Error al procesar datos de pago del state:', error);
       navigate('/dashboard-proveedor/membresia');
     } finally {
       setLoading(false);
-      console.log('Loading set to false.');
     }
   }, [navigate, location.state, isAuthenticated, user, authLoading]);
 

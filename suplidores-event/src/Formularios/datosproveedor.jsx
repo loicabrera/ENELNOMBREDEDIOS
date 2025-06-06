@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ProgressBar from '../ProgressBar';
 
-
-console.log('Loading DatosProveedor.jsx file'); // Added log
-
 // Paleta de colores pastel
 const colors = {
   darkTeal: '#012e33',
@@ -17,7 +14,6 @@ const colors = {
 
 const DatosProveedor = () => {
   const location = useLocation();
-  console.log('DatosProveedor mounted. location.state:', location.state);
   const navigate = useNavigate();
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -47,11 +43,8 @@ const DatosProveedor = () => {
       const planFromStorage = localStorage.getItem('registrationPlan');
       const plan = planFromState || planFromStorage;
 
-      console.log('DatosProveedor useEffect check:', { id, plan, state: location.state, planFromState, planFromStorage });
-
       if (planFromStorage) {
         localStorage.removeItem('registrationPlan');
-        console.log('Plan eliminado de localStorage.');
       }
 
       if (!id) {
@@ -67,8 +60,6 @@ const DatosProveedor = () => {
         navigate('/');
         return;
       }
-
-      console.log('ID de persona y plan válidos encontrados. Procediendo con formulario de proveedor.');
     };
 
     const timer = setTimeout(checkState, 100);
@@ -136,11 +127,6 @@ const DatosProveedor = () => {
       if (!personaId) {
         throw new Error('No se encontró el ID de la persona registrada');
       }
-
-      console.log('Enviando datos al servidor:', {
-        ...formData,
-        p_e_r_s_o_n_a_id_persona: personaId
-      });
 
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/crear_proveedores', {
         method: 'POST',

@@ -10,7 +10,6 @@ const stripePromise = loadStripe(STRIPE_PUBLIC_KEY);
 
 const PaymentContainer = () => {
   const location = useLocation();
-  console.log('PaymentContainer mounted. location.state:', location.state);
   const { amount, planName } = location.state || {};
 
   if (!amount || !planName) {

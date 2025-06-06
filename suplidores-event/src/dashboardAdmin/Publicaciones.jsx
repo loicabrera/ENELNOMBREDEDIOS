@@ -22,7 +22,6 @@ const Publicaciones = () => {
           throw new Error(`Error al obtener productos: ${productosResponse.status}`);
         }
         const productos = await productosResponse.json();
-        console.log('Productos recibidos:', productos);
 
         // Intentar obtener servicios
         const serviciosResponse = await fetch('https://spectacular-recreation-production.up.railway.app/api/servicios');
@@ -30,7 +29,6 @@ const Publicaciones = () => {
           throw new Error(`Error al obtener servicios: ${serviciosResponse.status}`);
         }
         const servicios = await serviciosResponse.json();
-        console.log('Servicios recibidos:', servicios);
 
         // Intentar obtener proveedores
         const proveedoresResponse = await fetch('https://spectacular-recreation-production.up.railway.app/proveedores');
@@ -38,9 +36,7 @@ const Publicaciones = () => {
           throw new Error(`Error al obtener proveedores: ${proveedoresResponse.status}`);
         }
         const proveedores = await proveedoresResponse.json();
-        console.log('Proveedores recibidos:', proveedores);
         if (proveedores.length > 0) {
-          console.log('Estructura del primer proveedor:', proveedores[0]);
         }
 
         const pubs = [
@@ -76,7 +72,6 @@ const Publicaciones = () => {
         setProveedores(proveedores);
         setError(null);
       } catch (err) {
-        console.error('Error al cargar los datos:', err);
         setError(err.message);
       }
     };

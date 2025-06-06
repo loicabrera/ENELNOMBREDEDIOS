@@ -17,13 +17,9 @@ const LoginProveedor = () => {
   const { clearActiveBusiness } = useActiveBusiness();
 
   useEffect(() => {
-    console.log('LoginProveedor useEffect: Estado actual de AuthContext - authLoading:', authLoading, 'isAuthenticated:', isAuthContextAuthenticated);
     if (!authLoading && isAuthContextAuthenticated) {
-       console.log('LoginProveedor useEffect: AuthContext ya autenticado y no cargando, redirigiendo...');
-       const from = location.state?.from?.pathname || '/dashboard-proveedor';
-       navigate(from, { replace: true });
+       navigate(location.state?.from?.pathname || '/dashboard-proveedor', { replace: true });
     } else if (!authLoading && !isAuthContextAuthenticated) {
-       console.log('LoginProveedor useEffect: AuthContext terminó de cargar y NO autenticado.');
        setLoading(false); 
     }
   }, [authLoading, isAuthContextAuthenticated, navigate, location]);
@@ -37,9 +33,7 @@ const LoginProveedor = () => {
     setError(null);
   };
 
-  console.log('Renderizando LoginProveedor y definiendo handleSubmit.');
   const handleSubmit = async (e) => {
-    console.log('handleSubmit llamado.');
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -49,7 +43,6 @@ const LoginProveedor = () => {
       await login(formData.username, formData.password);
 
     } catch (error) {
-      console.error('Error en handleSubmit de LoginProveedor:', error);
       setError(error.message);
       setLoading(false);
     }

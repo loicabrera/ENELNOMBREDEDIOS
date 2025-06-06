@@ -141,11 +141,9 @@ const DatosPersonas = () => {
       // Guardar el plan en localStorage antes de redirigir
       if (location.state?.plan) {
         localStorage.setItem('registrationPlan', location.state.plan);
-        console.log('Plan guardado en localStorage:', location.state.plan);
       }
 
       // Redirigir al formulario de proveedor
-      console.log('Redirigiendo a /registro/evento con state:', { id_persona: data.persona.id_persona, plan: location.state.plan });
       navigate('/registro/evento', {
         state: {
           id_persona: data.persona.id_persona,
@@ -153,7 +151,6 @@ const DatosPersonas = () => {
         }
       });
     } catch (error) {
-      console.error('Error:', error);
       setError(error.message);
     } finally {
       setLoading(false);

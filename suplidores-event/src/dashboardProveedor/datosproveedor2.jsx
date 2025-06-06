@@ -42,43 +42,21 @@ const DatosProveedor = () => {
   };
 
   useEffect(() => {
-    console.log('DatosProveedor2 useEffect: Iniciando validación de estado.');
-    console.log('DatosProveedor2 useEffect: location.state:', location.state);
-    console.log('DatosProveedor2 useEffect: user:', user);
-
-    const id = location.state?.id_persona;
-    const plan = location.state?.plan;
-    const isAddingNewBusiness = location.state?.isAddingNewBusiness;
-
-    console.log('DatosProveedor2 useEffect: Extraído - id_persona:', id);
-    console.log('DatosProveedor2 useEffect: Extraído - plan:', plan);
-    console.log('DatosProveedor2 useEffect: Extraído - isAddingNewBusiness:', isAddingNewBusiness);
-    
-    if (!isAuthenticated || !user) {
-      console.log('DatosProveedor2 useEffect: Usuario no autenticado o nulo, redirigiendo a /login');
-      navigate('/login');
-      return;
-    }
-
     // Modificar la condición de redirección a home
     // Solo redirigir si NO estamos agregando un nuevo negocio Y falta el id_persona
-    if (!isAddingNewBusiness && !id && !user?.personaId) {
-      console.log('DatosProveedor2 useEffect: No estamos agregando un nuevo negocio y falta id_persona. Redirigiendo a /');
+    if (!location.state?.isAddingNewBusiness && !location.state?.id_persona && !user?.personaId) {
       navigate('/'); // Redirige a home
       return;
     }
 
     // Si estamos agregando un nuevo negocio pero no hay personaId, redirigir a login
-    if (isAddingNewBusiness && !user?.personaId && !id) {
-      console.log('DatosProveedor2 useEffect: Agregando nuevo negocio pero falta personaId. Redirigiendo a /login');
+    if (location.state?.isAddingNewBusiness && !user?.personaId && !location.state?.id_persona) {
       navigate('/login');
       return;
     }
 
-    if (isAddingNewBusiness) {
-      console.log('DatosProveedor2 useEffect: Flujo de agregar nuevo negocio. Obteniendo detalles del plan principal.');
+    if (location.state?.isAddingNewBusiness) {
       if (!user?.provedorId) {
-        console.error('DatosProveedor2 useEffect: provedorId no encontrado en user. Redirigiendo a /dashboard-proveedor/negocios.');
         setError('No se pudo determinar el negocio principal. Por favor, intente nuevamente.');
         navigate('/dashboard-proveedor/negocios');
         return;
@@ -94,8 +72,6 @@ const DatosProveedor = () => {
          // Si fromRegistro es true, asegurarse de que el modal solo se muestra si proveedorCreado está seteado (después del handleSubmit exitoso)
          // Esto ya lo maneja la condición del modal, pero es bueno tenerlo en cuenta aquí.
     }
-
-     console.log('DatosProveedor2 useEffect: Validación completada. Componente cargando.');
 
   }, [location.state, navigate, planes, isAuthenticated, user]); // Añadir dependencias faltantes
 
@@ -202,11 +178,6 @@ const DatosProveedor = () => {
         throw new Error('No se encontró el ID de la persona registrada');
       }
 
-      console.log('Enviando datos al servidor:', {
-        ...formData,
-        PERSONA_id_persona: personaIdToSend
-      });
-
       const response = await fetch('https://spectacular-recreation-production.up.railway.app/crear_proveedores', {
         method: 'POST',
         headers: {
@@ -259,7 +230,6 @@ const DatosProveedor = () => {
           proveedorId: nuevoProveedor.id_provedor,
           personaId: personaId
         };
-        console.log('Redirigiendo a pago con datos:', paymentData);
         navigate('/pago-nuevo-negocio', { state: paymentData });
       } else if (nuevoProveedor === null) {
         // insertarDatos falló y retornó null (ya maneja el setError interno)

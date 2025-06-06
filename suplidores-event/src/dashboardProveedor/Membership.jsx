@@ -53,7 +53,6 @@ const Membership = () => {
             return res.json();
           })
           .then(pagosData => {
-            console.log('Historial de pagos recibido:', pagosData);
             if (Array.isArray(pagosData)) {
               setPaymentHistory(pagosData);
             } else {
@@ -161,8 +160,6 @@ const Membership = () => {
       const monto = currentPlan?.precio;
       const tipoPago = pendingPlanChange ? 'cambio_plan' : 'renovacion';
       
-      console.log('DEBUG handleRenewal:', { proveedorId, membresiaId, membresiaBaseId, personaId, monto, currentPlan, tipoPago });
-      
       if (!proveedorId || !membresiaId || !personaId || !monto || !membresiaBaseId) {
         setError('No se encontró la información necesaria para renovar la membresía.');
         return;
@@ -233,7 +230,6 @@ const Membership = () => {
 
       setAlerta({ tipo: 'success', mensaje: tipoPago === 'cambio_plan' ? '¡Plan cambiado exitosamente!' : '¡Membresía renovada exitosamente!' });
     } catch (err) {
-      console.error('Error en handleRenewal:', err);
       setError(err.message || 'Error al procesar el pago');
     }
   };
@@ -262,10 +258,7 @@ const Membership = () => {
     try {
       const proveedorId = activeBusiness?.id;
 
-      console.log('DEBUG - Valor de proveedorId obtenido del contexto:', proveedorId);
-
       if (!proveedorId) {
-        console.error('Error: provedorId no disponible en el contexto.');
         setError('Error: No se pudo obtener la información del proveedor. Por favor, inicie sesión nuevamente.');
         setLoading(false);
         return;

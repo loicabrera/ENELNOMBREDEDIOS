@@ -14,7 +14,6 @@ const Notifications = () => {
     const fetchMensajes = async () => {
       try {
         if (!isAuthenticated || !activeBusiness?.id) {
-          console.log('Usuario no autenticado o sin negocio activo en contexto.');
           setMensajes([]);
           setLoading(false);
           return;
@@ -30,7 +29,6 @@ const Notifications = () => {
         setMensajes(data);
         setLoading(false);
       } catch (err) {
-        console.error('Error:', err);
         setLoading(false);
       }
     };

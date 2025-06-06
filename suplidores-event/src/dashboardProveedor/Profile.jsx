@@ -33,7 +33,6 @@ const Profile = () => {
     const fetchProfileData = async () => {
       try {
         if (!isAuthenticated || !activeBusiness?.id || !user.personaId) {
-          console.log('Usuario no autenticado o sin negocio activo, redirigiendo a login.');
           setLoading(false);
           return;
         }
@@ -60,7 +59,6 @@ const Profile = () => {
         setLoading(false);
 
       } catch (err) {
-        console.error('Error al cargar datos del perfil:', err);
         setLoading(false);
       }
     };

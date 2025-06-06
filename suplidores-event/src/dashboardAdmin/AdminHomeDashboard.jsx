@@ -22,7 +22,6 @@ export default function AdminHomeDashboard() {
     fetch('https://spectacular-recreation-production.up.railway.app/api/membresias/resumen')
       .then(res => res.json())
       .then(data => {
-        console.log('Membresías recibidas:', data);
         setMembresias(data);
         setLoadingMembresias(false);
       })
