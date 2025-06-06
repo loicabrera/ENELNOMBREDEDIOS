@@ -149,20 +149,19 @@ const HomeProveedor = () => {
   ];
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-2 sm:p-4 md:p-6">
       {banner}
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center space-x-4">
-         
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">{proveedor.nombre_empresa}</h2>
-            <p className="text-gray-600">{proveedor.tipo_servicio}</p>
-            <div className="mt-2 flex items-center space-x-4">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 break-words">{proveedor.nombre_empresa}</h2>
+            <p className="text-gray-600 text-sm sm:text-base">{proveedor.tipo_servicio}</p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs sm:text-sm">
                  {membresia && membresia.nombre_pla ? membresia.nombre_pla : 'Básico'}
               </span>
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm">
                 {membresia && membresia.estado ? membresia.estado : 'Activo'}
               </span>
             </div>
@@ -170,42 +169,42 @@ const HomeProveedor = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
         {keyIndicators.map((indicator, index) => (
           <Link
             key={index}
             to={indicator.link}
-            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200"
+            className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200 min-w-0"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">{indicator.title}</p>
-                <p className="text-2xl font-semibold text-gray-800 mt-1">
+                <p className="text-xs sm:text-sm text-gray-600">{indicator.title}</p>
+                <p className="text-lg sm:text-2xl font-semibold text-gray-800 mt-1">
                   {indicator.value}
                 </p>
               </div>
-              <div className={`p-3 rounded-full ${indicator.color}`}>
-                <indicator.icon className="h-6 w-6 text-white" />
+              <div className={`p-2 sm:p-3 rounded-full ${indicator.color}`}>
+                <indicator.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
             </div>
           </Link>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {quickActions.map((action, index) => (
           <Link
             key={index}
             to={action.link}
-            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-200"
+            className="bg-white rounded-lg shadow p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200 min-w-0"
           >
-            <div className="flex items-center space-x-4">
-              <div className={`p-3 rounded-full ${action.color}`}>
-                <action.icon className="h-6 w-6" />
+            <div className="flex items-center gap-4">
+              <div className={`p-2 sm:p-3 rounded-full ${action.color}`}> 
+                <action.icon className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800">{action.title}</h3>
-                <p className="text-sm text-gray-600">{action.description}</p>
+                <h3 className="text-base sm:text-lg font-semibold text-gray-800">{action.title}</h3>
+                <p className="text-xs sm:text-sm text-gray-600">{action.description}</p>
               </div>
             </div>
           </Link>
