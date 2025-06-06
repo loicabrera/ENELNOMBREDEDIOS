@@ -115,10 +115,9 @@ const Profile = () => {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-[#2C3E50] drop-shadow-sm">Perfil del Negocio</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
           {/* Tarjeta del Negocio */}
           <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl overflow-hidden transform transition-all duration-300 hover:scale-[1.02]">
             <div className="p-6 md:p-8">
@@ -201,9 +200,9 @@ const Profile = () => {
                 </div>
 
                 <div className="bg-gradient-to-br from-white to-[#F8F9FA] p-6 rounded-xl shadow-sm">
-                  <h4 className="text-lg font-semibold text-[#2C3E50] mb-3">Descripción</h4>
+                  <h4 className="text-lg font-semibold text-[#2C3E50] mb-3 text-center">Descripción</h4>
                   <p 
-                    className="text-gray-700 leading-relaxed break-words cursor-pointer hover:text-[#3498DB] transition-colors"
+                    className="text-gray-700 leading-relaxed break-words cursor-pointer hover:text-[#3498DB] transition-colors text-justify"
                     onClick={() => handleTextClick('Descripción', proveedor.descripcion)}
                   >
                     {proveedor.descripcion}
