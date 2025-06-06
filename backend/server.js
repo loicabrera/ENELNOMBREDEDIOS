@@ -2104,8 +2104,8 @@ app.get('/personas/:id', async (req, res) => {
 
 // Servir archivos estáticos del frontend
 app.use(express.static(path.join(__dirname, 'public')));
-// Fallback para SPA: cualquier ruta no encontrada devuelve index.html
-app.get('*', (req, res) => {
+// Fallback para SPA: solo rutas que NO sean /api/*
+app.get(/^\/(?!api).*/, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
