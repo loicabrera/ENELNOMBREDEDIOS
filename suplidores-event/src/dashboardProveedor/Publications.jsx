@@ -16,6 +16,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useActiveBusiness } from '../context/ActiveBusinessContext.jsx';
+import { API_BASE_URL } from '../utils/config';
 
 const Publications = () => {
   const [tipoVendedor, setTipoVendedor] = useState(null); // null, 'servicios', 'productos'
@@ -1061,7 +1062,7 @@ const Publications = () => {
                       {formData.imagenes.map((img, idx) => (
                         <li key={idx} className="flex flex-col items-center">
                           <img
-                            src={URL.createObjectURL(img)}
+                            src={`${API_BASE_URL}/api/imagenes_productos/${img.id_imagenes}`}
                             alt={img.name}
                             style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8, marginBottom: 4 }}
                           />
@@ -1343,7 +1344,7 @@ const Publications = () => {
                         &#8592;
                       </button>
                       <img
-                        src={`http://localhost:3000/api/imagenes_servicio/${imagenesServicios[selectedPublication.id][currentImageIdx].id_imagenes}`}
+                        src={`${API_BASE_URL}/api/imagenes_servicio/${imagenesServicios[selectedPublication.id][currentImageIdx].id_imagenes}`}
                         alt={selectedPublication.nombre}
                         className="w-full h-64 object-cover bg-gray-100 rounded-lg"
                         style={{ maxWidth: 320 }}
@@ -1363,7 +1364,7 @@ const Publications = () => {
                         {imagenesServicios[selectedPublication.id].map((img, idx) => (
                           <img
                             key={img.id_imagenes}
-                            src={`http://localhost:3000/api/imagenes_servicio/${img.id_imagenes}`}
+                            src={`${API_BASE_URL}/api/imagenes_servicio/${img.id_imagenes}`}
                             alt={`Miniatura ${idx + 1}`}
                             className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
                             onClick={() => setCurrentImageIdx(idx)}
@@ -1387,7 +1388,7 @@ const Publications = () => {
                         &#8592;
                       </button>
                       <img
-                        src={`http://localhost:3000/api/imagenes_productos/${imagenes[selectedPublication.id][currentImageIdx].id_imagenes}`}
+                        src={`${API_BASE_URL}/api/imagenes_productos/${imagenes[selectedPublication.id][currentImageIdx].id_imagenes}`}
                         alt={selectedPublication.nombre}
                         className="w-full h-64 object-cover bg-gray-100 rounded-lg"
                         style={{ maxWidth: 320 }}
@@ -1407,7 +1408,7 @@ const Publications = () => {
                         {imagenes[selectedPublication.id].map((img, idx) => (
                           <img
                             key={img.id_imagenes}
-                            src={`http://localhost:3000/api/imagenes_productos/${img.id_imagenes}`}
+                            src={`${API_BASE_URL}/api/imagenes_productos/${img.id_imagenes}`}
                             alt={`Miniatura ${idx + 1}`}
                             className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
                             onClick={() => setCurrentImageIdx(idx)}

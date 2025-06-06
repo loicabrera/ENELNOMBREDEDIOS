@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { API_BASE_URL } from '../utils/config';
 
 const DetalleServicio = () => {
   const { id } = useParams();
@@ -15,18 +16,18 @@ const DetalleServicio = () => {
 
   useEffect(() => {
     // Obtener datos del servicio
-    fetch(`https://spectacular-recreation-production.up.railway.app/api/servicios`)
+    fetch(`${API_BASE_URL}/api/servicios`)
       .then(res => res.json())
       .then(async servicios => {
         const serv = servicios.find(s => s.id_servicio === Number(id));
         setServicio(serv);
         // Obtener imágenes
-        const resImg = await fetch(`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/por-servicio/${id}`);
+        const resImg = await fetch(`${API_BASE_URL}/api/imagenes_servicio/por-servicio/${id}`);
         const imgs = resImg.ok ? await resImg.json() : [];
         setImagenes(imgs);
         // Obtener proveedor
         if (serv && serv.provedor_negocio_id_provedor) {
-          const resProv = await fetch(`https://spectacular-recreation-production.up.railway.app/proveedores`);
+          const resProv = await fetch(`${API_BASE_URL}/proveedores`);
           const proveedores = resProv.ok ? await resProv.json() : [];
           const prov = proveedores.find(p => p.id_provedor === serv.provedor_negocio_id_provedor);
           setProveedor(prov);
@@ -56,7 +57,7 @@ const DetalleServicio = () => {
       return;
     }
     try {
-      const res = await fetch('https://spectacular-recreation-production.up.railway.app/usuarios', {
+      const res = await fetch(`${API_BASE_URL}/usuarios`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -80,7 +81,7 @@ const DetalleServicio = () => {
   if (error || !servicio) return <div className="p-8 text-center text-red-600">{error || 'Servicio no encontrado'}</div>;
 
   // Carrusel: obtener la imagen actual
-  const imagenActual = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/${imagenes[currentImageIdx]?.id_imagenes}` : null;
+  const imagenActual = imagenes.length > 0 ? `${API_BASE_URL}/api/imagenes_servicio/${imagenes[currentImageIdx]?.id_imagenes}` : null;
 
   const handlePrevImage = () => {
     setCurrentImageIdx((prev) => (prev === 0 ? imagenes.length - 1 : prev - 1));
@@ -147,7 +148,7 @@ const DetalleServicio = () => {
                 {imagenes.map((img, idx) => (
                   <img
                     key={img.id_imagenes}
-                    src={`https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/${img.id_imagenes}`}
+                    src={`${API_BASE_URL}/api/imagenes_servicio/${img.id_imagenes}`}
                     alt={`Miniatura ${idx + 1}`}
                     className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
                     onClick={() => handleSelectImage(idx)}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../utils/config';
 
 const EditarProducto = () => {
   const { id } = useParams();
@@ -169,7 +170,7 @@ const EditarProducto = () => {
               {imagenes.map(img => (
                 <div key={img.id_imagenes} className="relative group">
                   <img
-                    src={`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${img.id_imagenes}`}
+                    src={`${API_BASE_URL}/api/imagenes_productos/${img.id_imagenes}`}
                     alt="Imagen producto"
                     className="w-24 h-24 object-cover rounded-lg border"
                   />

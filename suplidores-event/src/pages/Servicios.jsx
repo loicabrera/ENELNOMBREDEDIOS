@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../utils/config';
 
 const IMAGEN_DEFAULT = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; // Imagen predeterminada
 
@@ -83,7 +84,7 @@ const Servicios = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {serviciosFiltrados.map(servicio => {
             const imagenes = imagenesServicios[servicio.id_servicio] || [];
-            const imagenReal = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_servicio/${imagenes[0].id_imagenes}` : null;
+            const imagenReal = imagenes.length > 0 ? `${API_BASE_URL}/api/imagenes_servicio/${imagenes[0].id_imagenes}` : null;
             return (
               <div
                 key={servicio.id_servicio}

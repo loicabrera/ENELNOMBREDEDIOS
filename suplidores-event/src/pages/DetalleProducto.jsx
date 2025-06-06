@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { API_BASE_URL } from '../utils/config';
 
 const DetalleProducto = () => {
   const { id } = useParams();
@@ -80,7 +81,7 @@ const DetalleProducto = () => {
   if (error || !producto) return <div className="p-8 text-center text-red-600">{error || 'Producto no encontrado'}</div>;
 
   // Carrusel: obtener la imagen actual
-  const imagenActual = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${imagenes[currentImageIdx]?.id_imagenes}` : null;
+  const imagenActual = imagenes.length > 0 ? `${API_BASE_URL}/api/imagenes_productos/${imagenes[currentImageIdx]?.id_imagenes}` : null;
 
   const handlePrevImage = () => {
     setCurrentImageIdx((prev) => (prev === 0 ? imagenes.length - 1 : prev - 1));
@@ -147,7 +148,7 @@ const DetalleProducto = () => {
                 {imagenes.map((img, idx) => (
                   <img
                     key={img.id_imagenes}
-                    src={`https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${img.id_imagenes}`}
+                    src={`${API_BASE_URL}/api/imagenes_productos/${img.id_imagenes}`}
                     alt={`Miniatura ${idx + 1}`}
                     className={`w-12 h-12 object-cover rounded cursor-pointer border-2 ${idx === currentImageIdx ? 'border-blue-500' : 'border-transparent'}`}
                     onClick={() => handleSelectImage(idx)}

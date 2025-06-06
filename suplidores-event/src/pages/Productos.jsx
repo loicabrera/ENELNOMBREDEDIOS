@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../utils/config';
 
 const Productos = () => {
   const [productos, setProductos] = useState([]);
@@ -66,7 +67,7 @@ const Productos = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
           {productosFiltrados.map(producto => {
             const imagenes = imagenesProductos[producto.id_productos] || [];
-            const imagenReal = imagenes.length > 0 ? `https://spectacular-recreation-production.up.railway.app/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
+            const imagenReal = imagenes.length > 0 ? `${API_BASE_URL}/api/imagenes_productos/${imagenes[0].id_imagenes}` : null;
             return (
               <div
                 key={producto.id_productos}
