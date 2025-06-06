@@ -138,6 +138,21 @@ const authenticateJWT = (req, res, next) => {
   });
 };
 
+// Middleware para verificar JWT de admin
+const authenticateAdminJWT = (req, res, next) => {
+  const token = req.cookies.adminToken; // El token de admin está en la cookie 'adminToken'
+  if (!token) {
+    return res.sendStatus(401); // No autorizado
+  }
+  jwt.verify(token, JWT_SECRET, (err, admin) => {
+    if (err || !admin || admin.rol !== 'admin') {
+      return res.sendStatus(403); // Prohibido
+    }
+    req.admin = admin; // Guardar los datos del admin en la request
+    next();
+  });
+};
+
 // Rutas básicas
 app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
