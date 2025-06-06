@@ -1539,7 +1539,8 @@ app.post('/login_admin', async (req, res) => {
           id: 1,
           username: 'admin2024',
           nombre: 'Administrador',
-          email: 'admin@example.com'
+          email: 'admin@example.com',
+          rol: 'admin'
         }
       });
     } else {
