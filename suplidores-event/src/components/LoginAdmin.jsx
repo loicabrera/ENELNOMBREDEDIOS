@@ -29,7 +29,6 @@ const LoginAdmin = () => {
 
       if (response.ok) {
         if (data.user && data.user.rol === 'admin') {
-          await login(username, password);
           navigate('/admin/dashboard');
         } else {
           setError('No tienes permisos de administrador');
