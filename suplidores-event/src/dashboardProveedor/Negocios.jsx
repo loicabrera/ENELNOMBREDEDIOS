@@ -134,92 +134,96 @@ const Negocios = () => {
   }
 
   return (
-    <div className="relative z-10 space-y-6 px-2 sm:px-4 md:px-8 lg:ml-64 lg:px-12 py-4">
-      <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Mis Negocios</h2>
-        {businesses.length === 0 ? (
-          <p className="text-gray-500">No tienes negocios registrados.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {businesses.map((business) => (
-              <div
-                key={business.id}
-                className={`p-4 rounded-lg border cursor-pointer transition-colors min-w-0 ${
-                  activeBusiness?.id === business.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
-                }`}
-                onClick={() => handleBusinessSelect(business)}
-              >
-                <h3 className="font-medium text-gray-900 break-words">{business.name}</h3>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">{business.description}</p>
-                <div className="mt-2 flex items-center text-xs sm:text-sm text-gray-500">
-                  <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {business.address}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Botón para agregar nuevo negocio */}
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleAgregarNegocio}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Agregar Nuevo Negocio
-          </button>
-        </div>
-
-      </div>
-
-      {activeBusiness && (
+    <div className="relative z-10 min-h-screen flex flex-col items-center bg-gray-50 py-4 px-2 sm:px-4 md:px-8 lg:ml-64 lg:px-12">
+      <div className="w-full max-w-5xl space-y-6">
         <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Detalles del Negocio</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 break-words">{activeBusiness.name}</h3>
-              <p className="text-xs sm:text-base text-gray-600 mt-2">{activeBusiness.description}</p>
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center text-xs sm:text-base text-gray-600">
-                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  {activeBusiness.address}
-                </div>
-                <div className="flex items-center text-xs sm:text-base text-gray-600">
-                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                  </svg>
-                  {activeBusiness.phone}
-                </div>
-                <div className="flex items-center text-xs sm:text-base text-gray-600">
-                  <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  {activeBusiness.email}
-                </div>
-              </div>
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Horario de Atención</h3>
-              <div className="space-y-2">
-                {activeBusiness.schedule?.map((day, index) => (
-                  <div key={index} className="flex justify-between text-xs sm:text-base text-gray-600">
-                    <span>{day.day}</span>
-                    <span>{day.hours}</span>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 text-center">Mis Negocios</h2>
+          {businesses.length === 0 ? (
+            <p className="text-gray-500 text-center">No tienes negocios registrados.</p>
+          ) : (
+            <div className="flex justify-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+                {businesses.map((business) => (
+                  <div
+                    key={business.id}
+                    className={`p-4 rounded-lg border cursor-pointer transition-colors min-w-0 ${
+                      activeBusiness?.id === business.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300'
+                    }`}
+                    onClick={() => handleBusinessSelect(business)}
+                  >
+                    <h3 className="font-medium text-gray-900 break-words">{business.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">{business.description}</p>
+                    <div className="mt-2 flex items-center text-xs sm:text-sm text-gray-500">
+                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      {business.address}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+          )}
+
+          {/* Botón para agregar nuevo negocio */}
+          <div className="mt-6 text-center">
+            <button
+              onClick={handleAgregarNegocio}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              Agregar Nuevo Negocio
+            </button>
           </div>
+
         </div>
-      )}
+
+        {activeBusiness && (
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 mt-6">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 text-center">Detalles del Negocio</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 break-words">{activeBusiness.name}</h3>
+                <p className="text-xs sm:text-base text-gray-600 mt-2">{activeBusiness.description}</p>
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center text-xs sm:text-base text-gray-600">
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    {activeBusiness.address}
+                  </div>
+                  <div className="flex items-center text-xs sm:text-base text-gray-600">
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    {activeBusiness.phone}
+                  </div>
+                  <div className="flex items-center text-xs sm:text-base text-gray-600">
+                    <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    {activeBusiness.email}
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">Horario de Atención</h3>
+                <div className="space-y-2">
+                  {activeBusiness.schedule?.map((day, index) => (
+                    <div key={index} className="flex justify-between text-xs sm:text-base text-gray-600">
+                      <span>{day.day}</span>
+                      <span>{day.hours}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
