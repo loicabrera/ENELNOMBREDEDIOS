@@ -17,16 +17,19 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   console.log('Roles permitidos:', allowedRoles);
   console.log('========================');
 
+  // Permitir acceso a rutas de admin si isAdmin está en localStorage
+  const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
+
   // Mientras carga la verificación, puedes mostrar un spinner o un mensaje
-  if (loading) {
+  if (loading && !isAdminLocal) {
     return <div>Cargando autenticación...</div>; // O un spinner más elaborado
   }
 
   // Determinar el rol del usuario autenticado (si existe)
-  const userRole = user?.provedorId ? 'proveedor' : user?.adminId ? 'admin' : null; // Ajusta la lógica del rol según la estructura de tu 'user' object del contexto
+  const userRole = user?.provedorId ? 'proveedor' : user?.adminId ? 'admin' : null;
 
   // Lógica de redirección basada en el estado del contexto y roles
-  if (!isAuthenticated || userRole === null) {
+  if ((!isAuthenticated || userRole === null) && !isAdminLocal) {
     console.log('Usuario no autenticado o rol desconocido, redirigiendo a login.');
     // Redirigir al login correspondiente si no está autenticado o el rol es desconocido
      if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
@@ -40,8 +43,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const requiresAdmin = location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios');
   const requiresProveedor = allowedRoles && allowedRoles.includes('proveedor');
 
-  if (isAuthenticated) {
-      if (requiresAdmin && userRole !== 'admin') {
+  if (isAuthenticated || isAdminLocal) {
+      if (requiresAdmin && !isAdminLocal && userRole !== 'admin') {
           console.log('Acceso denegado: Se requiere rol de admin.');
           // Redirigir a login de admin o a una página de acceso denegado
            return <Navigate to="/enelnombrededios" state={{ from: location }} replace />;
@@ -50,10 +53,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
            // Redirigir a login de proveedor o a una página de acceso denegado
            return <Navigate to="/login" state={{ from: location }} replace />;
        } else if (location.pathname === '/login' || location.pathname === '/enelnombrededios') {
-           // Si está autenticado y intenta ir a la página de login, redirigir a su dashboard
+            if(isAdminLocal) return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
             if(userRole === 'admin') return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
             if(userRole === 'proveedor') return <Navigate to="/dashboard-proveedor" state={{ from: location }} replace />;
-            // Si hay otros roles o no se puede determinar el rol, puedes redirigir a una página por defecto
             return <Navigate to="/" state={{ from: location }} replace />;
        } else {
          // Usuario autenticado con el rol correcto para la ruta o ruta no requiere rol específico (pero sí autenticación)

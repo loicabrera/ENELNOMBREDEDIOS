@@ -29,7 +29,8 @@ const LoginAdmin = () => {
 
       if (response.ok) {
         if (data.user && data.user.rol === 'admin') {
-          navigate('/admin/dashboard');
+          localStorage.setItem('isAdmin', 'true');
+          navigate('/dashboardadmin');
         } else {
           setError('No tienes permisos de administrador');
         }
