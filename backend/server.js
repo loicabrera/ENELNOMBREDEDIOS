@@ -1522,17 +1522,21 @@ app.get('/api/membresias/admin', async (req, res) => {
 app.post('/login_admin', async (req, res) => {
   try {
     const { username, password } = req.body;
-
-    // Validar que se proporcionaron las credenciales
     if (!username || !password) {
-      return res.status(400).json({
-        error: 'Se requieren nombre de usuario y contraseña'
-      });
+      return res.status(400).json({ error: 'Se requieren nombre de usuario y contraseña' });
     }
-
-    // Verificar credenciales fijas
     if (username === 'admin2024' && password === 'admin2024') {
-      // Enviar respuesta exitosa
+      // Generar JWT para admin
+      const token = jwt.sign({ id: 1, username: 'admin2024', rol: 'admin' }, JWT_SECRET, { expiresIn: '1h' });
+      // Configurar cookie segura
+      res.cookie('adminToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 3600000,
+        path: '/',
+        domain: process.env.NODE_ENV === 'production' ? '.up.railway.app' : undefined
+      });
       res.json({
         message: 'Login exitoso',
         user: {
@@ -1544,17 +1548,29 @@ app.post('/login_admin', async (req, res) => {
         }
       });
     } else {
-      return res.status(401).json({
-        error: 'Credenciales inválidas'
-      });
+      return res.status(401).json({ error: 'Credenciales inválidas' });
     }
-
   } catch (error) {
     console.error('Error en login de admin:', error);
-    res.status(500).json({
-      error: 'Error interno del servidor'
-    });
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
+});
+
+// Endpoint para verificar autenticación de admin
+app.get('/api/verify-auth-admin', authenticateAdminJWT, (req, res) => {
+  res.json({ isAuthenticated: true, user: req.admin });
+});
+
+// Endpoint para logout de admin
+app.post('/logout_admin', (req, res) => {
+  res.clearCookie('adminToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+    domain: process.env.NODE_ENV === 'production' ? '.up.railway.app' : undefined
+  });
+  res.json({ success: true });
 });
 
 // Cambiar el plan de membresía de un proveedor

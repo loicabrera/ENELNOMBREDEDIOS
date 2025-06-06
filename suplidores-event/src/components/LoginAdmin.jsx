@@ -28,8 +28,12 @@ const LoginAdmin = () => {
       const data = await response.json();
 
       if (response.ok) {
-        if (data.user && data.user.rol === 'admin') {
-          localStorage.setItem('isAdmin', 'true');
+        // Verificar sesión de admin
+        const verifyRes = await fetch('https://spectacular-recreation-production.up.railway.app/api/verify-auth-admin', {
+          credentials: 'include'
+        });
+        const verifyData = await verifyRes.json();
+        if (verifyRes.ok && verifyData.isAuthenticated && verifyData.user.rol === 'admin') {
           navigate('/dashboardadmin');
         } else {
           setError('No tienes permisos de administrador');

@@ -1,15 +1,34 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext'; // Importar useAuth
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, loading, user } = useAuth(); // Usar el hook useAuth para obtener el estado de autenticación
+  const [adminAuth, setAdminAuth] = useState({ checked: false, isAuthenticated: false, user: null });
 
-  // Ya no necesitamos la lógica de useEffect para verificar autenticación aquí, 
-  // el AuthContext lo maneja al inicio de la aplicación.
-  // Eliminamos también la lógica de localStorage y las funciones relacionadas.
+  // Verificar sesión de admin si la ruta es de admin
+  useEffect(() => {
+    const checkAdmin = async () => {
+      if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
+        try {
+          const res = await fetch('https://spectacular-recreation-production.up.railway.app/api/verify-auth-admin', { credentials: 'include' });
+          if (res.ok) {
+            const data = await res.json();
+            setAdminAuth({ checked: true, isAuthenticated: data.isAuthenticated, user: data.user });
+          } else {
+            setAdminAuth({ checked: true, isAuthenticated: false, user: null });
+          }
+        } catch {
+          setAdminAuth({ checked: true, isAuthenticated: false, user: null });
+        }
+      } else {
+        setAdminAuth({ checked: true, isAuthenticated: false, user: null });
+      }
+    };
+    checkAdmin();
+  }, [location.pathname]);
 
   console.log('=== ProtectedRoute Debug ===');
   console.log('Estado de autenticación (AuthContext):', { isAuthenticated, loading, user });
@@ -21,7 +40,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const isAdminLocal = localStorage.getItem('isAdmin') === 'true';
 
   // Mientras carga la verificación, puedes mostrar un spinner o un mensaje
-  if (loading && !isAdminLocal) {
+  if ((loading && !adminAuth.checked) || (location.pathname.includes('dashboardadmin') && !adminAuth.checked)) {
     return <div>Cargando autenticación...</div>; // O un spinner más elaborado
   }
 
@@ -29,43 +48,38 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const userRole = user?.provedorId ? 'proveedor' : user?.adminId ? 'admin' : null;
 
   // Lógica de redirección basada en el estado del contexto y roles
-  if ((!isAuthenticated || userRole === null) && !isAdminLocal) {
-    console.log('Usuario no autenticado o rol desconocido, redirigiendo a login.');
-    // Redirigir al login correspondiente si no está autenticado o el rol es desconocido
-     if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
-       return <Navigate to="/enelnombrededios" state={{ from: location }} replace />; // Redirigir al login de admin
-     } else {
-       return <Navigate to="/login" state={{ from: location }} replace />; // Redirigir al login de proveedor/general
-     }
-  }
-
-  // Si está autenticado, verificar roles y rutas
   const requiresAdmin = location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios');
   const requiresProveedor = allowedRoles && allowedRoles.includes('proveedor');
 
-  if (isAuthenticated || isAdminLocal) {
-      if (requiresAdmin && !isAdminLocal && userRole !== 'admin') {
-          console.log('Acceso denegado: Se requiere rol de admin.');
-          // Redirigir a login de admin o a una página de acceso denegado
-           return <Navigate to="/enelnombrededios" state={{ from: location }} replace />;
-      } else if (requiresProveedor && userRole !== 'proveedor') {
-           console.log('Acceso denegado: Se requiere rol de proveedor.');
-           // Redirigir a login de proveedor o a una página de acceso denegado
-           return <Navigate to="/login" state={{ from: location }} replace />;
-       } else if (location.pathname === '/login' || location.pathname === '/enelnombrededios') {
-            if(isAdminLocal) return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
-            if(userRole === 'admin') return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
-            if(userRole === 'proveedor') return <Navigate to="/dashboard-proveedor" state={{ from: location }} replace />;
-            return <Navigate to="/" state={{ from: location }} replace />;
-       } else {
-         // Usuario autenticado con el rol correcto para la ruta o ruta no requiere rol específico (pero sí autenticación)
-         console.log('Acceso permitido.');
-         return children; // Renderizar los componentes hijos
-       }
+  if (requiresAdmin) {
+    if (!adminAuth.isAuthenticated || adminAuth.user?.rol !== 'admin') {
+      return <Navigate to="/enelnombrededios" state={{ from: location }} replace />;
+    }
+    // Si está autenticado como admin, permitir acceso
+    return children;
   }
 
-   // Si por alguna razón llegamos aquí (no debería pasar con la lógica anterior), redirigir al login por defecto
-   return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!isAuthenticated || userRole === null) {
+    if (location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios')) {
+      return <Navigate to="/enelnombrededios" state={{ from: location }} replace />;
+    } else {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+  }
+
+  if (isAuthenticated) {
+    if (requiresProveedor && userRole !== 'proveedor') {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    } else if (location.pathname === '/login' || location.pathname === '/enelnombrededios') {
+      if(userRole === 'admin') return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
+      if(userRole === 'proveedor') return <Navigate to="/dashboard-proveedor" state={{ from: location }} replace />;
+      return <Navigate to="/" state={{ from: location }} replace />;
+    } else {
+      return children;
+    }
+  }
+
+  return <Navigate to="/login" state={{ from: location }} replace />;
 };
 
 export default ProtectedRoute; 

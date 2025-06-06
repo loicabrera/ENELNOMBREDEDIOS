@@ -59,6 +59,21 @@ export default function SidebarAdmin() {
           <NavItem icon={<FileText size={20} />} label="Publicaciones" onClick={() => navigate('/dashboardadmin/publicaciones')} isOpen={open} />
           <NavItem icon={<Layers size={20} />} label="Membresías" onClick={() => navigate('/dashboardadmin/membresias')} isOpen={open} />
           <NavItem icon={<CreditCard size={20} />} label="Pagos" onClick={() => navigate('/dashboardadmin/pagos')} isOpen={open} />
+          <div className="mt-8 border-t pt-4">
+            <button
+              onClick={async () => {
+                await fetch('https://spectacular-recreation-production.up.railway.app/logout_admin', {
+                  method: 'POST',
+                  credentials: 'include'
+                });
+                navigate('/enelnombrededios');
+              }}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-red-600 hover:bg-red-100 transition-all text-sm font-medium font-semibold mt-2"
+            >
+              <X size={20} />
+              {open && <span>Cerrar sesión</span>}
+            </button>
+          </div>
         </nav>
       </aside>
 
