@@ -27,7 +27,10 @@ export const AuthProvider = ({ children }) => {
         if (data.isAuthenticated) {
           setIsAuthenticated(true);
           // Guarda los datos básicos del usuario que el backend envía en el payload del JWT
-          setUser(data.user);
+          setUser({
+            ...data.user,
+            rol: data.user.adminId ? 'admin' : data.user.provedorId ? 'proveedor' : 'cliente'
+          });
         } else {
           // Autenticación fallida según el backend
           setIsAuthenticated(false);
