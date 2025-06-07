@@ -1219,7 +1219,7 @@ const Publications = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {getStatusBadge(pub.estado)}
+                          {getStatusBadge('published')}
                         </td>
                         <td className="px-6 py-4">
                           <div
