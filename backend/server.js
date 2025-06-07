@@ -504,7 +504,11 @@ app.post('/registrar_pago', async (req, res) => {
       'SELECT duracion_dias FROM MEMBRESIA WHERE id_memebresia = ?',
       { replacements: [MEMBRESIA_id_membresia] }
     );
+    console.log(`MEMBRESIA_id_membresia recibido: ${MEMBRESIA_id_membresia}`);
+    console.log('Objeto membresia de la DB:', membresia);
+
     const duracionDias = Number(membresia.duracion_dias) || 30;
+    console.log(`Duración de días calculada: ${duracionDias}`);
 
     // Si el plan es "Plan Básico", forzar la duración a 30 días
     if (membresia.nombre_pla === 'Plan Básico') {
