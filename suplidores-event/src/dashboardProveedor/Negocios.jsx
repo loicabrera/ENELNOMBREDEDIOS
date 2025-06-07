@@ -134,7 +134,7 @@ const Negocios = () => {
   }
 
   return (
-    <div className="relative z-10 min-h-screen flex flex-col items-center bg-gray-50 py-4 px-2 sm:px-4 md:px-8 lg:ml-64 lg:px-12">
+    <div className="relative z-10 min-h-screen flex flex-col items-center bg-gray-50 py-4 px-2 sm:px-4 md:px-8 lg:px-12">
       <div className="w-full max-w-5xl space-y-6">
         <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 text-center">Mis Negocios</h2>
