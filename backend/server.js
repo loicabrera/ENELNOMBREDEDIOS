@@ -1605,11 +1605,14 @@ app.post('/cambiar_plan', async (req, res) => {
       { replacements: [planId] }
     );
     const duracionDias = Number(membresia.duracion_dias) || 30;
+    console.log(`[CAMBIAR_PLAN] Duración de días recuperada de DB: ${membresia.duracion_dias}, duracionDias calculada: ${duracionDias}`);
 
     // Calcular fechas
     const fechaInicio = new Date();
+    console.log(`[CAMBIAR_PLAN] Fecha de inicio: ${fechaInicio.toISOString()}`);
     const fechaFin = new Date(fechaInicio);
-    fechaFin.setDate(fechaFin.getDate() + duracionDias);
+    fechaFin.setDate(fechaFin.getDate() + duracionDias); // Suma los días reales del plan
+    console.log(`[CAMBIAR_PLAN] Fecha de fin calculada: ${fechaFin.toISOString()}`);
     const formatDateToMySQL = (date) => date.toISOString().slice(0, 19).replace('T', ' ');
     const fechaInicioSQL = formatDateToMySQL(fechaInicio);
     const fechaFinSQL = formatDateToMySQL(fechaFin);
@@ -1621,6 +1624,7 @@ app.post('/cambiar_plan', async (req, res) => {
        VALUES (?, ?, ?, ?, ?, 'activa')`,
       { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, planId, proveedorId] }
     );
+    console.log(`[CAMBIAR_PLAN] Insertando en PROVEDOR_MEMBRESIA: fecha_inicio=${fechaInicioSQL}, fecha_fin=${fechaFinSQL}, planId=${planId}, proveedorId=${proveedorId}`);
 
     res.json({ success: true });
   } catch (error) {
@@ -1728,8 +1732,10 @@ app.post('/registrar_pago_cambio_plan', async (req, res) => {
 
             // Calcular fechas para la nueva membresía
             const fechaInicio = new Date();
+            console.log(`[REGISTRAR_PAGO_CAMBIO_PLAN] Fecha de inicio: ${fechaInicio.toISOString()}`);
             const fechaFin = new Date(fechaInicio);
             fechaFin.setDate(fechaFin.getDate() + duracionDias);
+            console.log(`[REGISTRAR_PAGO_CAMBIO_PLAN] Duración de días utilizada: ${duracionDias}, Fecha de fin calculada: ${fechaFin.toISOString()}`);
 
             const fechaInicioSQL = formatDateToMySQL(fechaInicio);
             const fechaFinSQL = formatDateToMySQL(fechaFin);
@@ -1741,6 +1747,8 @@ app.post('/registrar_pago_cambio_plan', async (req, res) => {
                VALUES (?, ?, ?, ?, ?, 'activa')`,
               { replacements: [fechaInicioSQL, fechaFinSQL, fechaPagoSQL, nuevaMembresiaId, proveedorId, 'activa'] }
             );
+            console.log(`[REGISTRAR_PAGO_CAMBIO_PLAN] Insertando en PROVEDOR_MEMBRESIA: fecha_inicio=${fechaInicioSQL}, fecha_fin=${fechaFinSQL}, nuevaMembresiaId=${nuevaMembresiaId}, proveedorId=${proveedorId}`);
+
             console.log('Nueva membresía registrada para provedorId:', proveedorId, 'MembresiaId:', nuevaMembresiaId);
 
             // Registrar el pago en la tabla pago
