@@ -1,202 +1,67 @@
-import {} from "react";
+import { 
+  Facebook, 
+  Twitter, 
+  Instagram, 
+  Linkedin, 
+  Building2, 
+  ShoppingBag, 
+  Store, 
+  Home
+} from 'lucide-react';
 
 const colors = {
-  lightBlue: "#bbe3fb",
+  sage: "#9CAF88",
   purple: "#cbb4db",
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
   darkTeal: "#012e33",
 };
-function footer() {
+
+function Footer() {
   return (
-    <footer
-      style={{ backgroundColor: colors.darkTeal }}
-      className="text-white py-12"
-    >
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-xl font-bold mb-4">ProveConnect</h3>
-            <p className="text-gray-300 mb-4">
-              La plataforma líder para conectar empresas con los mejores
-              proveedores de productos y servicios.
-            </p>
-            <div className="flex space-x-3">
-              {/* Iconos de redes sociales */}
-              <a
-                href="#"
-                className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-                style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.pink;
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255,255,255,0.1)";
-                }}
-              >
-                <span className="text-sm">FB</span>
-              </a>
-              <a
-                href="#"
-                className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-                style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.pink;
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255,255,255,0.1)";
-                }}
-              >
-                <span className="text-sm">IG</span>
-              </a>
-              <a
-                href="#"
-                className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-                style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.pink;
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255,255,255,0.1)";
-                }}
-              >
-                <span className="text-sm">TW</span>
-              </a>
-              <a
-                href="#"
-                className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
-                style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.pink;
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor =
-                    "rgba(255,255,255,0.1)";
-                }}
-              >
-                <span className="text-sm">LI</span>
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-4">Proveedores</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Registro
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Cómo funciona
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Planes y precios
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Casos de éxito
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-4">Empresas</h4>
-            <ul className="space-y-2">
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Encuentra proveedores
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Solicita presupuestos
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Comparar ofertas
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-gray-300 hover:text-white transition-colors"
-                >
-                  Centro de ayuda
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="font-bold mb-4">Contáctanos</h4>
-            <ul className="space-y-2">
-              <li className="text-gray-300">info@proveconnect.com</li>
-              <li className="text-gray-300">+1 234 567 890</li>
-              <li className="text-gray-300">Calle Principal 123, Ciudad</li>
-            </ul>
-          </div>
+    <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div className="mx-auto w-full max-w-screen-xl px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <a href="/" className="flex items-center mb-2 md:mb-0">
+          <span className="self-center text-xl font-bold whitespace-nowrap dark:text-white" style={{ color: colors.darkTeal }}>ÉVOCA</span>
+        </a>
+        <nav className="flex flex-wrap gap-6 text-sm font-medium">
+          <a href="/home" className="hover:text-purple-500 transition-colors flex items-center gap-1">
+            <Home size={16} /> Inicio
+          </a>
+          <a href="/servicios" className="hover:text-purple-300 transition-colors flex items-center gap-1">
+            <Building2 size={16} /> Servicios
+          </a>
+          <a href="/productos" className="hover:text-purple-300 transition-colors flex items-center gap-1">
+            <ShoppingBag size={16} /> Productos
+          </a>
+          <a href="/vende" className="hover:text-purple-300 transition-colors flex items-center gap-1">
+            <Store size={16} /> Vende
+          </a>
+        </nav>
+        <div className="flex space-x-4">
+          <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+            <Facebook className="w-5 h-5" />
+            <span className="sr-only">Facebook</span>
+          </a>
+          <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+            <Instagram className="w-5 h-5" />
+            <span className="sr-only">Instagram</span>
+          </a>
+          <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+            <Twitter className="w-5 h-5" />
+            <span className="sr-only">Twitter</span>
+          </a>
+          <a href="#" className="text-gray-400 hover:text-purple-600 dark:hover:text-white transition-colors">
+            <Linkedin className="w-5 h-5" />
+            <span className="sr-only">LinkedIn</span>
+          </a>
         </div>
-
-        <div className="border-t border-gray-800 mt-8 pt-6 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm mb-4 md:mb-0">
-            © 2025 ProveConnect. Todos los derechos reservados.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <a
-              href="#"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
-            >
-              Política de privacidad
-            </a>
-            <a
-              href="#"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
-            >
-              Términos de servicio
-            </a>
-            <a
-              href="#"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
-            >
-              Cookies
-            </a>
-          </div>
-        </div>
+      </div>
+      <div className="text-center text-xs text-gray-500 py-2 border-t border-gray-100 dark:border-gray-800">
+        © {new Date().getFullYear()} ÉVOCA. Todos los derechos reservados.
       </div>
     </footer>
   );
 }
 
-export default footer;
+export default Footer;

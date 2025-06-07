@@ -1,203 +1,187 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { Home, ShoppingBag, Store, DollarSign, User, LogIn, Menu, X } from "lucide-react";
+import { useSidebar } from '../../src/context/SidebarContext';
 
 const colors = {
-  lightBlue: "#bbe3fb",
+  sage: "#9CAF88",
   purple: "#cbb4db",
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
   darkTeal: "#012e33",
 };
-function Navbar({ children }) {
+
+function Navbar() {
   const [profileOpen, setProfileOpen] = useState(false);
-  const [asideOpen, setAsideOpen] = useState(true);
-  const [activeButton, setActiveButton] = useState(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const location = useLocation();
+  const { open, setOpen } = useSidebar();
 
-  const handleButtonClick = (id) => {
-    setActiveButton(id);
-  };
-
-  const isActive = (id) => activeButton === id;
-
-  const toggleProfile = () => {
-    setProfileOpen(!profileOpen);
-  };
-
-  const toggleAside = () => {
-    setAsideOpen(!asideOpen);
-  };
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setOpen(false);
+      } else {
+        setOpen(true);
+      }
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [setOpen]);
 
   return (
-    <main className="min-h-screen w-full  text-gray-700">
-      {/* Header */}
-      <header class="flex w-full items-center justify-between border-b-2 border-gray-200  p-2">
-        {/* Logo */}
-        <div className="flex items-center space-x-2">
-          <button type="button" className="text-3xl" onClick={toggleAside}>
-            ☰
-          </button>
-          <div>Logo</div>
-        </div>
-
-        {/* Button Profile */}
-        <div>
+    <>
+      {/* Mobile Header */}
+      {isMobile && (
+        <header className="fixed top-0 left-0 right-0 h-16 flex items-center px-4 bg-transparent z-50">
           <button
-            type="button"
-            onClick={toggleProfile}
-            className="h-9 w-9 overflow-hidden rounded-full"
+            onClick={() => setOpen(!open)}
+            className="p-2 rounded-md hover:bg-gray-100/50 transition-colors"
           >
-            <img src="/api/placeholder/40/40" alt="perfil" />
+            {open ? <X size={24} className="text-gray-700" /> : <Menu size={24} className="text-gray-700" />}
           </button>
+        </header>
+      )}
 
-          {/* Dropdown Profile */}
-          {profileOpen && (
-            <div
-              className="absolute right-2 mt-1 w-48 divide-y divide-gray-200 rounded-md border border-gray-200  shadow-md"
-              onClick={(e) => e.stopPropagation()}
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <div className={`fixed h-screen flex flex-col border-r border-gray-200 bg-white z-50 transition-all duration-300 ${open ? 'w-48' : 'w-16'}`}>
+          <div className="flex items-center justify-center p-4">
+            <button
+              onClick={() => setOpen(!open)}
+              className="p-2 rounded-md hover:bg-gray-100 transition-colors"
             >
-              <div className="flex items-center space-x-2 p-2">
-                <img
-                  src="/api/placeholder/40/40"
-                  alt="perfil"
-                  className="h-9 w-9 rounded-full"
-                />
-                <div className="font-medium">Hafiz Haziq</div>
-              </div>
+              <Menu size={24} className="text-gray-700" />
+            </button>
+          </div>
 
-              <div className="flex flex-col space-y-3 p-2">
-                <a href="#" className="transition hover:text-blue-600">
-                  Mi Perfil
-                </a>
-                <a href="#" className="transition hover:text-blue-600">
-                  Editar Perfil
-                </a>
-                <a href="#" className="transition hover:text-blue-600">
-                  Configuración
-                </a>
-              </div>
+          <nav className={`flex-1 transition-all duration-300 ${open ? 'w-48' : 'w-16'}`}>
+            <div className="flex flex-col gap-2 p-4">
+              {/* Links del sidebar */}
+              <a
+                href="/Home"
+                className={`flex items-center rounded-md transition-all duration-200 text-gray-700 ${
+                  open ? 'px-3 py-2' : 'justify-center p-2'
+                } ${
+                  location.pathname === "/Home" 
+                    ? 'bg-purple/30' 
+                    : 'hover:bg-purple/20'
+                }`}
+              >
+                <Home size={18} />
+                {open && <span className="ml-3 text-sm">Inicio</span>}
+              </a>
 
-              <div className="p-2">
-                <button className="flex items-center space-x-2 transition hover:text-blue-600">
-                  <svg
-                    className="h-4 w-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  <div>Cerrar Sesión</div>
-                </button>
-              </div>
+              <a
+                href="/servicios"
+                className={`flex items-center rounded-md transition-all duration-200 text-gray-700 ${
+                  open ? 'px-3 py-2' : 'justify-center p-2'
+                } ${
+                  location.pathname === "/servicios" 
+                    ? 'bg-purple/30' 
+                    : 'hover:bg-purple/20'
+                }`}
+              >
+                <ShoppingBag size={18} />
+                {open && <span className="ml-3 text-sm">Servicios</span>}
+              </a>
+
+              <a
+                href="/Productos"
+                className={`flex items-center rounded-md transition-all duration-200 text-gray-700 ${
+                  open ? 'px-3 py-2' : 'justify-center p-2'
+                } ${
+                  location.pathname === "/Productos" 
+                    ? 'bg-purple/30' 
+                    : 'hover:bg-purple/20'
+                }`}
+              >
+                <Store size={18} />
+                {open && <span className="ml-3 text-sm">Productos</span>}
+              </a>
+
+              <a
+                href="/Vende"
+                className={`flex items-center rounded-md transition-all duration-200 text-gray-700 ${
+                  open ? 'px-3 py-2' : 'justify-center p-2'
+                } ${
+                  location.pathname === "/Vende" 
+                    ? 'bg-purple/30' 
+                    : 'hover:bg-purple/20'
+                }`}
+              >
+                <DollarSign size={18} />
+                {open && <span className="ml-3 text-sm">Vende</span>}
+              </a>
             </div>
-          )}
+          </nav>
         </div>
-      </header>
+      )}
 
-      <div className="flex">
-        {/* Aside/Sidebar */}
-        {asideOpen && (
-          <aside
-            className="flex w-72 flex-col space-y-2 p-2"
-            style={{ height: "90.5vh", backgroundColor: "transparent" }}
+      {/* Mobile Sidebar Overlay */}
+      {isMobile && open && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-40" onClick={() => setOpen(false)}>
+          <div 
+            className="fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50"
+            onClick={e => e.stopPropagation()}
           >
-            <a
-              href="/Home"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:text-gray-500"
-              onClick={() => handleButtonClick(1)}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = colors.lightBlue)
-              }
-              onMouseOut={(e) => {
-                if (!isActive(1))
-                  e.currentTarget.style.backgroundColor = "white";
-              }}
-              style={{
-                backgroundColor: isActive(1) ? colors.black : "white",
-              }}
-            >
-              <span className="text-2xl"></span>
-              <span>Inicio</span>
-            </a>
+            <nav className="flex-1">
+              <div className="flex flex-col gap-2 p-4 mt-16">
+                <a
+                  href="/Home"
+                  className={`flex items-center rounded-md px-3 py-2 text-gray-700 ${
+                    location.pathname === "/Home" 
+                      ? 'bg-purple/30' 
+                      : 'hover:bg-purple/20'
+                  }`}
+                >
+                  <Home size={18} />
+                  <span className="ml-3 text-sm">Inicio</span>
+                </a>
 
-            <a
-              href="/servicios"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-            >
-              <span className="text-2xl"></span>
-              <span>Servicios</span>
-            </a>
+                <a
+                  href="/servicios"
+                  className={`flex items-center rounded-md px-3 py-2 text-gray-700 ${
+                    location.pathname === "/servicios" 
+                      ? 'bg-purple/30' 
+                      : 'hover:bg-purple/20'
+                  }`}
+                >
+                  <ShoppingBag size={18} />
+                  <span className="ml-3 text-sm">Servicios</span>
+                </a>
 
-            <a
-              href="/Productos"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-            >
-              <span className="text-2xl"></span>
-              <span>Productos</span>
-            </a>
+                <a
+                  href="/Productos"
+                  className={`flex items-center rounded-md px-3 py-2 text-gray-700 ${
+                    location.pathname === "/Productos" 
+                      ? 'bg-purple/30' 
+                      : 'hover:bg-purple/20'
+                  }`}
+                >
+                  <Store size={18} />
+                  <span className="ml-3 text-sm">Productos</span>
+                </a>
 
-            <a
-              href="/Vende"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-            >
-              <span className="text-2xl"></span>
-              <span>Vende</span>
-            </a>
-
-            <a
-              href="/perfil"
-              className="flex items-center space-x-1 rounded-md px-2 py-3 hover:bg-gray-100 hover:text-gray-500"
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = "white";
-              }}
-              onClick={(e) => {
-                e.currentTarget.style.backgroundColor = colors.lightBlue;
-              }}
-            >
-              <span className="text-2xl"></span>
-              <span></span>
-            </a>
-          </aside>
-        )}
-        {/* Main Content */}
-        <div className="w-full p-4">{children}</div>
-      </div>
-    </main>
+                <a
+                  href="/Vende"
+                  className={`flex items-center rounded-md px-3 py-2 text-gray-700 ${
+                    location.pathname === "/Vende" 
+                      ? 'bg-purple/30' 
+                      : 'hover:bg-purple/20'
+                  }`}
+                >
+                  <DollarSign size={18} />
+                  <span className="ml-3 text-sm">Vende</span>
+                </a>
+              </div>
+            </nav>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

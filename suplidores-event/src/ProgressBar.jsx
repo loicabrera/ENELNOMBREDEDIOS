@@ -1,34 +1,49 @@
-// ProgressBar.jsx
 import React from 'react';
 
+const colors = {
+  purple: '#cbb4db',
+  darkTeal: '#012e33',
+  pink: '#fbaccb',
+  lightPink: '#fbcbdb',
+  sage: '#9CAF88',
+};
+
 const ProgressBar = ({ currentStep }) => {
-  const steps = ['Datos', 'Proveedor', 'Confirmación'];
+  const steps = ['Datos', 'Proveedor', 'Pago'];
 
   return (
-    <div className="flex justify-center pt-28 pb-8 px-4"> {/* pt-28 para evitar el solapamiento */}
-      <div className="flex items-center space-x-4 sm:space-x-8">
-        {steps.map((step, index) => (
-          <div key={index} className="flex items-center">
-            {/* Paso con número y título */}
-            <div className="flex flex-col items-center">
+    <div className="flex justify-center items-center my-4 px-2 max-w-xl mx-auto">
+      <div className="w-full">
+        {/* Pasos con líneas conectoras */}
+        <div className="relative flex justify-between">
+          {/* Líneas de conexión que van detrás de los círculos */}
+          <div className="absolute top-4 left-0 right-0 h-0.5 bg-gray-200">
+            <div
+              className="h-full transition-all duration-300 ease-in-out rounded"
+              style={{ width: `${(currentStep / (steps.length - 1)) * 100}%`, background: colors.purple }}
+            ></div>
+          </div>
+
+          {/* Círculos con números */}
+          {steps.map((step, index) => (
+            <div key={index} className="relative flex flex-col items-center z-10">
+              {/* Círculo */}
               <div
-                className={`w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-bold
-                ${index <= currentStep ? 'bg-red-600' : 'bg-gray-300 text-gray-600'}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-base font-bold shadow transition-all duration-300 ${index <= currentStep ? '' : 'bg-gray-300'}`}
+                style={index <= currentStep ? { background: colors.purple, transform: 'scale(1.08)' } : {}}
               >
                 {index + 1}
               </div>
-              <div className="mt-1 text-sm font-medium text-gray-700 text-center">{step}</div>
-            </div>
-
-            {/* Línea conectora */}
-            {index < steps.length - 1 && (
+              {/* Texto del paso */}
               <div
-                className={`hidden sm:block w-12 h-2 mx-2 sm:mx-4 
-                ${index < currentStep ? 'bg-red-600' : 'bg-gray-300'}`}
-              ></div>
-            )}
-          </div>
-        ))}
+                className={`mt-1 text-xs font-medium text-center transition-all duration-300 ${index <= currentStep ? 'font-semibold' : 'text-gray-400'}`}
+                style={index <= currentStep ? { color: colors.purple } : { color: '#bdbdbd' }}
+              >
+                {step}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

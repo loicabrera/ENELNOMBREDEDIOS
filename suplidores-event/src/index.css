@@ -70,3 +70,100 @@ button:focus-visible {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Aplicar la fuente Outfit globalmente */
+@layer base {
+  html {
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+
+  body {
+    @apply text-gray-800 m-0 p-0;
+    font-family: 'Outfit', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', system-ui, sans-serif;
+    @apply font-medium;
+  }
+
+  /* Estilos específicos para diferentes tipos de texto */
+  h1 {
+    @apply text-4xl font-semibold;
+  }
+
+  h2 {
+    @apply text-3xl font-medium;
+  }
+
+  h3 {
+    @apply text-2xl font-medium;
+  }
+
+  p {
+    @apply text-base leading-relaxed;
+  }
+
+  /* Estilos para botones */
+  button, .button {
+    font-family: 'Outfit', system-ui, sans-serif;
+    @apply font-medium;
+  }
+
+  /* Estilos para inputs */
+  input, textarea, select {
+    font-family: 'Outfit', system-ui, sans-serif;
+    @apply text-base;
+  }
+}
+
+/* Variables globales de color */
+:root {
+  --color-sage: #9CAF88;
+  --color-purple: #cbb4db;
+  --color-pink: #fbaccb;
+  --color-light-pink: #fbcbdb;
+  --color-dark-teal: #012e33;
+}
+
+/* Clases de utilidad para los colores */
+.text-sage { color: var(--color-sage); }
+.text-purple { color: var(--color-purple); }
+.text-pink { color: var(--color-pink); }
+.text-light-pink { color: var(--color-light-pink); }
+.text-dark-teal { color: var(--color-dark-teal); }
+
+.bg-sage { background-color: var(--color-sage); }
+.bg-purple { background-color: var(--color-purple); }
+.bg-pink { background-color: var(--color-pink); }
+.bg-light-pink { background-color: var(--color-light-pink); }
+.bg-dark-teal { background-color: var(--color-dark-teal); }
+
+/* Ajustes de peso de fuente */
+.font-light { font-weight: 300; }
+.font-regular { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+/* Estilos específicos para el logo */
+.logo-container {
+  position: relative;
+}
+
+.logo-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  background: radial-gradient(circle at center, rgba(251, 203, 219, 0.1), transparent);
+  pointer-events: none;
+}
+
+.logo-container img {
+  transition: all 0.3s ease;
+}
+
+.logo-container:hover img {
+  transform: translateY(-5px);
+}

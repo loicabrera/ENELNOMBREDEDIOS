@@ -1,130 +1,84 @@
 import {
-  Award,
   ChevronRight,
-  MessageCircle,
-  ShoppingBag,
-  Star,
   Users,
+  Building2,
+  Package,
+  Wrench,
+  X,
 } from "lucide-react";
-import { useEffect } from "react";
-// Colores de la nueva paleta
+import { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
+
+// Colores definidos
 const colors = {
-  lightBlue: "#bbe3fb",
+  sage: "#9CAF88",
   purple: "#cbb4db",
   pink: "#fbaccb",
   lightPink: "#fbcbdb",
   darkTeal: "#012e33",
+  crema: "#cba884",
 };
 
-// Datos de ejemplo de proveedores destacados
-const proveedoresDestacados = [
-  {
-    id: 1,
-    nombre: "Suministros Profesionales",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Tecnología",
-    rating: 4.8,
-    reviews: 124,
-  },
-  {
-    id: 2,
-    nombre: "Distribuidora Ejecutiva",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Papelería",
-    rating: 4.7,
-    reviews: 98,
-  },
-  {
-    id: 3,
-    nombre: "InsumosTech",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Electrónica",
-    rating: 4.9,
-    reviews: 156,
-  },
-  {
-    id: 4,
-    nombre: "Materiales Express",
-    imagen: "/api/placeholder/400/300",
-    categoria: "Construcción",
-    rating: 4.6,
-    reviews: 87,
-  },
-];
+// Componente Modal Mejorado
+const Modal = ({ isOpen, onClose, children }) => {
+  const modalRef = useRef(null);
+  const overlayRef = useRef(null);
 
-// Categorías de ejemplo
-const categorias = [
-  { id: 1, nombre: "Tecnología", icono: <ShoppingBag size={24} /> },
-  { id: 2, nombre: "Papelería", icono: <MessageCircle size={24} /> },
-  { id: 3, nombre: "Mobiliario", icono: <Users size={24} /> },
-  { id: 4, nombre: "Construcción", icono: <Award size={24} /> },
-  { id: 5, nombre: "Servicios", icono: <Star size={24} /> },
-  { id: 6, nombre: "Electrónica", icono: <ShoppingBag size={24} /> },
-];
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
 
-// Componente para la tarjeta de proveedor
-const ProveedorCard = ({ proveedor }) => {
+    const handleClickOutside = (e) => {
+      if (e.target === overlayRef.current) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('mousedown', handleClickOutside);
+      // Bloquear el scroll del body cuando el modal está abierto
+      document.body.style.overflow = 'hidden';
+      // Enfocar el modal cuando se abre
+      modalRef.current?.focus();
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
   return (
-    <div className=" flex flex-col bg-white rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105">
-      <div className="h-48 relative">
-        <img
-          src={proveedor.imagen}
-          alt={proveedor.nombre}
-          className="w-full h-full object-cover"
-        />
-        <div
-          className="absolute top-2 right-2 bg-white px-2 py-1 rounded-full text-sm font-medium"
-          style={{ color: colors.darkTeal }}
-        >
-          {proveedor.categoria}
-        </div>
-      </div>
-
-      <div className="p-4 flex-grow">
-        <h3
-          className="text-xl font-semibold mb-2"
-          style={{ color: colors.darkTeal }}
-        >
-          {proveedor.nombre}
-        </h3>
-
-        <div className="flex items-center gap-2 mb-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star
-                key={i}
-                size={16}
-                className={
-                  i < Math.floor(proveedor.rating)
-                    ? "fill-yellow-400 text-yellow-400"
-                    : "text-gray-300"
-                }
-              />
-            ))}
-          </div>
-          <span className="text-sm font-medium text-gray-600">
-            {proveedor.rating} ({proveedor.reviews} reseñas)
-          </span>
-        </div>
-      </div>
-
-      <div className="px-4 pb-4">
+    <div 
+      ref={overlayRef}
+      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 transition-opacity duration-300 ease-in-out"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
+      <div 
+        ref={modalRef}
+        className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto relative transform transition-all duration-300 ease-in-out scale-100"
+        tabIndex="-1"
+        role="document"
+      >
         <button
-          className="w-full py-2 rounded-lg transition-colors flex items-center justify-center gap-1 font-medium"
-          style={{
-            border: `1px solid ${colors.purple}`,
-            color: colors.purple,
-            backgroundColor: "white",
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = colors.lightBlue;
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = "white";
-          }}
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500 rounded-full p-1 transition-colors"
+          aria-label="Cerrar modal"
         >
-          Ver perfil <ChevronRight size={16} />
+          <X size={24} />
         </button>
+        <div className="p-6">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -132,6 +86,9 @@ const ProveedorCard = ({ proveedor }) => {
 
 // Componente principal de la página de inicio
 export default function Home() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const modalTriggerRef = useRef(null);
+
   // Efecto para detectar el scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -142,41 +99,45 @@ export default function Home() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []); // Asegúrate de que el array de dependencias esté vacío o contenga las dependencias necesarias
+  }, []);
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    // Devolver el foco al botón que abrió el modal
+    modalTriggerRef.current?.focus();
+  };
 
   return (
-    <div className=" w-full p-4 min-h-screen flex flex-col bg-gray-50">
-      {/* Navigation */}
-
-      <main className="flex-grow">
-        {/* Hero Section - Cambiado a imagen simple sin gradiente */}
-        <section className="relative py-16 md:py-24">
+    <div className="flex flex-col min-h-full">
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative py-16 md:py-24 w-full">
           <div className="absolute inset-0 overflow-hidden">
             <img
-              src="/api/placeholder/1600/500"
+              src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1470&auto=format&fit=crop"
               alt="Hero background"
               className="w-full h-full object-cover"
             />
             <div
               className="absolute inset-0"
-              style={{ backgroundColor: colors.darkTeal, opacity: 0.7 }}
+              style={{ backgroundColor: colors.darkTeal, opacity: 0.4 }}
             ></div>
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-                Encuentra los mejores proveedores para tu negocio
+                ÉVOCA
               </h2>
               <p className="text-base sm:text-lg md:text-xl text-white opacity-90 mb-8">
-                Conectamos tu empresa con proveedores de calidad que ofrecen los
+                Proveedores de calidad que ofrecen los
                 productos y servicios que necesitas
               </p>
             </div>
           </div>
         </section>
 
-        {/* Categorías Section */}
+        {/* Sección de Conoce ÉVOCA */}
         <section className="py-12 md:py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
@@ -184,119 +145,190 @@ export default function Home() {
                 className="text-3xl font-bold mb-4"
                 style={{ color: colors.darkTeal }}
               >
-                Explora por categorías
+                ¿Quieres conocer ÉVOCA?
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Encuentra rápidamente los proveedores especializados en lo que
-                tu negocio necesita
+              <p className="text-lg mb-4" style={{ color: colors.darkTeal }}>
+                La plataforma líder en conexión de proveedores y clientes
               </p>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              {categorias.map((categoria) => (
-                <div
-                  key={categoria.id}
-                  className="flex flex-col items-center p-4 rounded-lg hover:bg-opacity-80 transition-colors cursor-pointer"
-                  style={{ backgroundColor: colors.lightBlue }}
-                >
-                  <div
-                    className="w-14 h-14 flex items-center justify-center bg-white rounded-full mb-3 shadow-sm"
-                    style={{ color: colors.purple }}
-                  >
-                    {categoria.icono}
-                  </div>
-                  <h3
-                    className="font-medium"
-                    style={{ color: colors.darkTeal }}
-                  >
-                    {categoria.nombre}
-                  </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="flex flex-col p-6 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105 bg-white">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full mb-4 shadow-sm"
+                  style={{ backgroundColor: colors.lightPink }}>
+                  <Users size={24} style={{ color: colors.darkTeal }} />
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
+                  Comunidad Activa
+                </h3>
+                <p className="text-gray-600 mb-4 flex-grow">
+                  Únete a nuestra comunidad de proveedores y clientes
+                </p>
+              </div>
 
-        {/* Proveedores Destacados */}
-        <section className="py-12 md:py-16 bg-gray-50">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
-              <h2
-                className="text-3xl font-bold mb-4 sm:mb-0"
-                style={{ color: colors.darkTeal }}
-              >
-                Proveedores Destacados
-              </h2>
-              <a
-                href="#"
-                className="font-medium flex items-center transition-colors"
-                style={{ color: colors.purple }}
+              <div className="flex flex-col p-6 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105 bg-white">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full mb-4 shadow-sm"
+                  style={{ backgroundColor: `${colors.purple}40` }}>
+                  <Building2 size={24} style={{ color: colors.darkTeal }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
+                  Plataforma Confiable
+                </h3>
+                <p className="text-gray-600 mb-4 flex-grow">
+                  Conectamos proveedores verificados con clientes potenciales
+                </p>
+              </div>
+
+              <div className="flex flex-col p-6 rounded-xl transition-all duration-200 cursor-pointer hover:shadow-lg hover:scale-105 bg-white">
+                <div className="w-12 h-12 flex items-center justify-center rounded-full mb-4 shadow-sm"
+                  style={{ backgroundColor: `${colors.sage}40` }}>
+                  <Package size={24} style={{ color: colors.darkTeal }} />
+                </div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
+                  Soluciones Integrales
+                </h3>
+                <p className="text-gray-600 mb-4 flex-grow">
+                  Todo lo que necesitas para tu evento en un solo lugar
+                </p>
+              </div>
+            </div>
+
+            <div className="text-center mt-8">
+              <button
+                ref={modalTriggerRef}
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center px-6 py-3 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                style={{ 
+                  backgroundColor: colors.purple,
+                  color: 'white'
+                }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.color = colors.pink;
+                  e.currentTarget.style.backgroundColor = colors.pink;
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = colors.purple;
+                  e.currentTarget.style.backgroundColor = colors.purple;
                 }}
+                aria-haspopup="dialog"
               >
-                Ver todos <ChevronRight size={16} className="ml-1" />
-              </a>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {proveedoresDestacados.map((proveedor) => (
-                <ProveedorCard key={proveedor.id} proveedor={proveedor} />
-              ))}
+                Conoce más sobre ÉVOCA <ChevronRight size={16} className="ml-2" />
+              </button>
             </div>
           </div>
         </section>
 
         {/* Sección "Vende con nosotros" */}
-        <section
-          className="py-16"
-          style={{
-            background: `linear-gradient(to right, ${colors.pink}, ${colors.purple})`,
-          }}
-        >
+        <section className="py-16">
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="md:w-1/2 mb-8 md:mb-0">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-4">
+                <h2 
+                  className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4"
+                  style={{ color: colors.darkTeal }}
+                >
                   ¿Eres proveedor? Vende con nosotros
                 </h2>
-                <p className="text-base sm:text-lg text-white opacity-90 mb-6 max-w-lg">
+                <p 
+                  className="text-base sm:text-lg mb-6 max-w-lg"
+                  style={{ color: colors.darkTeal }}
+                >
                   Únete a nuestra red de proveedores y conecta con miles de
                   empresas que buscan tus productos y servicios. Aumenta tu
                   visibilidad y consigue nuevos clientes.
                 </p>
                 <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                  <button
-                    className="bg-white py-3 px-6 rounded-lg font-medium transition-colors"
-                    style={{ color: colors.darkTeal }}
+                  <Link 
+                    to="/Vende"
+                    className="bg-transparent border py-3 px-6 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                    style={{ 
+                      color: colors.darkTeal,
+                      borderColor: colors.darkTeal 
+                    }}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.lightBlue;
+                      e.currentTarget.style.backgroundColor = colors.darkTeal;
+                      e.currentTarget.style.color = 'white';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "white";
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                      e.currentTarget.style.color = colors.darkTeal;
                     }}
                   >
-                    Comenzar ahora
-                  </button>
-                  <button className="bg-transparent border border-white text-white py-3 px-6 rounded-lg font-medium hover:bg-white hover:bg-opacity-10 transition-colors">
                     Saber más
-                  </button>
+                  </Link>
                 </div>
               </div>
 
               <div className="md:w-1/2 flex justify-center">
                 <img
-                  src="/api/placeholder/500/400"
+                  src="https://images.unsplash.com/photo-1556761175-b413da4baf72?q=80&w=1374&auto=format&fit=crop"
                   alt="Vender con nosotros"
-                  className="rounded-lg shadow-xl max-w-full md:max-w-md"
+                  className="rounded-lg shadow-xl max-w-full md:max-w-md object-cover h-[400px]"
                 />
               </div>
             </div>
           </div>
         </section>
+
+        {/* Modal de Información */}
+        <Modal isOpen={isModalOpen} onClose={handleModalClose}>
+          <div className="space-y-6">
+            <h2 id="modal-title" className="text-3xl font-bold" style={{ color: colors.darkTeal }}>
+              Sobre ÉVOCA
+            </h2>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
+                  Nuestra Misión
+                </h3>
+                <p className="text-gray-600">
+                  Conectar proveedores de calidad con clientes que buscan los mejores servicios para sus eventos, creando una comunidad confiable y eficiente.
+                </p>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
+                  ¿Por qué elegirnos?
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  <li>Plataforma verificada y segura</li>
+                  <li>Amplia red de proveedores profesionales</li>
+                  <li>Sistema de calificaciones y reseñas</li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-xl font-semibold mb-2" style={{ color: colors.darkTeal }}>
+                  Nuestros Valores
+                </h3>
+                <ul className="list-disc list-inside space-y-2 text-gray-600">
+                  <li>Calidad y profesionalismo</li>
+                  <li>Transparencia en cada interacción</li>
+                  <li>Innovación constante</li>
+                  <li>Compromiso con la excelencia</li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <button
+                onClick={handleModalClose}
+                className="w-full py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+                style={{ 
+                  backgroundColor: colors.purple,
+                  color: 'white'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.pink;
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.purple;
+                }}
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </Modal>
       </main>
     </div>
   );
