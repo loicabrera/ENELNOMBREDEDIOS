@@ -39,7 +39,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   // Determinar el rol del usuario autenticado (si existe)
-  const userRole = user?.provedorId ? 'proveedor' : user?.adminId ? 'admin' : null;
+  const userRole = user?.rol || null;
 
   // Lógica de redirección basada en el estado del contexto y roles
   const requiresAdmin = location.pathname.includes('dashboardadmin') || location.pathname.includes('enelnombrededios');
@@ -62,8 +62,11 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (isAuthenticated) {
-    if (requiresProveedor && userRole !== 'proveedor') {
-      return <Navigate to="/login" state={{ from: location }} replace />;
+    if (allowedRoles && !allowedRoles.includes(userRole)) {
+      // Si el usuario autenticado no tiene el rol permitido, redirige al login correspondiente
+      if (userRole === 'admin') return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
+      if (userRole === 'proveedor') return <Navigate to="/dashboard-proveedor" state={{ from: location }} replace />;
+      return <Navigate to="/" state={{ from: location }} replace />;
     } else if (location.pathname === '/login' || location.pathname === '/enelnombrededios') {
       if(userRole === 'admin') return <Navigate to="/dashboardadmin" state={{ from: location }} replace />;
       if(userRole === 'proveedor') return <Navigate to="/dashboard-proveedor" state={{ from: location }} replace />;
