@@ -506,6 +506,11 @@ app.post('/registrar_pago', async (req, res) => {
     );
     const duracionDias = Number(membresia.duracion_dias) || 30;
 
+    // Si el plan es "Plan Básico", forzar la duración a 30 días
+    if (membresia.nombre_pla === 'Plan Básico') {
+      duracionDias = 30;
+    }
+
     // Crear la membresía en PROVEDOR_MEMBRESIA
     console.log('Insertando membresía para negocio:', provedor_negocio_id_provedor);
     const fechaInicio = new Date(fecha_pago);
